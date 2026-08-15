@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Theo Dõi Funchomper - Dashboard</title>
   
-  <!-- FontAwesome Icons & Google Font (Inter) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -26,7 +25,6 @@
       --accent-red: #f87171;
       
       --border-color: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(56, 189, 248, 0.4);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
@@ -40,7 +38,6 @@
     
     .container { max-width: 1100px; margin: 0 auto; display: none; }
 
-    /* Màn hình đăng nhập Glassmorphism */
     .login-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -109,7 +106,6 @@
     }
     .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
 
-    /* Navbar Header */
     .navbar { 
       display: flex; 
       flex-direction: column;
@@ -131,7 +127,6 @@
     
     .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
     
-    /* Role Badge */
     .role-badge {
       padding: 6px 10px;
       border-radius: 20px;
@@ -144,7 +139,6 @@
     .role-admin { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
     .role-user { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
 
-    /* Nút Quản Lý Nav */
     .btn-action-nav {
       background: rgba(56, 189, 248, 0.1);
       color: var(--accent-blue);
@@ -171,7 +165,6 @@
       margin-left: auto;
     }
 
-    /* Bảng hiển thị chính */
     .card { 
       background: var(--bg-surface); 
       backdrop-filter: blur(12px);
@@ -185,7 +178,6 @@
     .card-title { font-size: 15px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
     .card-title i { color: var(--accent-blue); }
 
-    /* Bộ lọc nhóm Mobile */
     .filter-box { display: flex; align-items: center; gap: 8px; width: 100%; }
     .filter-box select { 
       width: 100%;
@@ -256,7 +248,6 @@
     .btn-edit { background: rgba(251, 191, 36, 0.1); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
     .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); }
 
-    /* Modal Popup Glassmorphism Mobile */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -285,7 +276,6 @@
     .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--accent-yellow); cursor: pointer; }
     .checkbox-group input { accent-color: var(--accent-yellow); width: 16px; height: 16px; }
 
-    /* Tối ưu hóa cho màn hình máy tính / Tablet rộng hơn */
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
       .navbar { flex-direction: row; justify-content: space-between; align-items: center; }
@@ -297,7 +287,6 @@
 </head>
 <body>
 
-<!-- 1. Màn hình đăng nhập (TÊN ĐĂNG NHẬP + MẬT KHẨU) -->
 <div class="login-overlay" id="loginScreen">
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
@@ -317,14 +306,12 @@
   </div>
 </div>
 
-<!-- 2. Màn hình Dashboard -->
 <div class="container" id="dashboardScreen">
   <div class="navbar">
     <h1><i class="fa-solid fa-microchip"></i> FUNCHOMPER</h1>
     <div class="nav-controls">
       <div id="roleBadge" class="role-badge role-user">User</div>
       
-      <!-- Nút dành riêng cho Admin -->
       <button id="btnPassManage" class="btn-action-nav" onclick="openPassModal()" style="display: none;">
         <i class="fa-solid fa-user-plus"></i> <span class="nav-btn-text">User</span>
       </button>
@@ -366,7 +353,6 @@
   </div>
 </div>
 
-<!-- 3. Popup Sửa Tên Trạm / Nhóm -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -399,7 +385,6 @@
   </div>
 </div>
 
-<!-- 4. Popup Admin Tạo & Quản Lý User -->
 <div class="modal-overlay" id="passModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -444,7 +429,6 @@
   </div>
 </div>
 
-<!-- 5. Popup Admin Tự Đổi Tên Đăng Nhập & Pass Của Mình -->
 <div class="modal-overlay" id="changeAdminPassModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -477,11 +461,13 @@
   </div>
 </div>
 
-<!-- Firebase SDK v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+  // KHÓA BẢO MẬT BẮT BUỘC
+  const DEVICE_SECRET_KEY = "Funchomper_Secure_2026@tz";
+
   const DEFAULT_ADMIN_USER = "admin";
   const DEFAULT_ADMIN_PASS = "88888888";
 
@@ -655,20 +641,23 @@
         let devGrp = globalDeviceData[id].group || "Chưa Phân Nhóm";
         if (devGrp === oldGroup) {
           updates["devices/" + id + "/group"] = newGroup;
+          updates["devices/" + id + "/secret_key"] = DEVICE_SECRET_KEY;
         }
       }
       updates["devices/" + deviceId + "/device_name"] = newName;
+      updates["devices/" + deviceId + "/secret_key"] = DEVICE_SECRET_KEY;
 
       db.ref().update(updates)
         .then(() => {
           alert(`Đã đổi tên nhóm cho tất cả thiết bị thuộc nhóm cũ!`);
           closeModal();
         })
-        .catch(err => alert("Lỗi khi cập nhật: " + err.message));
+        .catch(err => alert("Lỗi khi cập nhật (Kiểm tra xem thiết bị đã kèm Secret Key chưa): " + err.message));
     } else {
       db.ref("devices/" + deviceId).update({
         device_name: newName,
-        group: newGroup
+        group: newGroup,
+        secret_key: DEVICE_SECRET_KEY
       })
       .then(() => {
         alert("Cập nhật thành công!");
