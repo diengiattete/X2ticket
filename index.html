@@ -8,9 +8,6 @@
   <!-- FontAwesome Icons & Google Font (Inter) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- CryptoJS mã hóa MD5 Mật khẩu -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
   <style>
     :root {
@@ -72,10 +69,10 @@
       filter: drop-shadow(0 0 8px var(--accent-blue-glow));
     }
     .login-box h2 { font-size: 20px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; margin-bottom: 6px; }
-    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
     
-    .form-group { margin-bottom: 20px; text-align: left; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
     .form-input {
       width: 100%;
       padding: 12px 16px;
@@ -100,6 +97,7 @@
     }
     .btn-login { 
       width: 100%; 
+      margin-top: 8px;
       background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
       color: #fff; 
       box-shadow: 0 4px 15px var(--accent-blue-glow);
@@ -131,33 +129,27 @@
     }
     .navbar h1 i { color: var(--accent-blue); filter: drop-shadow(0 0 6px var(--accent-blue-glow)); }
     
-    .nav-controls { display: flex; align-items: center; gap: 14px; }
-    .status-badge { 
-      background: rgba(52, 211, 153, 0.1); 
-      border: 1px solid rgba(52, 211, 153, 0.25); 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      color: var(--accent-green); 
-      font-size: 13px; 
-      font-weight: 500; 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
+    .nav-controls { display: flex; align-items: center; gap: 10px; }
+    
+    /* Role Badge */
+    .role-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .status-badge .dot {
-      width: 7px;
-      height: 7px;
-      background-color: var(--accent-green);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent-green);
-    }
+    .role-admin { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .role-user { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
 
-    /* Nút Admin Quản lý User (Chỉ sáng khi là Admin) */
-    .btn-admin-manage {
+    /* Nút Quản Lý */
+    .btn-action-nav {
       background: rgba(56, 189, 248, 0.1);
       color: var(--accent-blue);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
@@ -167,7 +159,7 @@
       gap: 6px;
       transition: all 0.2s ease;
     }
-    .btn-admin-manage:hover {
+    .btn-action-nav:hover {
       background: var(--accent-blue);
       color: #000;
       box-shadow: 0 0 12px var(--accent-blue-glow);
@@ -295,7 +287,7 @@
       border-radius: 16px;
       border: 1px solid var(--border-color);
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       max-height: 90vh;
       overflow-y: auto;
@@ -306,30 +298,24 @@
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
     .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--accent-yellow); cursor: pointer; }
     .checkbox-group input { accent-color: var(--accent-yellow); width: 15px; height: 15px; cursor: pointer; }
-
-    .form-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
   </style>
 </head>
 <body>
 
-<!-- 1. Màn hình đăng nhập -->
+<!-- 1. Màn hình đăng nhập (TÊN ĐĂNG NHẬP + MẬT KHẨU) -->
 <div class="login-overlay" id="loginScreen">
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
     <h2>FUNCHOMPER CONTROL</h2>
-    <p>Nhập tài khoản & mật khẩu để truy cập</p>
+    <p>Đăng nhập hệ thống quản lý</p>
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
-        <label for="username">Tên Tài Khoản (User)</label>
-        <input type="text" id="username" class="form-input" placeholder="Để trống nếu là Admin..." autocomplete="off">
+        <label for="username">Tên Đăng Nhập</label>
+        <input type="text" id="username" class="form-input" placeholder="Nhập tên đăng nhập..." required autofocus autocomplete="username">
       </div>
       <div class="form-group">
         <label for="password">Mật Khẩu</label>
-        <input type="password" id="password" class="form-input" placeholder="Nhập mật khẩu..." autocomplete="off" required autofocus>
+        <input type="password" id="password" class="form-input" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
       </div>
       <button type="submit" class="btn-login">ĐĂNG NHẬP</button>
     </form>
@@ -341,11 +327,15 @@
   <div class="navbar">
     <h1><i class="fa-solid fa-microchip"></i> THEO DÕI FUNCHOMPER</h1>
     <div class="nav-controls">
-      <div class="status-badge"><span class="dot"></span> Firebase Live</div>
+      <div id="roleBadge" class="role-badge role-user">User</div>
       
-      <!-- Nút Admin bấm để quản lý User (Chỉ hiển thị với Admin) -->
-      <button class="btn-admin-manage" id="btnAdminUser" style="display: none;" onclick="openUserModal()">
-        <i class="fa-solid fa-user-gear"></i> <span id="userRoleLabel">Admin</span>
+      <!-- Nút dành riêng cho Admin -->
+      <button id="btnPassManage" class="btn-action-nav" onclick="openPassModal()" style="display: none;">
+        <i class="fa-solid fa-user-plus"></i> Quản Lý User
+      </button>
+
+      <button id="btnChangeAdminPass" class="btn-action-nav" onclick="openChangeAdminPassModal()" style="display: none;">
+        <i class="fa-solid fa-user-gear"></i> Đổi Pass Admin
       </button>
 
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
@@ -371,7 +361,7 @@
             <th>Nhóm / Trung Tâm</th>
             <th>Địa Chỉ MAC</th>
             <th>Phiên Bản FW</th>
-            <th style="text-align: right;" id="thActions">Thao Tác</th>
+            <th style="text-align: right;">Thao Tác</th>
           </tr>
         </thead>
         <tbody id="device-table-body">
@@ -382,7 +372,7 @@
   </div>
 </div>
 
-<!-- 3. Popup Bảng Chỉnh Sửa Tên Trạm / Nhóm -->
+<!-- 3. Popup Sửa Tên Trạm / Nhóm -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -415,47 +405,82 @@
   </div>
 </div>
 
-<!-- 4. Popup Quản Lý Người Dùng (Chỉ Admin mới mở được) -->
-<div class="modal-overlay" id="userModal">
+<!-- 4. Popup Admin Tạo & Quản Lý User -->
+<div class="modal-overlay" id="passModal">
   <div class="modal-box">
     <div class="modal-header">
-      <span><i class="fa-solid fa-users-gear" style="color:var(--accent-blue); margin-right:8px;"></i> Quản Lý Tài Khoản Người Dùng</span>
-      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeUserModal()"></i>
+      <span><i class="fa-solid fa-user-plus" style="color:var(--accent-blue); margin-right:8px;"></i> Tạo Tài Khoản User Mới</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closePassModal()"></i>
     </div>
 
     <!-- Form Tạo User Mới -->
-    <form id="createUserForm" onsubmit="handleCreateUser(event)">
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label for="newUsername">Tên đăng nhập</label>
-          <input type="text" id="newUsername" class="form-input" placeholder="Tên user..." required autocomplete="off">
-        </div>
-
-        <div class="form-group">
-          <label for="newPassword">Mật khẩu</label>
-          <input type="password" id="newPassword" class="form-input" placeholder="Mật khẩu..." required minlength="4">
-        </div>
+    <form id="createPassForm" onsubmit="handleCreatePass(event)">
+      <div class="form-group">
+        <label for="newUserNote">Ghi Chú / Tên Người Dùng</label>
+        <input type="text" id="newUserNote" class="form-input" placeholder="VD: Kỹ thuật viên Anh Nam..." required autocomplete="off">
       </div>
-      <button type="submit" class="btn-primary" style="width: 100%; margin-top: 5px;">TẠO USER MỚI</button>
+      <div class="form-group">
+        <label for="newUsername">Tên Đăng Nhập User</label>
+        <input type="text" id="newUsername" class="form-input" placeholder="Nhập tên đăng nhập user..." required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="newPassVal">Mật Khẩu User</label>
+        <input type="text" id="newPassVal" class="form-input" placeholder="Nhập mật khẩu..." required minlength="4">
+      </div>
+      <button type="submit" class="btn-primary" style="width: 100%;">TẠO TÀI KHOẢN USER</button>
     </form>
 
     <hr style="border-color: var(--border-color); margin: 20px 0;">
 
-    <!-- Bảng danh sách User -->
-    <div style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 12px;">Danh Sách Người Dùng Hiện Tại</div>
+    <div style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 12px;">Danh Sách Tài Khoản User Đang Hoạt Động</div>
     <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Tên User</th>
-            <th style="text-align: right;">Thao Tác</th>
+            <th>Ghi Chú</th>
+            <th>Tên Đăng Nhập</th>
+            <th>Mật Khẩu</th>
+            <th style="text-align: right;">Xóa</th>
           </tr>
         </thead>
-        <tbody id="user-table-body">
-          <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Đang tải danh sách...</td></tr>
+        <tbody id="pass-table-body">
+          <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Đang tải...</td></tr>
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<!-- 5. Popup Admin Tự Đổi Tên Đăng Nhập & Pass Của Mình -->
+<div class="modal-overlay" id="changeAdminPassModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-user-gear" style="color:var(--accent-yellow); margin-right:8px;"></i> Cập Nhật Tài Khoản Admin</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeChangeAdminPassModal()"></i>
+    </div>
+
+    <form onsubmit="handleChangeAdminPass(event)">
+      <div class="form-group">
+        <label for="newAdminUser">Tên Đăng Nhập Admin Mới</label>
+        <input type="text" id="newAdminUser" class="form-input" placeholder="Nhập username Admin mới..." required>
+      </div>
+      <div class="form-group">
+        <label for="currentAdminPass">Mật Khẩu Admin Hiện Tại</label>
+        <input type="password" id="currentAdminPass" class="form-input" placeholder="Nhập pass cũ để xác nhận..." required>
+      </div>
+      <div class="form-group">
+        <label for="newAdminPass">Mật Khẩu Admin Mới</label>
+        <input type="password" id="newAdminPass" class="form-input" placeholder="Nhập pass mới..." required minlength="4">
+      </div>
+      <div class="form-group">
+        <label for="confirmAdminPass">Xác Nhận Mật Khẩu Mới</label>
+        <input type="password" id="confirmAdminPass" class="form-input" placeholder="Nhập lại pass mới..." required minlength="4">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeChangeAdminPassModal()">Hủy</button>
+        <button type="submit" class="btn-primary">LƯU CẬP NHẬT ADMIN</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -464,8 +489,9 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-  // Mã MD5 của mật khẩu Admin gốc (88888888)
-  const MASTER_ADMIN_HASH = "3b8112520f922718ef8f2c38cc0e6a32";
+  // Mặc Định Mới Tải Lần Đầu
+  const DEFAULT_ADMIN_USER = "admin";
+  const DEFAULT_ADMIN_PASS = "88888888";
 
   const firebaseConfig = {
     databaseURL: "https://trungio.firebaseio.com"
@@ -474,58 +500,86 @@
   const db = firebase.database();
 
   let globalDeviceData = null;
-  let globalUserData = null;
-  let currentUserRole = "USER"; // Mặc định là USER
+  let globalPassData = null;
+  let currentAdminUser = DEFAULT_ADMIN_USER;
+  let currentAdminPass = DEFAULT_ADMIN_PASS;
 
-  // --- LOGIC ĐĂNG NHẬP & PHÂN QUYỀN ---
+  // Lấy thông tin Tài khoản Admin từ Firebase (nếu đã cài đặt)
+  db.ref("admin_settings").on("value", (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      currentAdminUser = data.admin_username || DEFAULT_ADMIN_USER;
+      currentAdminPass = data.admin_password || DEFAULT_ADMIN_PASS;
+    } else {
+      currentAdminUser = DEFAULT_ADMIN_USER;
+      currentAdminPass = DEFAULT_ADMIN_PASS;
+    }
+  });
+
+  // --- LOGIC ĐĂNG NHẬP USERNAME + PASSWORD ---
   function handleLogin(e) {
     e.preventDefault();
-    const userVal = document.getElementById("username").value.trim();
-    const pwdInput = document.getElementById("password").value;
-    const inputHash = CryptoJS.MD5(pwdInput).toString();
+    const userInput = document.getElementById("username").value.trim();
+    const pwdInput = document.getElementById("password").value.trim();
 
-    // 1. Kiểm tra Admin gốc (Nếu đăng nhập thẳng mật khẩu Master)
-    if (inputHash === MASTER_ADMIN_HASH) {
+    // 1. Kiểm tra nếu là ADMIN
+    if (userInput === currentAdminUser && pwdInput === currentAdminPass) {
       sessionStorage.setItem("funchomper_authenticated", "true");
       sessionStorage.setItem("funchomper_role", "ADMIN");
+      sessionStorage.setItem("funchomper_user", userInput);
       showDashboard();
       return;
     }
 
-    // 2. Kiểm tra User từ Firebase Database
-    if (!userVal) {
-      alert("Vui lòng nhập tên tài khoản hoặc kiểm tra lại mật khẩu Admin!");
-      return;
-    }
+    // 2. Kiểm tra nếu là USER trên Firebase
+    db.ref("access_passwords").once("value").then((snapshot) => {
+      const passData = snapshot.val();
+      let isValidUser = false;
+      let loggedUser = "";
 
-    db.ref("users/" + userVal).once("value").then((snapshot) => {
-      const userData = snapshot.val();
-      if (userData && userData.password_hash === inputHash) {
+      if (passData) {
+        for (let key in passData) {
+          if (passData[key].username === userInput && passData[key].password === pwdInput) {
+            isValidUser = true;
+            loggedUser = passData[key].note || userInput;
+            break;
+          }
+        }
+      }
+
+      if (isValidUser) {
         sessionStorage.setItem("funchomper_authenticated", "true");
-        sessionStorage.setItem("funchomper_role", userData.role || "USER");
-        sessionStorage.setItem("funchomper_user", userVal);
+        sessionStorage.setItem("funchomper_role", "USER");
+        sessionStorage.setItem("funchomper_user", loggedUser);
         showDashboard();
       } else {
-        alert("Tên đăng nhập hoặc mật khẩu không đúng!");
+        alert("Tên đăng nhập hoặc Mật khẩu không chính xác!");
       }
-    }).catch(err => alert("Lỗi kết nối: " + err.message));
+    }).catch(err => alert("Lỗi kết nối Firebase: " + err.message));
   }
 
   function showDashboard() {
-    currentUserRole = sessionStorage.getItem("funchomper_role") || "USER";
-    const loggedUser = sessionStorage.getItem("funchomper_user") || "Admin";
+    const role = sessionStorage.getItem("funchomper_role") || "USER";
+    const loggedUser = sessionStorage.getItem("funchomper_user") || "User";
 
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("dashboardScreen").style.display = "block";
 
-    // Phân quyền hiển thị nút Quản lý User và Cột Thao Tác Sửa/Xóa
-    if (currentUserRole === "ADMIN") {
-      document.getElementById("btnAdminUser").style.display = "flex";
-      document.getElementById("userRoleLabel").innerText = `Admin (${loggedUser})`;
-      document.getElementById("thActions").style.display = "";
+    const roleBadge = document.getElementById("roleBadge");
+    const btnPassManage = document.getElementById("btnPassManage");
+    const btnChangeAdminPass = document.getElementById("btnChangeAdminPass");
+
+    // Phân quyền hiển thị
+    if (role === "ADMIN") {
+      roleBadge.className = "role-badge role-admin";
+      roleBadge.innerHTML = `<i class="fa-solid fa-user-shield"></i> Admin (${loggedUser})`;
+      btnPassManage.style.display = "flex";
+      btnChangeAdminPass.style.display = "flex";
     } else {
-      document.getElementById("btnAdminUser").style.display = "none";
-      document.getElementById("thActions").style.display = "none";
+      roleBadge.className = "role-badge role-user";
+      roleBadge.innerHTML = `<i class="fa-solid fa-user"></i> ${loggedUser}`;
+      btnPassManage.style.display = "none";
+      btnChangeAdminPass.style.display = "none";
     }
 
     renderDevices();
@@ -540,7 +594,51 @@
     showDashboard();
   }
 
-  // --- QUẢN LÝ THIẾT BỊ (SỬA / XÓA) ---
+  // --- ĐỔI TÊN ĐĂNG NHẬP & PASS ADMIN ---
+  function openChangeAdminPassModal() {
+    document.getElementById("newAdminUser").value = currentAdminUser;
+    document.getElementById("changeAdminPassModal").style.display = "flex";
+  }
+
+  function closeChangeAdminPassModal() {
+    document.getElementById("changeAdminPassModal").style.display = "none";
+  }
+
+  function handleChangeAdminPass(e) {
+    e.preventDefault();
+    const newAdminUserVal = document.getElementById("newAdminUser").value.trim();
+    const currentPass = document.getElementById("currentAdminPass").value.trim();
+    const newPass = document.getElementById("newAdminPass").value.trim();
+    const confirmPass = document.getElementById("confirmAdminPass").value.trim();
+
+    if (currentPass !== currentAdminPass) {
+      alert("Mật khẩu Admin hiện tại không đúng!");
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      alert("Xác nhận mật khẩu mới không trùng khớp!");
+      return;
+    }
+
+    // Cập nhật Tên Đăng Nhập & Mật Khẩu Admin lên Firebase
+    db.ref("admin_settings").set({
+      admin_username: newAdminUserVal,
+      admin_password: newPass
+    })
+    .then(() => {
+      alert("Đã cập nhật thông tin Admin thành công!");
+      currentAdminUser = newAdminUserVal;
+      currentAdminPass = newPass;
+      closeChangeAdminPassModal();
+      document.getElementById("currentAdminPass").value = "";
+      document.getElementById("newAdminPass").value = "";
+      document.getElementById("confirmAdminPass").value = "";
+    })
+    .catch(err => alert("Lỗi khi cập nhật Admin: " + err.message));
+  }
+
+  // --- QUẢN LÝ THIẾT BỊ ---
   function openEditModal(deviceId, currentName, currentGroup) {
     document.getElementById("editDeviceId").value = deviceId;
     document.getElementById("oldGroupName").value = currentGroup;
@@ -604,7 +702,6 @@
     }
   }
 
-  // --- RENDER DANH SÁCH THIẾT BỊ ---
   function renderDevices() {
     const tbody = document.getElementById("device-table-body");
     const filterValue = document.getElementById("groupFilter").value;
@@ -630,7 +727,11 @@
       let macAddr = dev.mac || id;
       let fwVer   = dev.firmware || "1.0.0";
 
-      let actionBtns = currentUserRole === "ADMIN" ? `
+      let row = `<tr>
+        <td><b style="font-size: 14px; color: var(--text-main); font-weight: 600;">${devName}</b></td>
+        <td><span class="badge-group"><i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> ${devGroup}</span></td>
+        <td><span class="badge-mac">${macAddr}</span></td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
         <td>
           <div class="action-group">
             <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')">
@@ -640,14 +741,7 @@
               <i class="fa-solid fa-trash-can"></i> Xóa
             </button>
           </div>
-        </td>` : '';
-
-      let row = `<tr>
-        <td><b style="font-size: 14px; color: var(--text-main); font-weight: 600;">${devName}</b></td>
-        <td><span class="badge-group"><i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> ${devGroup}</span></td>
-        <td><span class="badge-mac">${macAddr}</span></td>
-        <td><span class="badge-fw">v${fwVer}</span></td>
-        ${actionBtns}
+        </td>
       </tr>`;
       tbody.innerHTML += row;
     }
@@ -679,67 +773,68 @@
     }
   }
 
-  // --- LOGIC POPUP QUẢN LÝ USER ---
-  function openUserModal() {
-    document.getElementById("userModal").style.display = "flex";
+  // --- ADMIN QUẢN LÝ TẠO & XÓA TÀI KHOẢN USER ---
+  function openPassModal() {
+    document.getElementById("passModal").style.display = "flex";
   }
 
-  function closeUserModal() {
-    document.getElementById("userModal").style.display = "none";
+  function closePassModal() {
+    document.getElementById("passModal").style.display = "none";
   }
 
-  function handleCreateUser(e) {
+  function handleCreatePass(e) {
     e.preventDefault();
-    const uname = document.getElementById("newUsername").value.trim();
-    const pwd = document.getElementById("newPassword").value;
+    const note = document.getElementById("newUserNote").value.trim();
+    const username = document.getElementById("newUsername").value.trim();
+    const passVal = document.getElementById("newPassVal").value.trim();
 
-    if (!uname || !pwd) return;
+    if (!note || !username || !passVal) return;
 
-    const pwdHash = CryptoJS.MD5(pwd).toString();
-
-    db.ref("users/" + uname).set({
-      password_hash: pwdHash,
-      role: "USER",
+    db.ref("access_passwords").push({
+      note: note,
+      username: username,
+      password: passVal,
       created_at: Date.now()
     }).then(() => {
-      alert(`Đã tạo tài khoản user: ${uname} thành công!`);
-      document.getElementById("createUserForm").reset();
-    }).catch(err => alert("Lỗi khi tạo user: " + err.message));
+      alert(`Đã tạo tài khoản User "${username}" thành công!`);
+      document.getElementById("createPassForm").reset();
+    }).catch(err => alert("Lỗi khi tạo User: " + err.message));
   }
 
-  function deleteUser(username) {
-    if (confirm(`Bạn có chắc muốn xóa tài khoản User: "${username}"?`)) {
-      db.ref("users/" + username).remove()
-        .then(() => alert(`Đã xóa user "${username}"!`))
+  function deletePass(passId) {
+    if (confirm("Bạn có chắc chắn muốn XÓA tài khoản User này?")) {
+      db.ref("access_passwords/" + passId).remove()
+        .then(() => alert("Đã xóa tài khoản User!"))
         .catch(err => alert("Lỗi khi xóa: " + err.message));
     }
   }
 
-  function renderUserList(users) {
-    const tbody = document.getElementById("user-table-body");
+  function renderPassList(passData) {
+    const tbody = document.getElementById("pass-table-body");
     tbody.innerHTML = "";
 
-    if (!users) {
-      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">Chưa có User nào được tạo.</td></tr>';
+    if (!passData) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Chưa có tài khoản User nào.</td></tr>';
       return;
     }
 
-    for (let uname in users) {
+    for (let id in passData) {
+      let item = passData[id];
       let row = `<tr>
-        <td><i class="fa-solid fa-user" style="color:var(--accent-blue); margin-right:8px;"></i> <b>${uname}</b></td>
-        <td>
-          <div class="action-group">
-            <button class="btn-delete" onclick="deleteUser('${uname}')">
-              <i class="fa-solid fa-trash-can"></i> Xóa
-            </button>
-          </div>
+        <td><b style="color: var(--text-main);">${item.note || 'User'}</b></td>
+        <td><code style="color: var(--accent-blue); font-size:13px;">${item.username || '-'}</code></td>
+        <td><code style="color: var(--accent-yellow); font-size:13px;">${item.password}</code></td>
+        <td style="text-align: right;">
+          <button class="btn-delete" onclick="deletePass('${id}')">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
         </td>
       </tr>`;
       tbody.innerHTML += row;
     }
   }
 
-  // Lắng nghe dữ liệu Devices & Users từ Firebase
+  // Lắng nghe dữ liệu Firebase
   db.ref("devices").on("value", (snapshot) => {
     globalDeviceData = snapshot.val();
     if (globalDeviceData) {
@@ -748,9 +843,9 @@
     renderDevices();
   });
 
-  db.ref("users").on("value", (snapshot) => {
-    globalUserData = snapshot.val();
-    renderUserList(globalUserData);
+  db.ref("access_passwords").on("value", (snapshot) => {
+    globalPassData = snapshot.val();
+    renderPassList(globalPassData);
   });
 </script>
 
