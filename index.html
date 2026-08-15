@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bảng Điều Khiển Quản Trị</title>
+  <title>Hệ Thống Quản Lý Thiết Bị & User</title>
   <style>
     /* --- CSS Reset & Base Styles (Dark Mode) --- */
     * {
@@ -14,8 +14,8 @@
     }
 
     body {
-      background-color: #0f172a; /* Nền tối chính */
-      color: #f8fafc; /* Chữ sáng */
+      background-color: #0f172a;
+      color: #f8fafc;
       display: flex;
       min-height: 100vh;
     }
@@ -31,7 +31,7 @@
     }
 
     .sidebar h2 {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       margin-bottom: 30px;
       color: #38bdf8;
       text-transform: uppercase;
@@ -57,13 +57,14 @@
     .main-content {
       flex: 1;
       padding: 30px;
+      overflow-y: auto;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       background: #1e293b;
       padding: 20px;
       border-radius: 8px;
@@ -83,6 +84,51 @@
       color: #38bdf8;
       border-bottom: 1px solid #334155;
       padding-bottom: 10px;
+    }
+
+    /* --- Grid & Cards Thiết bị --- */
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .device-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .device-card h4 {
+      color: #f8fafc;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .device-status {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .status-online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    .status-offline { background-color: #ef4444; }
+
+    .device-val {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #38bdf8;
+      margin: 15px 0 5px 0;
+    }
+
+    .device-sub {
+      font-size: 0.85rem;
+      color: #94a3b8;
     }
 
     /* --- Form Styles --- */
@@ -130,17 +176,9 @@
       transition: background 0.2s;
     }
 
-    .btn:hover {
-      background-color: #0369a1;
-    }
-
-    .btn-danger {
-      background-color: #ef4444;
-    }
-
-    .btn-danger:hover {
-      background-color: #dc2626;
-    }
+    .btn:hover { background-color: #0369a1; }
+    .btn-danger { background-color: #ef4444; }
+    .btn-danger:hover { background-color: #dc2626; }
 
     /* --- Table Styles --- */
     table {
@@ -183,32 +221,62 @@
 </head>
 <body>
 
-  <!-- Thanh Điều Hướng Bên (Sidebar) -->
+  <!-- Sidebar -->
   <aside class="sidebar">
-    <h2>Admin Dashboard</h2>
+    <h2>IoT Dashboard</h2>
     <nav>
-      <a href="#" class="active">Quản lý Người dùng</a>
-      <a href="#">Cấu hình Hệ thống</a>
-      <a href="#">Nhật ký Hoạt động</a>
+      <a href="#devices" class="active">Giám Sát Thiết Bị</a>
+      <a href="#users">Quản Lý Người Dùng</a>
+      <a href="#">Cấu Hình Hệ Thống</a>
     </nav>
   </aside>
 
-  <!-- Khu Vực Nội Dung Chính -->
+  <!-- Main Content -->
   <main class="main-content">
     <header>
-      <h1>Quản Lý Hệ Thống</h1>
+      <h1>Hệ Thống Quản Lý Trạm Thiết Bị</h1>
       <div class="user-profile">
-        <span>Xin chào, <strong>Admin</strong></span>
+        <span>Tài khoản: <strong>Admin</strong></span>
       </div>
     </header>
 
-    <!-- CARD 1: FORM TẠO NGƯỜI DÙNG MỚI (User & Mật khẩu) -->
-    <section class="card">
+    <!-- SECTION 1: DASHBOARD THIẾT BỊ (GIÁM SÁT TRẠM DỮ LIỆU) -->
+    <section id="devices">
+      <div class="card">
+        <h3>Trạng Thái Trạm / Thiết Bị Realtime</h3>
+        
+        <div class="device-grid">
+          <!-- Card Thiết bị 1 -->
+          <div class="device-card">
+            <h4><span class="device-status status-online"></span>Trạm 01 (ESP8266)</h4>
+            <div class="device-val" id="count-dev-1">1,248</div>
+            <div class="device-sub">Số xung ghi nhận</div>
+          </div>
+
+          <!-- Card Thiết bị 2 -->
+          <div class="device-card">
+            <h4><span class="device-status status-online"></span>Trạm 02 (ESP8266)</h4>
+            <div class="device-val" id="count-dev-2">856</div>
+            <div class="device-sub">Số xung ghi nhận</div>
+          </div>
+
+          <!-- Card Thiết bị 3 -->
+          <div class="device-card">
+            <h4><span class="device-status status-offline"></span>Trạm 03 (Dự phòng)</h4>
+            <div class="device-val" style="color: #64748b;">0</div>
+            <div class="device-sub">Mất kết nối</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: QUẢN LÝ USER / MẬT KHẨU -->
+    <section id="users" class="card">
       <h3>Tạo Người Dùng Mới</h3>
       <form id="createUserForm" onsubmit="handleCreateUser(event)">
         <div class="form-grid">
           <div class="form-group">
-            <label for="username">Tên người dùng (User)</label>
+            <label for="username">Tên đăng nhập (User)</label>
             <input type="text" id="username" placeholder="Nhập tên tài khoản" required autocomplete="off">
           </div>
 
@@ -227,10 +295,9 @@
         </div>
         <button type="submit" class="btn">Tạo Tài Khoản</button>
       </form>
-    </section>
 
-    <!-- CARD 2: DANH SÁCH NGƯỜI DÙNG -->
-    <section class="card">
+      <br><hr style="border-color: #334155;"><br>
+
       <h3>Danh Sách Tài Khoản</h3>
       <table>
         <thead>
@@ -242,77 +309,53 @@
           </tr>
         </thead>
         <tbody id="userTableBody">
-          <!-- Dữ liệu mẫu -->
           <tr>
             <td>1</td>
             <td>admin_root</td>
             <td><span class="badge badge-admin">ADMIN</span></td>
-            <td><button class="btn btn-danger" onclick="deleteUser(1)">Xóa</button></td>
+            <td><button class="btn btn-danger" onclick="deleteUser(this)">Xóa</button></td>
           </tr>
           <tr>
             <td>2</td>
             <td>operator_01</td>
             <td><span class="badge badge-user">USER</span></td>
-            <td><button class="btn btn-danger" onclick="deleteUser(2)">Xóa</button></td>
+            <td><button class="btn btn-danger" onclick="deleteUser(this)">Xóa</button></td>
           </tr>
         </tbody>
       </table>
     </section>
+
   </main>
 
-  <!-- LOGIC XỬ LÝ JAVASCRIPT -->
+  <!-- JavaScript -->
   <script>
-    // Hàm xử lý tạo User mới
-    async function handleCreateUser(event) {
+    // Hàm thêm User mới
+    function handleCreateUser(event) {
       event.preventDefault();
 
       const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
       const role = document.getElementById('userRole').value;
-
-      try {
-        // Gửi thông tin tới Server/API của bạn ở đây
-        /*
-        const response = await fetch('/api/users', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, role })
-        });
-        */
-
-        // Giả lập thêm dữ liệu vào giao diện bảng để xem thử:
-        alert(`Tạo thành công tài khoản: ${username}`);
-        addUserToTable(Date.now(), username, role);
-
-        // Reset form sau khi tạo
-        document.getElementById('createUserForm').reset();
-
-      } catch (error) {
-        console.error('Lỗi khi tạo user:', error);
-        alert('Đã xảy ra lỗi, vui lòng thử lại.');
-      }
-    }
-
-    // Hàm thêm user vừa tạo vào bảng hiển thị
-    function addUserToTable(id, username, role) {
       const tbody = document.getElementById('userTableBody');
+
       const tr = document.createElement('tr');
       const roleBadge = role === 'admin' ? 'badge-admin' : 'badge-user';
       
       tr.innerHTML = `
-        <td>${id}</td>
+        <td>${Date.now().toString().slice(-4)}</td>
         <td>${username}</td>
         <td><span class="badge ${roleBadge}">${role.toUpperCase()}</span></td>
-        <td><button class="btn btn-danger" onclick="deleteUser(${id})">Xóa</button></td>
+        <td><button class="btn btn-danger" onclick="deleteUser(this)">Xóa</button></td>
       `;
+      
       tbody.appendChild(tr);
+      alert(`Đã tạo tài khoản: ${username}`);
+      document.getElementById('createUserForm').reset();
     }
 
-    // Hàm xóa user
-    function deleteUser(id) {
-      if (confirm(`Bạn có chắc chắn muốn xóa tài khoản có ID: ${id}?`)) {
-        // Thực hiện xóa dòng trên bảng giao diện
-        event.target.closest('tr').remove();
+    // Hàm xóa User
+    function deleteUser(btn) {
+      if (confirm('Bạn có chắc muốn xóa tài khoản này?')) {
+        btn.closest('tr').remove();
       }
     }
   </script>
