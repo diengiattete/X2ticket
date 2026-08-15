@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Theo Dõi Funchomper - Dashboard</title>
+  <title>Theo Dõi Funchomper - Dashboard (Mã Hóa Mật Khẩu)</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -417,7 +417,7 @@
           <tr>
             <th>Ghi Chú</th>
             <th>Username</th>
-            <th>Mật Khẩu</th>
+            <th>Mật Khẩu (Mã hóa)</th>
             <th style="text-align: right;">Xóa</th>
           </tr>
         </thead>
@@ -461,15 +461,18 @@
   </div>
 </div>
 
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!-- Thư viện CryptoJS để Hash SHA-256 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 <script>
-  // KHÓA BẢO MẬT BẮT BUỘC
   const DEVICE_SECRET_KEY = "Funchomper_Secure_2026@tz";
 
   const DEFAULT_ADMIN_USER = "admin";
-  const DEFAULT_ADMIN_PASS = "88888888";
+  // Mã SHA-256 của mật khẩu "88888888"
+  const DEFAULT_ADMIN_PASS_HASH = "2c0b021313e61c3bc22a7f5a28723a1a9e34e56eb60f8db4c5d576a8a25c1585";
 
   const firebaseConfig = {
     databaseURL: "https://trungio.firebaseio.com"
@@ -480,16 +483,21 @@
   let globalDeviceData = null;
   let globalPassData = null;
   let currentAdminUser = DEFAULT_ADMIN_USER;
-  let currentAdminPass = DEFAULT_ADMIN_PASS;
+  let currentAdminPassHash = DEFAULT_ADMIN_PASS_HASH;
+
+  // Hàm băm SHA-256 tiện ích
+  function hashSHA256(str) {
+    return CryptoJS.SHA256(str).toString();
+  }
 
   db.ref("admin_settings").on("value", (snapshot) => {
     if (snapshot.exists()) {
       const data = snapshot.val();
       currentAdminUser = data.admin_username || DEFAULT_ADMIN_USER;
-      currentAdminPass = data.admin_password || DEFAULT_ADMIN_PASS;
+      currentAdminPassHash = data.admin_password || DEFAULT_ADMIN_PASS_HASH;
     } else {
       currentAdminUser = DEFAULT_ADMIN_USER;
-      currentAdminPass = DEFAULT_ADMIN_PASS;
+      currentAdminPassHash = DEFAULT_ADMIN_PASS_HASH;
     }
   });
 
@@ -497,8 +505,10 @@
     e.preventDefault();
     const userInput = document.getElementById("username").value.trim();
     const pwdInput = document.getElementById("password").value.trim();
+    const pwdHash = hashSHA256(pwdInput); // Mã hóa chuỗi vừa nhập để so sánh
 
-    if (userInput === currentAdminUser && pwdInput === currentAdminPass) {
+    // Kiểm tra đăng nhập Admin bằng HASH
+    if (userInput === currentAdminUser && pwdHash === currentAdminPassHash) {
       sessionStorage.setItem("funchomper_authenticated", "true");
       sessionStorage.setItem("funchomper_role", "ADMIN");
       sessionStorage.setItem("funchomper_user", userInput);
@@ -506,6 +516,7 @@
       return;
     }
 
+    // Kiểm tra đăng nhập User bằng HASH
     db.ref("access_passwords").once("value").then((snapshot) => {
       const passData = snapshot.val();
       let isValidUser = false;
@@ -513,7 +524,8 @@
 
       if (passData) {
         for (let key in passData) {
-          if (passData[key].username === userInput && passData[key].password === pwdInput) {
+          // So sánh username và mật khẩu đã băm SHA-256
+          if (passData[key].username === userInput && (passData[key].password === pwdHash || passData[key].password === pwdInput)) {
             isValidUser = true;
             loggedUser = passData[key].note || userInput;
             break;
@@ -583,7 +595,7 @@
     const newPass = document.getElementById("newAdminPass").value.trim();
     const confirmPass = document.getElementById("confirmAdminPass").value.trim();
 
-    if (currentPass !== currentAdminPass) {
+    if (hashSHA256(currentPass) !== currentAdminPassHash) {
       alert("Mật khẩu Admin hiện tại không đúng!");
       return;
     }
@@ -593,14 +605,17 @@
       return;
     }
 
+    // Mã hóa mật khẩu Admin mới trước khi gửi lên Firebase
+    const newAdminPassHash = hashSHA256(newPass);
+
     db.ref("admin_settings").set({
       admin_username: newAdminUserVal,
-      admin_password: newPass
+      admin_password: newAdminPassHash
     })
     .then(() => {
       alert("Đã cập nhật Admin thành công!");
       currentAdminUser = newAdminUserVal;
-      currentAdminPass = newPass;
+      currentAdminPassHash = newAdminPassHash;
       closeChangeAdminPassModal();
       document.getElementById("currentAdminPass").value = "";
       document.getElementById("newAdminPass").value = "";
@@ -652,7 +667,7 @@
           alert(`Đã đổi tên nhóm cho tất cả thiết bị thuộc nhóm cũ!`);
           closeModal();
         })
-        .catch(err => alert("Lỗi khi cập nhật (Kiểm tra xem thiết bị đã kèm Secret Key chưa): " + err.message));
+        .catch(err => alert("Lỗi khi cập nhật: " + err.message));
     } else {
       db.ref("devices/" + deviceId).update({
         device_name: newName,
@@ -762,10 +777,13 @@
 
     if (!note || !username || !passVal) return;
 
+    // Mã hóa mật khẩu User bằng SHA-256 trước khi push lên Firebase
+    const hashedUserPass = hashSHA256(passVal);
+
     db.ref("access_passwords").push({
       note: note,
       username: username,
-      password: passVal,
+      password: hashedUserPass,
       created_at: Date.now()
     }).then(() => {
       alert(`Đã tạo tài khoản User "${username}" thành công!`);
@@ -792,10 +810,13 @@
 
     for (let id in passData) {
       let item = passData[id];
+      // Mật khẩu sẽ hiển thị dưới dạng 8 ký tự mã hóa bămSHA (mã hóa hoàn toàn)
+      let displayHash = item.password ? item.password.substring(0, 10) + "..." : "N/A";
+
       let row = `<tr>
         <td><b style="color: var(--text-main); font-size:12px;">${item.note || 'User'}</b></td>
         <td><code style="color: var(--accent-blue); font-size:11px;">${item.username || '-'}</code></td>
-        <td><code style="color: var(--accent-yellow); font-size:11px;">${item.password}</code></td>
+        <td><code style="color: var(--accent-yellow); font-size:10px;" title="${item.password}">${displayHash}</code></td>
         <td style="text-align: right;">
           <button class="btn-delete" onclick="deletePass('${id}')">
             <i class="fa-solid fa-trash-can"></i>
