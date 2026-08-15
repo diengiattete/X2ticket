@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bảng Điều Khiển Quản Trị</title>
   <style>
-    /* --- CSS Reset & Base Styles --- */
+    /* --- CSS Reset & Base Styles (Dark Mode) --- */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,8 +14,8 @@
     }
 
     body {
-      background-color: #f4f7f6;
-      color: #333;
+      background-color: #0f172a; /* Nền tối chính */
+      color: #f8fafc; /* Chữ sáng */
       display: flex;
       min-height: 100vh;
     }
@@ -24,7 +24,7 @@
     .sidebar {
       width: 250px;
       background-color: #1e293b;
-      color: #fff;
+      border-right: 1px solid #334155;
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -64,24 +64,24 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
-      background: #fff;
+      background: #1e293b;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #334155;
     }
 
     .card {
-      background: #fff;
+      background: #1e293b;
       padding: 25px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #334155;
       margin-bottom: 25px;
     }
 
     .card h3 {
       margin-bottom: 20px;
-      color: #0f172a;
-      border-bottom: 2px solid #e2e8f0;
+      color: #38bdf8;
+      border-bottom: 1px solid #334155;
       padding-bottom: 10px;
     }
 
@@ -101,20 +101,22 @@
     .form-group label {
       font-size: 0.875rem;
       font-weight: 600;
-      margin-bottom: 5px;
-      color: #475569;
+      margin-bottom: 8px;
+      color: #cbd5e1;
     }
 
     .form-group input, .form-group select {
-      padding: 10px;
-      border: 1px solid #cbd5e1;
+      padding: 10px 12px;
+      background-color: #0f172a;
+      border: 1px solid #334155;
       border-radius: 6px;
+      color: #f8fafc;
       outline: none;
       font-size: 0.95rem;
     }
 
     .form-group input:focus, .form-group select:focus {
-      border-color: #0284c7;
+      border-color: #38bdf8;
     }
 
     .btn {
@@ -150,12 +152,12 @@
     th, td {
       text-align: left;
       padding: 12px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid #334155;
     }
 
     th {
-      background-color: #f8fafc;
-      color: #475569;
+      background-color: #0f172a;
+      color: #94a3b8;
       font-weight: 600;
     }
 
@@ -167,13 +169,15 @@
     }
 
     .badge-admin {
-      background-color: #dbeafe;
-      color: #1e40af;
+      background-color: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
     }
 
     .badge-user {
-      background-color: #f1f5f9;
-      color: #475569;
+      background-color: rgba(148, 163, 184, 0.2);
+      color: #94a3b8;
+      border: 1px solid #94a3b8;
     }
   </style>
 </head>
@@ -198,19 +202,19 @@
       </div>
     </header>
 
-    <!-- CARD 1: FORM TẠO NGƯỜI DÙNG MỚI -->
+    <!-- CARD 1: FORM TẠO NGƯỜI DÙNG MỚI (User & Mật khẩu) -->
     <section class="card">
       <h3>Tạo Người Dùng Mới</h3>
       <form id="createUserForm" onsubmit="handleCreateUser(event)">
         <div class="form-grid">
           <div class="form-group">
-            <label for="newEmail">Email người dùng</label>
-            <input type="email" id="newEmail" placeholder="user@example.com" required>
+            <label for="username">Tên người dùng (User)</label>
+            <input type="text" id="username" placeholder="Nhập tên tài khoản" required autocomplete="off">
           </div>
 
           <div class="form-group">
-            <label for="newPassword">Mật khẩu</label>
-            <input type="password" id="newPassword" placeholder="Nhập mật khẩu" required minlength="6">
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" placeholder="Nhập mật khẩu" required minlength="4">
           </div>
 
           <div class="form-group">
@@ -232,23 +236,23 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Email</th>
+            <th>Tên Tài Khoản</th>
             <th>Vai Trò</th>
             <th>Thao Tác</th>
           </tr>
         </thead>
         <tbody id="userTableBody">
-          <!-- Dữ liệu mẫu (Sẽ được render động bằng JS) -->
+          <!-- Dữ liệu mẫu -->
           <tr>
             <td>1</td>
-            <td>admin@domain.com</td>
-            <td><span class="badge badge-admin">Admin</span></td>
+            <td>admin_root</td>
+            <td><span class="badge badge-admin">ADMIN</span></td>
             <td><button class="btn btn-danger" onclick="deleteUser(1)">Xóa</button></td>
           </tr>
           <tr>
             <td>2</td>
-            <td>user01@domain.com</td>
-            <td><span class="badge badge-user">User</span></td>
+            <td>operator_01</td>
+            <td><span class="badge badge-user">USER</span></td>
             <td><button class="btn btn-danger" onclick="deleteUser(2)">Xóa</button></td>
           </tr>
         </tbody>
@@ -262,28 +266,25 @@
     async function handleCreateUser(event) {
       event.preventDefault();
 
-      const email = document.getElementById('newEmail').value;
-      const password = document.getElementById('newPassword').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
       const role = document.getElementById('userRole').value;
 
       try {
-        // Gửi dữ liệu tới API Backend của bạn (Hoặc Firebase Cloud Function)
+        // Gửi thông tin tới Server/API của bạn ở đây
         /*
         const response = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, role })
+          body: JSON.stringify({ username, password, role })
         });
-        const data = await response.json();
         */
 
-        // Giả lập xử lý thành công cho giao diện:
-        alert(`Tạo thành công user: ${email} với quyền [${role}]`);
-        
-        // Thêm trực tiếp vào bảng giao diện để xem trước
-        addUserToTable(Date.now(), email, role);
+        // Giả lập thêm dữ liệu vào giao diện bảng để xem thử:
+        alert(`Tạo thành công tài khoản: ${username}`);
+        addUserToTable(Date.now(), username, role);
 
-        // Reset form
+        // Reset form sau khi tạo
         document.getElementById('createUserForm').reset();
 
       } catch (error) {
@@ -292,15 +293,15 @@
       }
     }
 
-    // Hàm hỗ trợ render giao diện bảng khi tạo mới
-    function addUserToTable(id, email, role) {
+    // Hàm thêm user vừa tạo vào bảng hiển thị
+    function addUserToTable(id, username, role) {
       const tbody = document.getElementById('userTableBody');
       const tr = document.createElement('tr');
       const roleBadge = role === 'admin' ? 'badge-admin' : 'badge-user';
       
       tr.innerHTML = `
         <td>${id}</td>
-        <td>${email}</td>
+        <td>${username}</td>
         <td><span class="badge ${roleBadge}">${role.toUpperCase()}</span></td>
         <td><button class="btn btn-danger" onclick="deleteUser(${id})">Xóa</button></td>
       `;
@@ -309,9 +310,9 @@
 
     // Hàm xóa user
     function deleteUser(id) {
-      if (confirm(`Bạn có chắc chắn muốn xóa user có ID: ${id}?`)) {
-        // Gọi API xóa ở Backend tại đây
-        alert(`Đã xóa user ID: ${id}`);
+      if (confirm(`Bạn có chắc chắn muốn xóa tài khoản có ID: ${id}?`)) {
+        // Thực hiện xóa dòng trên bảng giao diện
+        event.target.closest('tr').remove();
       }
     }
   </script>
