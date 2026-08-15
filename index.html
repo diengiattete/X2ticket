@@ -3,421 +3,412 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bảng Điều Khiển Giám Sát Thiết Bị</title>
+  <title>theo dõi funchomper</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    /* --- CSS Reset & Base Styles (Dark Mode) --- */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    :root {
+      --bg-primary: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-card: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #4ade80;
+      --accent-yellow: #facc15;
+      --accent-red: #f87171;
+      --border-color: #475569;
     }
 
-    body {
-      background-color: #0f172a;
-      color: #f8fafc;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg-primary); color: var(--text-main); min-height: 100vh; padding: 24px; }
+    .container { max-width: 1000px; margin: 0 auto; display: none; }
+
+    /* Login Screen Style */
+    .login-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-primary);
       display: flex;
-      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
     }
-
-    /* --- Sidebar --- */
-    .sidebar {
-      width: 250px;
-      background-color: #1e293b;
-      border-right: 1px solid #334155;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
+    .login-box {
+      background: var(--bg-surface);
+      padding: 32px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      text-align: center;
     }
-
-    .sidebar h2 {
-      font-size: 1.1rem;
-      margin-bottom: 30px;
-      color: #38bdf8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .sidebar nav a {
-      color: #94a3b8;
-      text-decoration: none;
-      display: block;
-      padding: 12px 15px;
+    .login-box h2 { font-size: 20px; color: var(--accent-blue); margin-bottom: 8px; text-transform: uppercase; }
+    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
       border-radius: 6px;
-      margin-bottom: 8px;
-      transition: all 0.3s ease;
+      border: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
     }
+    .form-input:focus { border-color: var(--accent-blue); }
 
-    .sidebar nav a:hover, .sidebar nav a.active {
-      background-color: #0284c7;
-      color: #fff;
-    }
-
-    /* --- Main Content --- */
-    .main-content {
-      flex: 1;
-      padding: 30px;
-      overflow-y: auto;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-      background: #1e293b;
-      padding: 15px 20px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-    }
-
-    /* Bấm vào chữ Admin / Avatar để quản lý user */
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background-color: #0f172a;
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid #38bdf8;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .user-profile:hover {
-      background-color: #0284c7;
-      border-color: #0284c7;
-    }
-
-    .user-profile strong {
-      color: #38bdf8;
-    }
-
-    .user-profile:hover strong {
-      color: #fff;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 25px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      margin-bottom: 25px;
-    }
-
-    .card h3 {
-      margin-bottom: 20px;
-      color: #38bdf8;
-      border-bottom: 1px solid #334155;
-      padding-bottom: 10px;
-    }
-
-    /* --- Grid Cards Thiết Bị --- */
-    .device-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-    }
-
-    .device-card {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 20px;
-    }
-
-    .device-card h4 {
-      color: #f8fafc;
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-    }
-
-    .device-status {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-
-    .status-online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
-    .status-offline { background-color: #ef4444; }
-
-    .device-val {
-      font-size: 1.8rem;
+    .btn-login, .btn-primary, .btn-cancel {
+      padding: 10px 18px;
       font-weight: bold;
-      color: #38bdf8;
-      margin: 15px 0 5px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s;
     }
+    .btn-login { width: 100%; background: var(--accent-blue); color: #000; }
+    .btn-primary { background: var(--accent-blue); color: #000; }
+    .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+    .btn-login:hover, .btn-primary:hover { opacity: 0.9; }
 
-    .device-sub {
-      font-size: 0.85rem;
-      color: #94a3b8;
-    }
+    /* Navbar & Header */
+    .navbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+    .navbar h1 { font-size: 20px; color: var(--accent-blue); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+    .nav-controls { display: flex; align-items: center; gap: 12px; }
+    .status-badge { background: rgba(74, 222, 128, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--accent-green); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .btn-logout { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
 
-    /* --- MODAL POPUP QUẢN LÝ USER --- */
+    /* Main Table Card */
+    .card { background: var(--bg-surface); border-radius: 10px; border: 1px solid var(--border-color); padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+
+    /* Filter Controls */
+    .filter-box { display: flex; align-items: center; gap: 8px; }
+    .filter-box select { background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; font-size: 13px; outline: none; }
+
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: var(--bg-primary); padding: 12px 14px; font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 14px; border-bottom: 1px solid var(--border-color); font-size: 14px; vertical-align: middle; }
+
+    .badge-mac { font-family: monospace; background: var(--bg-primary); color: var(--accent-blue); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 13px; }
+    .badge-fw { background: rgba(74, 222, 128, 0.15); color: var(--accent-green); padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 13px; }
+    .badge-group { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    .action-group { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-edit { background: rgba(250, 204, 21, 0.1); color: var(--accent-yellow); border: 1px solid rgba(250, 204, 21, 0.3); }
+    .btn-edit:hover { background: var(--accent-yellow); color: #000; }
+    .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .btn-delete:hover { background: var(--accent-red); color: #fff; }
+
+    /* Modal Chỉnh Sửa */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: none; /* Ẩn mặc định */
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(4px);
+      display: none;
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-
-    .modal-content {
-      background: #1e293b;
-      width: 90%;
-      max-width: 600px;
-      border-radius: 10px;
-      border: 1px solid #334155;
-      padding: 25px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      position: relative;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 1.5rem;
-      color: #94a3b8;
-      cursor: pointer;
-    }
-
-    .close-btn:hover { color: #fff; }
-
-    /* --- Forms & Tables inside Modal --- */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group label {
-      font-size: 0.85rem;
-      margin-bottom: 6px;
-      color: #cbd5e1;
-    }
-
-    .form-group input, .form-group select {
-      padding: 8px 12px;
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      color: #f8fafc;
-      outline: none;
-    }
-
-    .btn {
-      background-color: #0284c7;
-      color: white;
-      border: none;
-      padding: 9px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .btn:hover { background-color: #0369a1; }
-    .btn-danger { background-color: #ef4444; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 10px;
-      border-bottom: 1px solid #334155;
-    }
-
-    th { background-color: #0f172a; color: #94a3b8; }
-
-    .badge {
-      padding: 3px 8px;
+    .modal-box {
+      background: var(--bg-surface);
+      padding: 24px;
       border-radius: 12px;
-      font-size: 0.75rem;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
-
-    .badge-admin { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; }
-    .badge-user { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid #94a3b8; }
+    .modal-header { font-size: 16px; font-weight: bold; color: var(--accent-blue); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--accent-yellow); cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h2>IoT Dashboard</h2>
-    <nav>
-      <a href="#" class="active">Giám Sát Thiết Bị</a>
-      <a href="#">Cấu Hình Trạm</a>
-      <a href="#">Nhật Ký Hệ Thống</a>
-    </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <header>
-      <h1>Hệ Thống Giám Sát Trạm Thiết Bị</h1>
-      
-      <!-- BẤM VÀO ĐÂY ĐỂ MỞ TÍNH NĂNG QUẢN LÝ USER -->
-      <div class="user-profile" onclick="openUserModal()" title="Bấm để quản lý tài khoản">
-        <span>Tài khoản: <strong id="currentUser">Admin ⚙️</strong></span>
+<!-- 1. Màn hình đăng nhập -->
+<div class="login-overlay" id="loginScreen">
+  <div class="login-box">
+    <h2><i class="fa-solid fa-shield-halved"></i> THEO DÕI FUNCHOMPER</h2>
+    <p>Vui lòng nhập mật khẩu quản trị hệ thống</p>
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="password">Mật Khẩu</label>
+        <input type="password" id="password" class="form-input" placeholder="Nhập mật khẩu..." autocomplete="off" required autofocus>
       </div>
-    </header>
+      <button type="submit" class="btn-login">ĐĂNG NHẬP</button>
+    </form>
+  </div>
+</div>
 
-    <!-- TRẠNG THÁI THIẾT BỊ BAN ĐẦU -->
-    <section class="card">
-      <h3>Trạng Thái Trạm Realtime</h3>
-      <div class="device-grid">
-        <div class="device-card">
-          <h4><span class="device-status status-online"></span>Trạm 01 (ESP8266)</h4>
-          <div class="device-val">1,248</div>
-          <div class="device-sub">Số xung ghi nhận</div>
-        </div>
+<!-- 2. Màn hình Dashboard -->
+<div class="container" id="dashboardScreen">
+  <div class="navbar">
+    <h1><i class="fa-solid fa-microchip"></i> THEO DÕI FUNCHOMPER</h1>
+    <div class="nav-controls">
+      <div class="status-badge"><i class="fa-solid fa-circle" style="font-size:8px;"></i> Firebase Live</div>
+      <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+    </div>
+  </div>
 
-        <div class="device-card">
-          <h4><span class="device-status status-online"></span>Trạm 02 (ESP8266)</h4>
-          <div class="device-val">856</div>
-          <div class="device-sub">Số xung ghi nhận</div>
-        </div>
-
-        <div class="device-card">
-          <h4><span class="device-status status-offline"></span>Trạm 03 (Dự phòng)</h4>
-          <div class="device-val" style="color: #64748b;">0</div>
-          <div class="device-sub">Mất kết nối</div>
-        </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="fa-solid fa-server"></i> Danh Sách Thiết Bị Theo Nhóm</div>
+      <div class="filter-box">
+        <label style="font-size:13px; color:var(--text-muted);"><i class="fa-solid fa-filter"></i> Lọc Nhóm:</label>
+        <select id="groupFilter" onchange="renderDevices()">
+          <option value="ALL">-- Tất cả các nhóm --</option>
+        </select>
       </div>
-    </section>
-  </main>
+    </div>
 
-  <!-- MODAL POPUP QUẢN LÝ USER (Xuất hiện khi bấm vào Admin) -->
-  <div class="modal-overlay" id="userModal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeUserModal()">&times;</span>
-      
-      <h3 style="color: #38bdf8; margin-bottom: 15px;">Quản Lý Người Dùng</h3>
-
-      <!-- Form Tạo User & Mật khẩu -->
-      <form id="createUserForm" onsubmit="handleCreateUser(event)">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="username">Tên tài khoản (User)</label>
-            <input type="text" id="username" placeholder="Nhập tên user" required autocomplete="off">
-          </div>
-
-          <div class="form-group">
-            <label for="password">Mật khẩu</label>
-            <input type="password" id="password" placeholder="Nhập mật khẩu" required minlength="4">
-          </div>
-
-          <div class="form-group">
-            <label for="userRole">Vai trò</label>
-            <select id="userRole">
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="btn">Tạo Người Dùng</button>
-      </form>
-
-      <hr style="border-color: #334155; margin: 20px 0;">
-
-      <!-- Bảng danh sách User -->
-      <h4 style="color: #cbd5e1; margin-bottom: 10px;">Danh Sách Tài Khoản</h4>
+    <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Tên Tài Khoản</th>
-            <th>Vai Trò</th>
-            <th>Thao Tác</th>
+            <th>Tên Trạm</th>
+            <th>Nhóm / Trung Tâm</th>
+            <th>Địa Chỉ MAC</th>
+            <th>Phiên Bản FW</th>
+            <th style="text-align: right;">Thao Tác</th>
           </tr>
         </thead>
-        <tbody id="userTableBody">
-          <tr>
-            <td>1</td>
-            <td>admin_root</td>
-            <td><span class="badge badge-admin">ADMIN</span></td>
-            <td><button class="btn btn-danger" onclick="deleteUser(this)">Xóa</button></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>operator_01</td>
-            <td><span class="badge badge-user">USER</span></td>
-            <td><button class="btn btn-danger" onclick="deleteUser(this)">Xóa</button></td>
-          </tr>
+        <tbody id="device-table-body">
+          <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Đang kết nối Firebase...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
+</div>
 
-  <!-- JavaScript -->
-  <script>
-    // Bật/Tắt Modal Quản lý User
-    function openUserModal() {
-      document.getElementById('userModal').style.display = 'flex';
-    }
+<!-- 3. Popup Bảng Chỉnh Sửa Thông Tin -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-pen-to-square"></i> Cập Nhật Thông Tin Trạm</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal()"></i>
+    </div>
+    
+    <input type="hidden" id="editDeviceId">
+    <input type="hidden" id="oldGroupName">
 
-    function closeUserModal() {
-      document.getElementById('userModal').style.display = 'none';
-    }
+    <div class="form-group">
+      <label for="editDeviceName">Tên Trạm / Thiết Bị</label>
+      <input type="text" id="editDeviceName" class="form-input" placeholder="Nhập tên trạm...">
+    </div>
 
-    // Đóng Modal khi bấm ra ngoài phần khung nội dung
-    window.onclick = function(event) {
-      const modal = document.getElementById('userModal');
-      if (event.target === modal) {
-        closeUserModal();
-      }
-    }
-
-    // Xử lý Thêm User mới
-    function handleCreateUser(event) {
-      event.preventDefault();
-
-      const username = document.getElementById('username').value;
-      const role = document.getElementById('userRole').value;
-      const tbody = document.getElementById('userTableBody');
-
-      const tr = document.createElement('tr');
-      const roleBadge = role === 'admin' ? 'badge-admin' : 'badge-user';
+    <div class="form-group">
+      <label for="editGroupName">Tên Nhóm / Trung Tâm</label>
+      <input type="text" id="editGroupName" class="form-input" placeholder="Nhập tên nhóm mới...">
       
-      tr.innerHTML = `
-        <td>${Date.now().toString().slice(-4)}</td>
-        <td>${username}</td>
-        <td><span class="badge ${roleBadge}">${role.toUpperCase()}</span></td>
-        <td><button class="btn btn-danger" onclick="deleteUser(this)">Xóa</button></td>
-      `;
-      
-      tbody.appendChild(tr);
-      alert(`Đã tạo thành công tài khoản: ${username}`);
-      document.getElementById('createUserForm').reset();
+      <label class="checkbox-group">
+        <input type="checkbox" id="applyGroupToAll"> 
+        <span>Đổi tên nhóm này cho <b>TẤT CẢ</b> thiết bị thuộc nhóm cũ</span>
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+      <button class="btn-primary" onclick="saveDeviceChanges()">Lưu Thay Đổi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  const ADMIN_PASSWORD = "88888888";
+
+  const firebaseConfig = {
+    databaseURL: "https://trungio.firebaseio.com"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let globalDeviceData = null;
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const pwdInput = document.getElementById("password").value;
+    if (pwdInput === ADMIN_PASSWORD) {
+      sessionStorage.setItem("funchomper_authenticated", "true");
+      showDashboard();
+    } else {
+      alert("Mật khẩu không chính xác!");
+    }
+  }
+
+  function showDashboard() {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboardScreen").style.display = "block";
+  }
+
+  function logout() {
+    sessionStorage.removeItem("funchomper_authenticated");
+    location.reload();
+  }
+
+  if (sessionStorage.getItem("funchomper_authenticated") === "true") {
+    showDashboard();
+  }
+
+  // --- QUẢN LÝ MODAL POPUP ---
+  function openEditModal(deviceId, currentName, currentGroup) {
+    document.getElementById("editDeviceId").value = deviceId;
+    document.getElementById("oldGroupName").value = currentGroup;
+    document.getElementById("editDeviceName").value = currentName;
+    document.getElementById("editGroupName").value = currentGroup;
+    document.getElementById("applyGroupToAll").checked = false;
+
+    document.getElementById("editModal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("editModal").style.display = "none";
+  }
+
+  function saveDeviceChanges() {
+    const deviceId = document.getElementById("editDeviceId").value;
+    const oldGroup = document.getElementById("oldGroupName").value;
+    const newName = document.getElementById("editDeviceName").value.trim();
+    const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
+    const applyToAll = document.getElementById("applyGroupToAll").checked;
+
+    if (!newName) {
+      alert("Vui lòng nhập tên trạm!");
+      return;
     }
 
-    // Xử lý Xóa User
-    function deleteUser(btn) {
-      if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-        btn.closest('tr').remove();
+    if (applyToAll && oldGroup && oldGroup !== "Chưa Phân Nhóm") {
+      // Cập nhật tên nhóm hàng loạt cho tất cả thiết bị thuộc nhóm cũ
+      let updates = {};
+      for (let id in globalDeviceData) {
+        let devGrp = globalDeviceData[id].group || "Chưa Phân Nhóm";
+        if (devGrp === oldGroup) {
+          updates["devices/" + id + "/group"] = newGroup;
+        }
       }
+      updates["devices/" + deviceId + "/device_name"] = newName;
+
+      db.ref().update(updates)
+        .then(() => {
+          alert(`Đã đổi tên nhóm từ "${oldGroup}" sang "${newGroup}" cho toàn bộ thiết bị liên quan!`);
+          closeModal();
+        })
+        .catch(err => alert("Lỗi khi cập nhật hàng loạt: " + err.message));
+    } else {
+      // Chỉ cập nhật cho riêng thiết bị này
+      db.ref("devices/" + deviceId).update({
+        device_name: newName,
+        group: newGroup
+      })
+      .then(() => {
+        alert("Cập nhật thông tin thành công!");
+        closeModal();
+      })
+      .catch(err => alert("Lỗi khi lưu: " + err.message));
     }
-  </script>
+  }
+
+  function deleteDevice(deviceId, deviceName) {
+    if (confirm(`Bạn có chắc chắn muốn XÓA thiết bị "${deviceName}" khỏi hệ thống?`)) {
+      db.ref("devices/" + deviceId).remove()
+        .then(() => alert(`Đã xóa thiết bị "${deviceName}"!`))
+        .catch((err) => alert("Lỗi khi xóa: " + err.message));
+    }
+  }
+
+  function renderDevices() {
+    const tbody = document.getElementById("device-table-body");
+    const filterValue = document.getElementById("groupFilter").value;
+    tbody.innerHTML = "";
+
+    if (!globalDeviceData) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Chưa có thiết bị nào trong hệ thống.</td></tr>';
+      return;
+    }
+
+    let count = 0;
+    for (let id in globalDeviceData) {
+      let dev = globalDeviceData[id];
+      let devGroup = dev.group || "Chưa Phân Nhóm";
+
+      if (filterValue !== "ALL" && devGroup !== filterValue) {
+        continue;
+      }
+
+      count++;
+      let defaultName = "TRAM_" + id.substring(id.length - 4);
+      let devName = dev.device_name || defaultName;
+      let macAddr = dev.mac || id;
+      let fwVer   = dev.firmware || "1.0.0";
+
+      let row = `<tr>
+        <td><b style="font-size: 15px; color: var(--text-main);">${devName}</b></td>
+        <td><span class="badge-group"><i class="fa-solid fa-layer-group"></i> ${devGroup}</span></td>
+        <td><span class="badge-mac">${macAddr}</span></td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
+        <td>
+          <div class="action-group">
+            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')">
+              <i class="fa-solid fa-pen"></i> Sửa
+            </button>
+            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')">
+              <i class="fa-solid fa-trash-can"></i> Xóa
+            </button>
+          </div>
+        </td>
+      </tr>`;
+      tbody.innerHTML += row;
+    }
+
+    if (count === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Không tìm thấy thiết bị thuộc nhóm này.</td></tr>';
+    }
+  }
+
+  function updateGroupDropdown(data) {
+    const filterSelect = document.getElementById("groupFilter");
+    const currentSelected = filterSelect.value;
+    
+    let groups = new Set();
+    for (let id in data) {
+      groups.add(data[id].group || "Chưa Phân Nhóm");
+    }
+
+    let optionsHTML = '<option value="ALL">-- Tất cả các nhóm --</option>';
+    groups.forEach(g => {
+      optionsHTML += `<option value="${g}">${g}</option>`;
+    });
+
+    filterSelect.innerHTML = optionsHTML;
+    if ([...groups].includes(currentSelected) || currentSelected === "ALL") {
+      filterSelect.value = currentSelected;
+    } else {
+      filterSelect.value = "ALL";
+    }
+  }
+
+  db.ref("devices").on("value", (snapshot) => {
+    globalDeviceData = snapshot.val();
+    if (globalDeviceData) {
+      updateGroupDropdown(globalDeviceData);
+    }
+    renderDevices();
+  });
+</script>
+
 </body>
 </html>
