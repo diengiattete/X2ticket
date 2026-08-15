@@ -8,6 +8,9 @@
   <!-- FontAwesome Icons & Google Font (Inter) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CryptoJS mã hóa MD5 Mật khẩu -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
   <style>
     :root {
@@ -148,6 +151,28 @@
       border-radius: 50%;
       box-shadow: 0 0 8px var(--accent-green);
     }
+
+    /* Nút Admin Quản lý User (Chỉ sáng khi là Admin) */
+    .btn-admin-manage {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-admin-manage:hover {
+      background: var(--accent-blue);
+      color: #000;
+      box-shadow: 0 0 12px var(--accent-blue-glow);
+    }
+
     .btn-logout { 
       background: rgba(248, 113, 113, 0.08); 
       color: var(--accent-red); 
@@ -270,8 +295,10 @@
       border-radius: 16px;
       border: 1px solid var(--border-color);
       width: 100%;
-      max-width: 460px;
+      max-width: 500px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .modal-header { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
     .modal-header i.fa-xmark { color: var(--text-muted); transition: color 0.2s; }
@@ -279,6 +306,12 @@
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
     .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--accent-yellow); cursor: pointer; }
     .checkbox-group input { accent-color: var(--accent-yellow); width: 15px; height: 15px; cursor: pointer; }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
   </style>
 </head>
 <body>
@@ -288,8 +321,12 @@
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
     <h2>FUNCHOMPER CONTROL</h2>
-    <p>Vui lòng nhập mật khẩu quản trị hệ thống</p>
+    <p>Nhập tài khoản & mật khẩu để truy cập</p>
     <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="username">Tên Tài Khoản (User)</label>
+        <input type="text" id="username" class="form-input" placeholder="Để trống nếu là Admin..." autocomplete="off">
+      </div>
       <div class="form-group">
         <label for="password">Mật Khẩu</label>
         <input type="password" id="password" class="form-input" placeholder="Nhập mật khẩu..." autocomplete="off" required autofocus>
@@ -305,6 +342,12 @@
     <h1><i class="fa-solid fa-microchip"></i> THEO DÕI FUNCHOMPER</h1>
     <div class="nav-controls">
       <div class="status-badge"><span class="dot"></span> Firebase Live</div>
+      
+      <!-- Nút Admin bấm để quản lý User (Chỉ hiển thị với Admin) -->
+      <button class="btn-admin-manage" id="btnAdminUser" style="display: none;" onclick="openUserModal()">
+        <i class="fa-solid fa-user-gear"></i> <span id="userRoleLabel">Admin</span>
+      </button>
+
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
     </div>
   </div>
@@ -328,7 +371,7 @@
             <th>Nhóm / Trung Tâm</th>
             <th>Địa Chỉ MAC</th>
             <th>Phiên Bản FW</th>
-            <th style="text-align: right;">Thao Tác</th>
+            <th style="text-align: right;" id="thActions">Thao Tác</th>
           </tr>
         </thead>
         <tbody id="device-table-body">
@@ -372,12 +415,57 @@
   </div>
 </div>
 
+<!-- 4. Popup Quản Lý Người Dùng (Chỉ Admin mới mở được) -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-users-gear" style="color:var(--accent-blue); margin-right:8px;"></i> Quản Lý Tài Khoản Người Dùng</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeUserModal()"></i>
+    </div>
+
+    <!-- Form Tạo User Mới -->
+    <form id="createUserForm" onsubmit="handleCreateUser(event)">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="newUsername">Tên đăng nhập</label>
+          <input type="text" id="newUsername" class="form-input" placeholder="Tên user..." required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">Mật khẩu</label>
+          <input type="password" id="newPassword" class="form-input" placeholder="Mật khẩu..." required minlength="4">
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width: 100%; margin-top: 5px;">TẠO USER MỚI</button>
+    </form>
+
+    <hr style="border-color: var(--border-color); margin: 20px 0;">
+
+    <!-- Bảng danh sách User -->
+    <div style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 12px;">Danh Sách Người Dùng Hiện Tại</div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Tên User</th>
+            <th style="text-align: right;">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Đang tải danh sách...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase SDK v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-  const ADMIN_PASSWORD = "88888888";
+  // Mã MD5 của mật khẩu Admin gốc (88888888)
+  const MASTER_ADMIN_HASH = "3b8112520f922718ef8f2c38cc0e6a32";
 
   const firebaseConfig = {
     databaseURL: "https://trungio.firebaseio.com"
@@ -386,25 +474,65 @@
   const db = firebase.database();
 
   let globalDeviceData = null;
+  let globalUserData = null;
+  let currentUserRole = "USER"; // Mặc định là USER
 
+  // --- LOGIC ĐĂNG NHẬP & PHÂN QUYỀN ---
   function handleLogin(e) {
     e.preventDefault();
+    const userVal = document.getElementById("username").value.trim();
     const pwdInput = document.getElementById("password").value;
-    if (pwdInput === ADMIN_PASSWORD) {
+    const inputHash = CryptoJS.MD5(pwdInput).toString();
+
+    // 1. Kiểm tra Admin gốc (Nếu đăng nhập thẳng mật khẩu Master)
+    if (inputHash === MASTER_ADMIN_HASH) {
       sessionStorage.setItem("funchomper_authenticated", "true");
+      sessionStorage.setItem("funchomper_role", "ADMIN");
       showDashboard();
-    } else {
-      alert("Mật khẩu không chính xác!");
+      return;
     }
+
+    // 2. Kiểm tra User từ Firebase Database
+    if (!userVal) {
+      alert("Vui lòng nhập tên tài khoản hoặc kiểm tra lại mật khẩu Admin!");
+      return;
+    }
+
+    db.ref("users/" + userVal).once("value").then((snapshot) => {
+      const userData = snapshot.val();
+      if (userData && userData.password_hash === inputHash) {
+        sessionStorage.setItem("funchomper_authenticated", "true");
+        sessionStorage.setItem("funchomper_role", userData.role || "USER");
+        sessionStorage.setItem("funchomper_user", userVal);
+        showDashboard();
+      } else {
+        alert("Tên đăng nhập hoặc mật khẩu không đúng!");
+      }
+    }).catch(err => alert("Lỗi kết nối: " + err.message));
   }
 
   function showDashboard() {
+    currentUserRole = sessionStorage.getItem("funchomper_role") || "USER";
+    const loggedUser = sessionStorage.getItem("funchomper_user") || "Admin";
+
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("dashboardScreen").style.display = "block";
+
+    // Phân quyền hiển thị nút Quản lý User và Cột Thao Tác Sửa/Xóa
+    if (currentUserRole === "ADMIN") {
+      document.getElementById("btnAdminUser").style.display = "flex";
+      document.getElementById("userRoleLabel").innerText = `Admin (${loggedUser})`;
+      document.getElementById("thActions").style.display = "";
+    } else {
+      document.getElementById("btnAdminUser").style.display = "none";
+      document.getElementById("thActions").style.display = "none";
+    }
+
+    renderDevices();
   }
 
   function logout() {
-    sessionStorage.removeItem("funchomper_authenticated");
+    sessionStorage.clear();
     location.reload();
   }
 
@@ -412,7 +540,7 @@
     showDashboard();
   }
 
-  // --- QUẢN LÝ MODAL POPUP SỬA TÊN ---
+  // --- QUẢN LÝ THIẾT BỊ (SỬA / XÓA) ---
   function openEditModal(deviceId, currentName, currentGroup) {
     document.getElementById("editDeviceId").value = deviceId;
     document.getElementById("oldGroupName").value = currentGroup;
@@ -476,6 +604,7 @@
     }
   }
 
+  // --- RENDER DANH SÁCH THIẾT BỊ ---
   function renderDevices() {
     const tbody = document.getElementById("device-table-body");
     const filterValue = document.getElementById("groupFilter").value;
@@ -501,11 +630,7 @@
       let macAddr = dev.mac || id;
       let fwVer   = dev.firmware || "1.0.0";
 
-      let row = `<tr>
-        <td><b style="font-size: 14px; color: var(--text-main); font-weight: 600;">${devName}</b></td>
-        <td><span class="badge-group"><i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> ${devGroup}</span></td>
-        <td><span class="badge-mac">${macAddr}</span></td>
-        <td><span class="badge-fw">v${fwVer}</span></td>
+      let actionBtns = currentUserRole === "ADMIN" ? `
         <td>
           <div class="action-group">
             <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')">
@@ -515,7 +640,14 @@
               <i class="fa-solid fa-trash-can"></i> Xóa
             </button>
           </div>
-        </td>
+        </td>` : '';
+
+      let row = `<tr>
+        <td><b style="font-size: 14px; color: var(--text-main); font-weight: 600;">${devName}</b></td>
+        <td><span class="badge-group"><i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> ${devGroup}</span></td>
+        <td><span class="badge-mac">${macAddr}</span></td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
+        ${actionBtns}
       </tr>`;
       tbody.innerHTML += row;
     }
@@ -547,12 +679,78 @@
     }
   }
 
+  // --- LOGIC POPUP QUẢN LÝ USER ---
+  function openUserModal() {
+    document.getElementById("userModal").style.display = "flex";
+  }
+
+  function closeUserModal() {
+    document.getElementById("userModal").style.display = "none";
+  }
+
+  function handleCreateUser(e) {
+    e.preventDefault();
+    const uname = document.getElementById("newUsername").value.trim();
+    const pwd = document.getElementById("newPassword").value;
+
+    if (!uname || !pwd) return;
+
+    const pwdHash = CryptoJS.MD5(pwd).toString();
+
+    db.ref("users/" + uname).set({
+      password_hash: pwdHash,
+      role: "USER",
+      created_at: Date.now()
+    }).then(() => {
+      alert(`Đã tạo tài khoản user: ${uname} thành công!`);
+      document.getElementById("createUserForm").reset();
+    }).catch(err => alert("Lỗi khi tạo user: " + err.message));
+  }
+
+  function deleteUser(username) {
+    if (confirm(`Bạn có chắc muốn xóa tài khoản User: "${username}"?`)) {
+      db.ref("users/" + username).remove()
+        .then(() => alert(`Đã xóa user "${username}"!`))
+        .catch(err => alert("Lỗi khi xóa: " + err.message));
+    }
+  }
+
+  function renderUserList(users) {
+    const tbody = document.getElementById("user-table-body");
+    tbody.innerHTML = "";
+
+    if (!users) {
+      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">Chưa có User nào được tạo.</td></tr>';
+      return;
+    }
+
+    for (let uname in users) {
+      let row = `<tr>
+        <td><i class="fa-solid fa-user" style="color:var(--accent-blue); margin-right:8px;"></i> <b>${uname}</b></td>
+        <td>
+          <div class="action-group">
+            <button class="btn-delete" onclick="deleteUser('${uname}')">
+              <i class="fa-solid fa-trash-can"></i> Xóa
+            </button>
+          </div>
+        </td>
+      </tr>`;
+      tbody.innerHTML += row;
+    }
+  }
+
+  // Lắng nghe dữ liệu Devices & Users từ Firebase
   db.ref("devices").on("value", (snapshot) => {
     globalDeviceData = snapshot.val();
     if (globalDeviceData) {
       updateGroupDropdown(globalDeviceData);
     }
     renderDevices();
+  });
+
+  db.ref("users").on("value", (snapshot) => {
+    globalUserData = snapshot.val();
+    renderUserList(globalUserData);
   });
 </script>
 
