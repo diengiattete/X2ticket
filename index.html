@@ -3,558 +3,317 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Theo Dõi Funchomper - Dashboard</title>
-  
-  <!-- FontAwesome Icons & Google Font (Inter) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+  <title>Bảng Điều Khiển Quản Trị</title>
   <style>
-    :root {
-      --bg-body: #090d16;
-      --bg-surface: rgba(22, 30, 46, 0.75);
-      --bg-card: rgba(30, 41, 59, 0.6);
-      --bg-input: rgba(15, 23, 42, 0.8);
-      
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      
-      --accent-blue: #38bdf8;
-      --accent-blue-glow: rgba(56, 189, 248, 0.25);
-      --accent-green: #34d399;
-      --accent-yellow: #fbbf24;
-      --accent-red: #f87171;
-      
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(56, 189, 248, 0.4);
+    /* --- CSS Reset & Base Styles --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    
-    body { 
-      background: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-body) 75%);
-      color: var(--text-main); 
-      min-height: 100vh; 
-      padding: 32px 16px; 
-    }
-    
-    .container { max-width: 1100px; margin: 0 auto; display: none; }
-
-    /* Màn hình đăng nhập Glassmorphism */
-    .login-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
+    body {
+      background-color: #f4f7f6;
+      color: #333;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
+      min-height: 100vh;
     }
-    .login-box {
-      background: var(--bg-surface);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 40px 36px;
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1);
-      text-align: center;
-    }
-    .login-box .icon-logo {
-      font-size: 36px;
-      color: var(--accent-blue);
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 8px var(--accent-blue-glow));
-    }
-    .login-box h2 { font-size: 20px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; margin-bottom: 6px; }
-    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
-    
-    .form-group { margin-bottom: 20px; text-align: left; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-input {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-input);
-      color: var(--text-main);
-      font-size: 14px;
-      outline: none;
-      transition: all 0.25s ease;
-    }
-    .form-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 12px var(--accent-blue-glow); }
 
-    .btn-login, .btn-primary, .btn-cancel {
-      padding: 12px 20px;
+    /* --- Sidebar --- */
+    .sidebar {
+      width: 250px;
+      background-color: #1e293b;
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sidebar nav a {
+      color: #94a3b8;
+      text-decoration: none;
+      display: block;
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background-color: #0284c7;
+      color: #fff;
+    }
+
+    /* --- Main Content --- */
+    .main-content {
+      flex: 1;
+      padding: 30px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+
+    .card h3 {
+      margin-bottom: 20px;
+      color: #0f172a;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+    }
+
+    /* --- Form Styles --- */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
       font-weight: 600;
+      margin-bottom: 5px;
+      color: #475569;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #0284c7;
+    }
+
+    .btn {
+      background-color: #0284c7;
+      color: white;
       border: none;
-      border-radius: 8px;
+      padding: 10px 20px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s ease;
-    }
-    .btn-login { 
-      width: 100%; 
-      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
-      color: #fff; 
-      box-shadow: 0 4px 15px var(--accent-blue-glow);
-    }
-    .btn-primary { 
-      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
-      color: #fff; 
-    }
-    .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
-    .btn-login:hover, .btn-primary:hover { opacity: 0.95; transform: translateY(-1px); }
-
-    /* Navbar Header */
-    .navbar { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 28px; 
-      padding-bottom: 20px; 
-      border-bottom: 1px solid var(--border-color); 
-    }
-    .navbar h1 { 
-      font-size: 22px; 
-      font-weight: 700; 
-      color: var(--text-main); 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      letter-spacing: -0.3px;
-    }
-    .navbar h1 i { color: var(--accent-blue); filter: drop-shadow(0 0 6px var(--accent-blue-glow)); }
-    
-    .nav-controls { display: flex; align-items: center; gap: 14px; }
-    .status-badge { 
-      background: rgba(52, 211, 153, 0.1); 
-      border: 1px solid rgba(52, 211, 153, 0.25); 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      color: var(--accent-green); 
-      font-size: 13px; 
-      font-weight: 500; 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
-    }
-    .status-badge .dot {
-      width: 7px;
-      height: 7px;
-      background-color: var(--accent-green);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent-green);
-    }
-    .btn-logout { 
-      background: rgba(248, 113, 113, 0.08); 
-      color: var(--accent-red); 
-      border: 1px solid rgba(248, 113, 113, 0.25); 
-      padding: 8px 14px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-size: 13px; 
-      font-weight: 500; 
-      transition: all 0.2s;
-    }
-    .btn-logout:hover { background: rgba(248, 113, 113, 0.2); }
-
-    /* Bảng hiển thị chính */
-    .card { 
-      background: var(--bg-surface); 
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 16px; 
-      border: 1px solid var(--border-color); 
-      padding: 24px; 
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); 
-    }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
-    .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-    .card-title i { color: var(--accent-blue); }
-
-    /* Bộ lọc nhóm */
-    .filter-box { display: flex; align-items: center; gap: 10px; }
-    .filter-box select { 
-      background: var(--bg-input); 
-      color: var(--text-main); 
-      border: 1px solid var(--border-color); 
-      padding: 8px 14px; 
-      border-radius: 8px; 
-      font-size: 13px; 
-      outline: none; 
-      transition: border-color 0.2s;
-    }
-    .filter-box select:focus { border-color: var(--accent-blue); }
-
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
-    th { 
-      background: rgba(15, 23, 42, 0.5); 
-      padding: 14px 16px; 
-      font-size: 12px; 
-      font-weight: 600; 
-      color: var(--text-muted); 
-      border-bottom: 1px solid var(--border-color); 
-      text-transform: uppercase; 
-      letter-spacing: 0.6px; 
-    }
-    th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-    th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-
-    td { padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; vertical-align: middle; }
-    tr:hover td { background: rgba(255, 255, 255, 0.02); }
-
-    .badge-mac { 
-      font-family: 'Consolas', 'Courier New', monospace; 
-      background: rgba(15, 23, 42, 0.8); 
-      color: var(--accent-blue); 
-      padding: 4px 10px; 
-      border-radius: 6px; 
-      border: 1px solid var(--border-color); 
-      font-size: 13px; 
-    }
-    .badge-fw { 
-      background: rgba(52, 211, 153, 0.1); 
-      color: var(--accent-green); 
-      padding: 4px 10px; 
-      border-radius: 6px; 
-      font-weight: 600; 
-      font-size: 12px; 
-      border: 1px solid rgba(52, 211, 153, 0.2);
-    }
-    .badge-group { 
-      background: rgba(56, 189, 248, 0.1); 
-      color: var(--accent-blue); 
-      padding: 4px 12px; 
-      border-radius: 20px; 
-      font-size: 12px; 
-      font-weight: 500; 
-      border: 1px solid rgba(56, 189, 248, 0.25); 
+      font-weight: 600;
+      transition: background 0.2s;
     }
 
-    .action-group { display: flex; gap: 8px; justify-content: flex-end; }
-    .btn-edit, .btn-delete { 
-      border-radius: 8px; 
-      padding: 7px 14px; 
-      cursor: pointer; 
-      font-size: 12px; 
-      font-weight: 500; 
-      display: inline-flex; 
-      align-items: center; 
-      gap: 6px; 
-      transition: all 0.2s; 
+    .btn:hover {
+      background-color: #0369a1;
     }
-    .btn-edit { background: rgba(251, 191, 36, 0.1); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
-    .btn-edit:hover { background: var(--accent-yellow); color: #000; box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
-    .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); }
-    .btn-delete:hover { background: var(--accent-red); color: #fff; box-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
 
-    /* Modal Popup Glassmorphism */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(5, 8, 17, 0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+    .btn-danger {
+      background-color: #ef4444;
     }
-    .modal-box {
-      background: var(--bg-surface);
-      padding: 28px;
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
+
+    .btn-danger:hover {
+      background-color: #dc2626;
+    }
+
+    /* --- Table Styles --- */
+    table {
       width: 100%;
-      max-width: 460px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      border-collapse: collapse;
+      margin-top: 10px;
     }
-    .modal-header { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header i.fa-xmark { color: var(--text-muted); transition: color 0.2s; }
-    .modal-header i.fa-xmark:hover { color: var(--text-main); }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
-    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--accent-yellow); cursor: pointer; }
-    .checkbox-group input { accent-color: var(--accent-yellow); width: 15px; height: 15px; cursor: pointer; }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-admin {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-user {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
   </style>
 </head>
 <body>
 
-<!-- 1. Màn hình đăng nhập -->
-<div class="login-overlay" id="loginScreen">
-  <div class="login-box">
-    <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
-    <h2>FUNCHOMPER CONTROL</h2>
-    <p>Vui lòng nhập mật khẩu quản trị hệ thống</p>
-    <form onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label for="password">Mật Khẩu</label>
-        <input type="password" id="password" class="form-input" placeholder="Nhập mật khẩu..." autocomplete="off" required autofocus>
+  <!-- Thanh Điều Hướng Bên (Sidebar) -->
+  <aside class="sidebar">
+    <h2>Admin Dashboard</h2>
+    <nav>
+      <a href="#" class="active">Quản lý Người dùng</a>
+      <a href="#">Cấu hình Hệ thống</a>
+      <a href="#">Nhật ký Hoạt động</a>
+    </nav>
+  </aside>
+
+  <!-- Khu Vực Nội Dung Chính -->
+  <main class="main-content">
+    <header>
+      <h1>Quản Lý Hệ Thống</h1>
+      <div class="user-profile">
+        <span>Xin chào, <strong>Admin</strong></span>
       </div>
-      <button type="submit" class="btn-login">ĐĂNG NHẬP</button>
-    </form>
-  </div>
-</div>
+    </header>
 
-<!-- 2. Màn hình Dashboard -->
-<div class="container" id="dashboardScreen">
-  <div class="navbar">
-    <h1><i class="fa-solid fa-microchip"></i> THEO DÕI FUNCHOMPER</h1>
-    <div class="nav-controls">
-      <div class="status-badge"><span class="dot"></span> Firebase Live</div>
-      <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-    </div>
-  </div>
+    <!-- CARD 1: FORM TẠO NGƯỜI DÙNG MỚI -->
+    <section class="card">
+      <h3>Tạo Người Dùng Mới</h3>
+      <form id="createUserForm" onsubmit="handleCreateUser(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="newEmail">Email người dùng</label>
+            <input type="email" id="newEmail" placeholder="user@example.com" required>
+          </div>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Danh Sách Thiết Bị Theo Nhóm</div>
-      <div class="filter-box">
-        <label style="font-size:13px; color:var(--text-muted);"><i class="fa-solid fa-filter"></i> Lọc Nhóm:</label>
-        <select id="groupFilter" onchange="renderDevices()">
-          <option value="ALL">-- Tất cả các nhóm --</option>
-        </select>
-      </div>
-    </div>
+          <div class="form-group">
+            <label for="newPassword">Mật khẩu</label>
+            <input type="password" id="newPassword" placeholder="Nhập mật khẩu" required minlength="6">
+          </div>
 
-    <div class="table-container">
+          <div class="form-group">
+            <label for="userRole">Vai trò</label>
+            <select id="userRole">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn">Tạo Tài Khoản</button>
+      </form>
+    </section>
+
+    <!-- CARD 2: DANH SÁCH NGƯỜI DÙNG -->
+    <section class="card">
+      <h3>Danh Sách Tài Khoản</h3>
       <table>
         <thead>
           <tr>
-            <th>Tên Trạm</th>
-            <th>Nhóm / Trung Tâm</th>
-            <th>Địa Chỉ MAC</th>
-            <th>Phiên Bản FW</th>
-            <th style="text-align: right;">Thao Tác</th>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Vai Trò</th>
+            <th>Thao Tác</th>
           </tr>
         </thead>
-        <tbody id="device-table-body">
-          <tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang kết nối dữ liệu Firebase...</td></tr>
+        <tbody id="userTableBody">
+          <!-- Dữ liệu mẫu (Sẽ được render động bằng JS) -->
+          <tr>
+            <td>1</td>
+            <td>admin@domain.com</td>
+            <td><span class="badge badge-admin">Admin</span></td>
+            <td><button class="btn btn-danger" onclick="deleteUser(1)">Xóa</button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>user01@domain.com</td>
+            <td><span class="badge badge-user">User</span></td>
+            <td><button class="btn btn-danger" onclick="deleteUser(2)">Xóa</button></td>
+          </tr>
         </tbody>
       </table>
-    </div>
-  </div>
-</div>
+    </section>
+  </main>
 
-<!-- 3. Popup Bảng Chỉnh Sửa Tên Trạm / Nhóm -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span><i class="fa-solid fa-pen-to-square" style="color:var(--accent-blue); margin-right:8px;"></i> Cập Nhật Thông Tin Trạm</span>
-      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal()"></i>
-    </div>
-    
-    <input type="hidden" id="editDeviceId">
-    <input type="hidden" id="oldGroupName">
+  <!-- LOGIC XỬ LÝ JAVASCRIPT -->
+  <script>
+    // Hàm xử lý tạo User mới
+    async function handleCreateUser(event) {
+      event.preventDefault();
 
-    <div class="form-group">
-      <label for="editDeviceName">Tên Trạm / Thiết Bị</label>
-      <input type="text" id="editDeviceName" class="form-input" placeholder="Nhập tên trạm...">
-    </div>
+      const email = document.getElementById('newEmail').value;
+      const password = document.getElementById('newPassword').value;
+      const role = document.getElementById('userRole').value;
 
-    <div class="form-group">
-      <label for="editGroupName">Tên Nhóm / Trung Tâm</label>
-      <input type="text" id="editGroupName" class="form-input" placeholder="Nhập tên nhóm mới...">
+      try {
+        // Gửi dữ liệu tới API Backend của bạn (Hoặc Firebase Cloud Function)
+        /*
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, role })
+        });
+        const data = await response.json();
+        */
+
+        // Giả lập xử lý thành công cho giao diện:
+        alert(`Tạo thành công user: ${email} với quyền [${role}]`);
+        
+        // Thêm trực tiếp vào bảng giao diện để xem trước
+        addUserToTable(Date.now(), email, role);
+
+        // Reset form
+        document.getElementById('createUserForm').reset();
+
+      } catch (error) {
+        console.error('Lỗi khi tạo user:', error);
+        alert('Đã xảy ra lỗi, vui lòng thử lại.');
+      }
+    }
+
+    // Hàm hỗ trợ render giao diện bảng khi tạo mới
+    function addUserToTable(id, email, role) {
+      const tbody = document.getElementById('userTableBody');
+      const tr = document.createElement('tr');
+      const roleBadge = role === 'admin' ? 'badge-admin' : 'badge-user';
       
-      <label class="checkbox-group">
-        <input type="checkbox" id="applyGroupToAll"> 
-        <span>Đổi tên nhóm này cho <b>TẤT CẢ</b> thiết bị thuộc nhóm cũ</span>
-      </label>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
-      <button class="btn-primary" onclick="saveDeviceChanges()">Lưu Thay Đổi</button>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase SDK v8 -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-<script>
-  const ADMIN_PASSWORD = "88888888";
-
-  const firebaseConfig = {
-    databaseURL: "https://trungio.firebaseio.com"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  let globalDeviceData = null;
-
-  function handleLogin(e) {
-    e.preventDefault();
-    const pwdInput = document.getElementById("password").value;
-    if (pwdInput === ADMIN_PASSWORD) {
-      sessionStorage.setItem("funchomper_authenticated", "true");
-      showDashboard();
-    } else {
-      alert("Mật khẩu không chính xác!");
-    }
-  }
-
-  function showDashboard() {
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("dashboardScreen").style.display = "block";
-  }
-
-  function logout() {
-    sessionStorage.removeItem("funchomper_authenticated");
-    location.reload();
-  }
-
-  if (sessionStorage.getItem("funchomper_authenticated") === "true") {
-    showDashboard();
-  }
-
-  // --- QUẢN LÝ MODAL POPUP SỬA TÊN ---
-  function openEditModal(deviceId, currentName, currentGroup) {
-    document.getElementById("editDeviceId").value = deviceId;
-    document.getElementById("oldGroupName").value = currentGroup;
-    document.getElementById("editDeviceName").value = currentName;
-    document.getElementById("editGroupName").value = currentGroup;
-    document.getElementById("applyGroupToAll").checked = false;
-
-    document.getElementById("editModal").style.display = "flex";
-  }
-
-  function closeModal() {
-    document.getElementById("editModal").style.display = "none";
-  }
-
-  function saveDeviceChanges() {
-    const deviceId = document.getElementById("editDeviceId").value;
-    const oldGroup = document.getElementById("oldGroupName").value;
-    const newName = document.getElementById("editDeviceName").value.trim();
-    const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
-    const applyToAll = document.getElementById("applyGroupToAll").checked;
-
-    if (!newName) {
-      alert("Vui lòng nhập tên trạm!");
-      return;
+      tr.innerHTML = `
+        <td>${id}</td>
+        <td>${email}</td>
+        <td><span class="badge ${roleBadge}">${role.toUpperCase()}</span></td>
+        <td><button class="btn btn-danger" onclick="deleteUser(${id})">Xóa</button></td>
+      `;
+      tbody.appendChild(tr);
     }
 
-    if (applyToAll && oldGroup && oldGroup !== "Chưa Phân Nhóm") {
-      let updates = {};
-      for (let id in globalDeviceData) {
-        let devGrp = globalDeviceData[id].group || "Chưa Phân Nhóm";
-        if (devGrp === oldGroup) {
-          updates["devices/" + id + "/group"] = newGroup;
-        }
+    // Hàm xóa user
+    function deleteUser(id) {
+      if (confirm(`Bạn có chắc chắn muốn xóa user có ID: ${id}?`)) {
+        // Gọi API xóa ở Backend tại đây
+        alert(`Đã xóa user ID: ${id}`);
       }
-      updates["devices/" + deviceId + "/device_name"] = newName;
-
-      db.ref().update(updates)
-        .then(() => {
-          alert(`Đã đổi tên nhóm từ "${oldGroup}" sang "${newGroup}" cho toàn bộ thiết bị!`);
-          closeModal();
-        })
-        .catch(err => alert("Lỗi khi cập nhật hàng loạt: " + err.message));
-    } else {
-      db.ref("devices/" + deviceId).update({
-        device_name: newName,
-        group: newGroup
-      })
-      .then(() => {
-        alert("Cập nhật thông tin thành công!");
-        closeModal();
-      })
-      .catch(err => alert("Lỗi khi lưu: " + err.message));
     }
-  }
-
-  function deleteDevice(deviceId, deviceName) {
-    if (confirm(`Bạn có chắc chắn muốn XÓA thiết bị "${deviceName}" khỏi hệ thống?`)) {
-      db.ref("devices/" + deviceId).remove()
-        .then(() => alert(`Đã xóa thiết bị "${deviceName}"!`))
-        .catch((err) => alert("Lỗi khi xóa: " + err.message));
-    }
-  }
-
-  function renderDevices() {
-    const tbody = document.getElementById("device-table-body");
-    const filterValue = document.getElementById("groupFilter").value;
-    tbody.innerHTML = "";
-
-    if (!globalDeviceData) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong hệ thống.</td></tr>';
-      return;
-    }
-
-    let count = 0;
-    for (let id in globalDeviceData) {
-      let dev = globalDeviceData[id];
-      let devGroup = dev.group || "Chưa Phân Nhóm";
-
-      if (filterValue !== "ALL" && devGroup !== filterValue) {
-        continue;
-      }
-
-      count++;
-      let defaultName = "TRAM_" + id.substring(id.length - 4);
-      let devName = dev.device_name || defaultName;
-      let macAddr = dev.mac || id;
-      let fwVer   = dev.firmware || "1.0.0";
-
-      let row = `<tr>
-        <td><b style="font-size: 14px; color: var(--text-main); font-weight: 600;">${devName}</b></td>
-        <td><span class="badge-group"><i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> ${devGroup}</span></td>
-        <td><span class="badge-mac">${macAddr}</span></td>
-        <td><span class="badge-fw">v${fwVer}</span></td>
-        <td>
-          <div class="action-group">
-            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')">
-              <i class="fa-solid fa-pen"></i> Sửa
-            </button>
-            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')">
-              <i class="fa-solid fa-trash-can"></i> Xóa
-            </button>
-          </div>
-        </td>
-      </tr>`;
-      tbody.innerHTML += row;
-    }
-
-    if (count === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị thuộc nhóm này.</td></tr>';
-    }
-  }
-
-  function updateGroupDropdown(data) {
-    const filterSelect = document.getElementById("groupFilter");
-    const currentSelected = filterSelect.value;
-    
-    let groups = new Set();
-    for (let id in data) {
-      groups.add(data[id].group || "Chưa Phân Nhóm");
-    }
-
-    let optionsHTML = '<option value="ALL">-- Tất cả các nhóm --</option>';
-    groups.forEach(g => {
-      optionsHTML += `<option value="${g}">${g}</option>`;
-    });
-
-    filterSelect.innerHTML = optionsHTML;
-    if ([...groups].includes(currentSelected) || currentSelected === "ALL") {
-      filterSelect.value = currentSelected;
-    } else {
-      filterSelect.value = "ALL";
-    }
-  }
-
-  db.ref("devices").on("value", (snapshot) => {
-    globalDeviceData = snapshot.val();
-    if (globalDeviceData) {
-      updateGroupDropdown(globalDeviceData);
-    }
-    renderDevices();
-  });
-</script>
-
+  </script>
 </body>
 </html>
