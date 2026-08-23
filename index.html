@@ -31,7 +31,7 @@
       padding: 16px 8px; 
     }
     
-    .container { max-width: 1280px; margin: 0 auto; display: none; }
+    .container { max-width: 1380px; margin: 0 auto; display: none; }
 
     .login-overlay {
       position: fixed;
@@ -132,7 +132,6 @@
       margin-left: auto;
     }
 
-    /* Thanh Tab Switcher */
     .nav-tabs {
       display: flex;
       gap: 10px;
@@ -186,7 +185,7 @@
     }
 
     .table-container { overflow-x: auto; border-radius: 8px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 850px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 950px; }
     th { background: rgba(15, 23, 42, 0.7); padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
     td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
 
@@ -206,6 +205,8 @@
     .pulse-out { color: #f43f5e; }
     
     .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
+    .time-sub { font-size: 11px; color: #a7f3d0; font-weight: 500; font-family: monospace; }
+    .time-sub-offline { font-size: 11px; color: var(--accent-red); font-weight: 500; font-family: monospace; }
 
     .action-group { display: flex; gap: 6px; justify-content: flex-end; }
     .btn-log, .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; }
@@ -306,6 +307,7 @@
             <tr id="tableHeaderRow">
               <th>Trạng Thái</th>
               <th>Tên Trạm / Thiết Bị</th>
+              <th>Lần Cuối Online</th>
               <th>Nhóm</th>
               <th>Thông Số Xung (IN / OUT / Ratio)</th>
               <th>Cường Độ Wi-Fi</th>
@@ -315,7 +317,7 @@
             </tr>
           </thead>
           <tbody id="device-table-body">
-            <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang tải dữ liệu trực tuyến...</td></tr>
+            <tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang tải dữ liệu trực tuyến...</td></tr>
           </tbody>
         </table>
       </div>
@@ -424,6 +426,34 @@
   let currentUser = null;
   let lastReceivedTimeMap = {};
 
+  // Hàm format thời gian online dạng khoảng thời gian & ngày giờ
+  function formatLastSeen(lastSeenVal, diffSec, isOnline) {
+    if (!lastSeenVal) return '<span class="info-sub">Chưa có dữ liệu</span>';
+
+    let dateObj;
+    if (typeof lastSeenVal === 'number') {
+      dateObj = new Date(lastSeenVal);
+    } else if (typeof lastSeenVal === 'string' && !isNaN(lastSeenVal)) {
+      dateObj = new Date(parseInt(lastSeenVal));
+    } else {
+      dateObj = new Date(lastSeenVal);
+    }
+
+    let timeStr = !isNaN(dateObj.getTime()) 
+      ? dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      : '--:--:--';
+
+    let relativeStr = "";
+    if (diffSec < 10) relativeStr = "Vừa xong";
+    else if (diffSec < 60) relativeStr = `${Math.floor(diffSec)} giây trước`;
+    else if (diffSec < 3600) relativeStr = `${Math.floor(diffSec / 60)} phút trước`;
+    else relativeStr = `${Math.floor(diffSec / 3600)} giờ trước`;
+
+    let timeClass = isOnline ? "time-sub" : "time-sub-offline";
+
+    return `<div><span class="${timeClass}"><i class="fa-regular fa-clock"></i> ${relativeStr}</span><span class="info-sub">${timeStr}</span></div>`;
+  }
+
   // XỬ LÝ CHUYỂN TAB
   function switchTab(tabId, element) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -514,7 +544,7 @@
     tbody.innerHTML = "";
 
     if (!globalDeviceData) {
-      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 9 : 8}" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
       return;
     }
 
@@ -560,6 +590,8 @@
         ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
         : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
 
+      let lastSeenHTML = formatLastSeen(dev.last_seen, timeDiffSec, isOnline);
+
       let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
       let ratioDisplay = isRatioError 
         ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
@@ -578,6 +610,7 @@
       let row = `<tr>
         <td>${statusHTML}</td>
         <td><b style="color: var(--text-main); font-size:14px;">${devName}</b></td>
+        <td>${lastSeenHTML}</td>
         <td><span class="badge-group">${devGroup}</span></td>
         <td>
           <div class="${pulseContainerClass}">
@@ -598,7 +631,7 @@
     }
 
     if (count === 0) {
-      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 9 : 8}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
     }
   }
 
