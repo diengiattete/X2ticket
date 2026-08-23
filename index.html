@@ -114,6 +114,11 @@
       color: var(--accent-blue);
       border: 1px solid rgba(56, 189, 248, 0.3);
     }
+    .role-badge.readonly {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--accent-yellow);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
 
     .btn-logout { 
       background: rgba(248, 113, 113, 0.08); 
@@ -150,11 +155,10 @@
     }
 
     .table-container { overflow-x: auto; border-radius: 8px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 900px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 850px; }
     th { background: rgba(15, 23, 42, 0.7); padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
     td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
 
-    /* Badge & Tag Styles */
     .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); padding: 3px 6px; border-radius: 4px; font-size: 11px; }
     .badge-fw { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); padding: 3px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
     .badge-group { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); padding: 3px 8px; border-radius: 12px; font-size: 11px; }
@@ -213,7 +217,7 @@
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
         <label for="email">Email Hệ Thống</label>
-        <input type="email" id="email" class="form-input" placeholder="admin@funchomper.com" required autofocus autocomplete="username">
+        <input type="email" id="email" class="form-input" placeholder="nhap_email@domain.com" required autofocus autocomplete="username">
       </div>
       <div class="form-group">
         <label for="password">Mật Khẩu</label>
@@ -247,15 +251,15 @@
     <div class="table-container">
       <table>
         <thead>
-          <tr>
+          <tr id="tableHeaderRow">
             <th>Trạng Thái</th>
             <th>Tên Trạm / Thiết Bị</th>
             <th>Nhóm</th>
             <th>Thông Số Xung (IN / OUT / Ratio)</th>
-            <th>Phần Cứng / Wi-Fi</th>
+            <th>Cường Độ Wi-Fi</th>
             <th>Địa Chỉ MAC / IP</th>
             <th>FW</th>
-            <th style="text-align: right;">Thao Tác</th>
+            <th id="thAction" style="text-align: right;">Thao Tác</th>
           </tr>
         </thead>
         <tbody id="device-table-body">
@@ -299,7 +303,9 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-  // Cấu hình Firebase
+  // TÀI KHOẢN ADMIN DUY NHẤT CÓ QUYỀN CHỈNH SỬA / XÓA
+  const ADMIN_EMAIL = "trung@fun.io";
+
   const firebaseConfig = {
     apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
     authDomain: "trungio.firebaseapp.com",
@@ -312,21 +318,36 @@
   const db = firebase.database();
 
   let globalDeviceData = null;
+  let currentUser = null;
 
   // LẮNG NGHE TRẠNG THÁI XÁC THỰC
   auth.onAuthStateChanged((user) => {
     if (user) {
+      currentUser = user;
       document.getElementById("loginScreen").style.display = "none";
       document.getElementById("dashboardScreen").style.display = "block";
-      document.getElementById("userEmail").innerText = user.email;
+
+      const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      const badgeEl = document.getElementById("userBadge");
+      
+      if (isAdmin) {
+        badgeEl.className = "role-badge";
+        badgeEl.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`;
+        document.getElementById("thAction").style.display = "";
+      } else {
+        badgeEl.className = "role-badge readonly";
+        badgeEl.innerHTML = `<i class="fa-solid fa-eye"></i> ${user.email} (READ ONLY)`;
+        document.getElementById("thAction").style.display = "none";
+      }
+
       listenToDatabase();
     } else {
+      currentUser = null;
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("dashboardScreen").style.display = "none";
     }
   });
 
-  // XỬ LÝ ĐĂNG NHẬP
   function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -344,14 +365,12 @@
       });
   }
 
-  // ĐĂNG XUẤT
   function logout() {
     auth.signOut().then(() => {
       location.reload();
     });
   }
 
-  // ĐỌC DỮ LIỆU REALTIME
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
@@ -364,29 +383,15 @@
     });
   }
 
-  // HÀM QUY ĐỔI GIÂY SANG CHUỖI UPTIME
-  function formatUptime(seconds) {
-    if (!seconds) return "--";
-    const d = Math.floor(seconds / (3600 * 24));
-    const h = Math.floor((seconds % (3600 * 24)) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-
-    let res = "";
-    if (d > 0) res += d + "d ";
-    if (h > 0 || d > 0) res += h + "h ";
-    res += m + "m " + s + "s";
-    return res;
-  }
-
-  // HIỂN THỊ DANH SÁCH THIẾT BỊ VỚI ĐẦY ĐỦ THÔNG SỐ
   function renderDevices() {
     const tbody = document.getElementById("device-table-body");
     const filterValue = document.getElementById("groupFilter").value;
+    const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
     tbody.innerHTML = "";
 
     if (!globalDeviceData) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
       return;
     }
 
@@ -402,28 +407,31 @@
       let macAddr   = dev.mac || id;
       let fwVer     = dev.firmware || "1.0.0";
       let ipAddr    = dev.ip || "--";
-      let hardware  = dev.hardware || "ESP32";
       let status    = dev.status || "ONLINE";
       let isOnline  = status.toUpperCase() === "ONLINE";
 
-      // Lấy thông số đếm xung & tín hiệu
       let inCnt     = dev.input_count !== undefined ? dev.input_count : 0;
       let outCnt    = dev.output_count !== undefined ? dev.output_count : 0;
       let ratio     = dev.ratio !== undefined ? dev.ratio : 0.0;
       let pulseUs   = dev.pulse_width_us !== undefined ? dev.pulse_width_us : "--";
       let wifiRssi  = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
-      let uptime    = formatUptime(dev.uptime_sec);
 
       let statusHTML = isOnline 
         ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
         : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
 
+      let actionTd = isAdmin ? `
+        <td>
+          <div class="action-group">
+            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          </div>
+        </td>
+      ` : '';
+
       let row = `<tr>
         <td>${statusHTML}</td>
-        <td>
-          <b style="color: var(--text-main); font-size:14px;">${devName}</b>
-          <span class="info-sub"><i class="fa-regular fa-clock"></i> Uptime: ${uptime}</span>
-        </td>
+        <td><b style="color: var(--text-main); font-size:14px;">${devName}</b></td>
         <td><span class="badge-group">${devGroup}</span></td>
         <td>
           <div>
@@ -432,27 +440,19 @@
           </div>
           <span class="info-sub">Tỷ lệ: <b>${ratio}x</b> | Độ rộng: ${pulseUs} µs</span>
         </td>
-        <td>
-          <span>${hardware}</span>
-          <span class="info-sub"><i class="fa-solid fa-wifi"></i> ${wifiRssi}</span>
-        </td>
+        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
         <td>
           <span class="badge-mac">${macAddr}</span>
           <span class="info-sub">IP: ${ipAddr}</span>
         </td>
         <td><span class="badge-fw">v${fwVer}</span></td>
-        <td>
-          <div class="action-group">
-            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
-            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
-          </div>
-        </td>
+        ${actionTd}
       </tr>`;
       tbody.innerHTML += row;
     }
 
     if (count === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
     }
   }
 
@@ -472,6 +472,9 @@
   }
 
   function openEditModal(deviceId, currentName, currentGroup) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return alert("Bạn không có quyền chỉnh sửa!");
+    }
     document.getElementById("editDeviceId").value = deviceId;
     document.getElementById("editDeviceName").value = currentName;
     document.getElementById("editGroupName").value = currentGroup;
@@ -483,6 +486,10 @@
   }
 
   function saveDeviceChanges() {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return alert("Bạn không có quyền chỉnh sửa!");
+    }
+
     const deviceId = document.getElementById("editDeviceId").value;
     const newName = document.getElementById("editDeviceName").value.trim();
     const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
@@ -499,6 +506,10 @@
   }
 
   function deleteDevice(deviceId, deviceName) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return alert("Bạn không có quyền xóa!");
+    }
+
     if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
       db.ref("devices/" + deviceId).remove()
         .then(() => alert(`Đã xóa "${deviceName}"!`))
