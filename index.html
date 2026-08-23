@@ -426,8 +426,10 @@
   let currentUser = null;
   let lastReceivedTimeMap = {};
 
-  // Hàm format thời gian online dạng khoảng thời gian & ngày giờ
+// Hàm format thời gian online: Nếu ONLINE thì không hiển thị giờ, nếu OFFLINE mới hiển thị
   function formatLastSeen(lastSeenVal, diffSec, isOnline) {
+    if (isOnline) return ''; // Bỏ qua không hiển thị giờ khi thiết bị đang Online
+
     if (!lastSeenVal) return '<span class="info-sub">Chưa có dữ liệu</span>';
 
     let dateObj;
@@ -449,9 +451,7 @@
     else if (diffSec < 3600) relativeStr = `${Math.floor(diffSec / 60)} phút trước`;
     else relativeStr = `${Math.floor(diffSec / 3600)} giờ trước`;
 
-    let timeClass = isOnline ? "time-sub" : "time-sub-offline";
-
-    return `<div><span class="${timeClass}"><i class="fa-regular fa-clock"></i> ${relativeStr}</span><span class="info-sub">${timeStr}</span></div>`;
+    return `<div><span class="time-sub-offline"><i class="fa-regular fa-clock"></i> ${relativeStr}</span><span class="info-sub">${timeStr}</span></div>`;
   }
 
   // XỬ LÝ CHUYỂN TAB
