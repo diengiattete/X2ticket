@@ -450,7 +450,7 @@
       }
 
       let timeDiffSec = (now - lastReceivedTimeMap[id].updatedAt) / 1000;
-      let isOnline = (timeDiffSec <= 10) && (dev.status === "ONLINE");
+      let isOnline = (timeDiffSec <= 30) && (dev.status === "ONLINE");
 
       let inCnt     = dev.input_count !== undefined ? dev.input_count : 0;
       let outCnt    = dev.output_count !== undefined ? dev.output_count : 0;
