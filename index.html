@@ -2,152 +2,605 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Giám Sát Thiết Bị X2 Realtime</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Theo Dõi Funchomper - Firebase Realtime</title>
   
-  <!-- Tailwind CSS cho Giao diện -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Firebase JS SDK (v8) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-body: #090d16;
+      --bg-surface: rgba(22, 30, 46, 0.85);
+      --bg-input: rgba(15, 23, 42, 0.9);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-yellow: #fbbf24;
+      --accent-red: #f87171;
+      --border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+    
+    body { 
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-body) 75%);
+      color: var(--text-main); 
+      min-height: 100vh; 
+      padding: 16px 8px; 
+    }
+    
+    .container { max-width: 1280px; margin: 0 auto; display: none; }
+
+    .login-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 16px;
+    }
+    .login-box {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      padding: 32px 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+    .login-box .icon-logo { font-size: 36px; color: var(--accent-blue); margin-bottom: 12px; }
+    .login-box h2 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--accent-blue); }
+
+    .btn-login, .btn-primary, .btn-cancel {
+      padding: 12px 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-login { 
+      width: 100%; 
+      margin-top: 8px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
+      color: #fff; 
+    }
+    .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; }
+    .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+
+    .navbar { 
+      display: flex; 
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px; 
+      padding-bottom: 16px; 
+      border-bottom: 1px solid var(--border-color); 
+    }
+    .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .navbar h1 i { color: var(--accent-blue); }
+    
+    .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+    
+    .role-badge {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .role-badge.readonly {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--accent-yellow);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .btn-logout { 
+      background: rgba(248, 113, 113, 0.08); 
+      color: var(--accent-red); 
+      border: 1px solid rgba(248, 113, 113, 0.25); 
+      padding: 6px 12px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 12px; 
+      font-weight: 500; 
+      margin-left: auto;
+    }
+
+    .card { 
+      background: var(--bg-surface); 
+      backdrop-filter: blur(12px);
+      border-radius: 14px; 
+      border: 1px solid var(--border-color); 
+      padding: 16px 12px; 
+    }
+    .card-header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 16px; gap: 12px; }
+    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-title i { color: var(--accent-blue); }
+
+    .filter-box select { 
+      width: 100%;
+      background: var(--bg-input); 
+      color: var(--text-main); 
+      border: 1px solid var(--border-color); 
+      padding: 8px 12px; 
+      border-radius: 8px; 
+      font-size: 13px; 
+      outline: none; 
+    }
+
+    .table-container { overflow-x: auto; border-radius: 8px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 850px; }
+    th { background: rgba(15, 23, 42, 0.7); padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
+    td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
+
+    .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); padding: 3px 6px; border-radius: 4px; font-size: 11px; }
+    .badge-fw { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); padding: 3px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+    .badge-group { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .status-online { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .status-offline { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
+    
+    .pulse-container-normal { background: rgba(15, 23, 42, 0.5); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); }
+    .pulse-container-error { background: rgba(248, 113, 113, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent-red); color: var(--accent-red); font-weight: bold; }
+
+    .pulse-counter { font-weight: 700; font-family: monospace; font-size: 13px; }
+    .pulse-in { color: #60a5fa; }
+    .pulse-out { color: #f43f5e; }
+    
+    .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
+
+    .action-group { display: flex; gap: 6px; justify-content: flex-end; }
+    .btn-log, .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-log { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .btn-edit { background: rgba(251, 191, 36, 0.1); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.25); }
+    .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 8, 17, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 12px;
+    }
+    .modal-box {
+      background: var(--bg-surface);
+      padding: 20px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 520px;
+    }
+    .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    .log-list { max-height: 280px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
+    .log-item { padding: 6px 0; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; }
+    .log-item:last-child { border-bottom: none; }
+
+    @media (min-width: 640px) {
+      body { padding: 32px 16px; }
+      .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans min-h-screen p-4 md:p-8">
+<body>
 
-  <div class="max-w-6xl mx-auto">
-    <!-- Header -->
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-md border-b-4 border-blue-600">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Hệ Thống Giám Sát X2 Realtime</h1>
-        <p class="text-sm text-gray-500 mt-1">Đồng bộ dữ liệu phát xung song song qua Firebase</p>
+<!-- MÀN HÌNH ĐĂNG NHẬP -->
+<div class="login-overlay" id="loginScreen">
+  <div class="login-box">
+    <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
+    <h2>FUNCHOMPER SYSTEM</h2>
+    <p>Đăng nhập bằng Firebase Auth</p>
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="email">Email Hệ Thống</label>
+        <input type="email" id="email" class="form-input" placeholder="nhap_email@domain.com" required autofocus autocomplete="username">
       </div>
-      <div class="mt-4 md:mt-0 flex items-center space-x-2">
-        <span class="text-sm font-semibold text-gray-600">Trạng thái hệ thống:</span>
-        <span id="system-status" class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">HOẠT ĐỘNG</span>
+      <div class="form-group">
+        <label for="password">Mật Khẩu</label>
+        <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
       </div>
-    </header>
+      <button type="submit" class="btn-login" id="btnLogin">ĐĂNG NHẬP</button>
+    </form>
+  </div>
+</div>
 
-    <!-- Thống Kê Tổng Quan / Danh Sách Thiết Bị -->
-    <div id="devices-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Thẻ thiết bị sẽ được render tự động ở đây -->
-      <div class="col-span-full text-center py-12 text-gray-400">
-        Đang tải dữ liệu thiết bị...
-      </div>
+<!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
+<div class="container" id="dashboardScreen">
+  <div class="navbar">
+    <h1><i class="fa-solid fa-microchip"></i> FUNCHOMPER</h1>
+    <div class="nav-controls">
+      <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
+      <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
     </div>
   </div>
 
-  <script>
-    // 1. CẤU HÌNH FIREBASE DATABASE CỦA BẠN
-    const firebaseConfig = {
-      databaseURL: "https://trungio.firebaseio.com"
-    };
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
+      <div class="filter-box">
+        <select id="groupFilter" onchange="renderDevices()">
+          <option value="ALL">-- Tất cả nhóm --</option>
+        </select>
+      </div>
+    </div>
 
-    // Khởi tạo Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr id="tableHeaderRow">
+            <th>Trạng Thái</th>
+            <th>Tên Trạm / Thiết Bị</th>
+            <th>Nhóm</th>
+            <th>Thông Số Xung (IN / OUT / Ratio)</th>
+            <th>Cường Độ Wi-Fi</th>
+            <th>Địa Chỉ MAC / IP</th>
+            <th>FW</th>
+            <th id="thAction" style="text-align: right;">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody id="device-table-body">
+          <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-    // Hằng số thời gian chờ Offline (30 giây)
-    const OFFLINE_TIMEOUT_MS = 30000;
+<!-- MODAL EDIT DEVICE -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-pen-to-square" style="color:var(--accent-blue); margin-right:6px;"></i> Cập Nhật Trạm</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('editModal')"></i>
+    </div>
     
-    // Lưu trữ local trạng thái các thiết bị để loop kiểm tra
-    let localDevicesData = {};
+    <input type="hidden" id="editDeviceId">
 
-    // 2. LẮNG NGHE DỮ LIỆU REALTIME TỪ FIREBASE
-    db.ref('/devices').on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (!data) {
-        document.getElementById('devices-container').innerHTML = `
-          <div class="col-span-full text-center py-12 text-gray-400">
-            Chưa có dữ liệu thiết bị nào trong Database.
-          </div>`;
-        return;
+    <div class="form-group">
+      <label for="editDeviceName">Tên Trạm / Thiết Bị</label>
+      <input type="text" id="editDeviceName" class="form-input" placeholder="Nhập tên trạm...">
+    </div>
+
+    <div class="form-group">
+      <label for="editGroupName">Tên Nhóm / Trung Tâm</label>
+      <input type="text" id="editGroupName" class="form-input" placeholder="Nhập tên nhóm...">
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('editModal')">Hủy</button>
+      <button class="btn-primary" onclick="saveDeviceChanges()">Lưu Thay Đổi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL XEM NHẬT KÝ LOG HÀNG GIỜ -->
+<div class="modal-overlay" id="logModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung 24 Giờ Gần Nhất</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('logModal')"></i>
+    </div>
+    
+    <div class="log-list" id="logContainer">
+      <div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('logModal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  const ADMIN_EMAIL = "trung@fun.io";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
+    authDomain: "trungio.firebaseapp.com",
+    databaseURL: "https://trungio.firebaseio.com",
+    projectId: "trungio"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  let globalDeviceData = null;
+  let currentUser = null;
+  let lastReceivedTimeMap = {};
+
+  // XÁC THỰC NGƯỜI DÙNG
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      currentUser = user;
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("dashboardScreen").style.display = "block";
+
+      const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      const badgeEl = document.getElementById("userBadge");
+      
+      if (isAdmin) {
+        badgeEl.className = "role-badge";
+        badgeEl.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`;
+        document.getElementById("thAction").style.display = "";
+      } else {
+        badgeEl.className = "role-badge readonly";
+        badgeEl.innerHTML = `<i class="fa-solid fa-eye"></i> ${user.email} (READ ONLY)`;
+        document.getElementById("thAction").style.display = "none";
       }
 
-      localDevicesData = data;
+      listenToDatabase();
+    } else {
+      currentUser = null;
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("dashboardScreen").style.display = "none";
+    }
+  });
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const btnLogin = document.getElementById("btnLogin");
+
+    btnLogin.innerText = "ĐANG XÁC THỰC...";
+    btnLogin.disabled = true;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .catch((error) => {
+        alert("Lỗi đăng nhập: " + error.message);
+        btnLogin.innerText = "ĐĂNG NHẬP";
+        btnLogin.disabled = false;
+      });
+  }
+
+  function logout() {
+    auth.signOut().then(() => location.reload());
+  }
+
+  // LẮNG NGHE DỮ LIỆU REALTIME VÀ KIỂM TRA TIMEOUT 30S
+  function listenToDatabase() {
+    db.ref("devices").on("value", (snapshot) => {
+      globalDeviceData = snapshot.val();
+      if (globalDeviceData) {
+        updateGroupDropdown(globalDeviceData);
+      }
       renderDevices();
+    }, (error) => {
+      alert("Lỗi truy cập dữ liệu: " + error.message);
     });
 
-    // 3. HÀM RENDER GIAO DIỆN THIẾT BỊ
-    function renderDevices() {
-      const container = document.getElementById('devices-container');
-      container.innerHTML = '';
-
-      const currentTime = Date.now();
-
-      Object.keys(localDevicesData).forEach((mac) => {
-        const device = localDevicesData[mac];
-        const lastSeen = device.last_seen || 0;
-        const timeDiff = currentTime - lastSeen;
-
-        // Tính toán trạng thái ONLINE / OFFLINE (>30s không có tin = OFFLINE)
-        const isOnline = timeDiff <= OFFLINE_TIMEOUT_MS;
-        const statusText = isOnline ? "ONLINE" : "OFFLINE";
-        const statusClass = isOnline 
-          ? "bg-green-100 text-green-800 border-green-300" 
-          : "bg-red-100 text-red-800 border-red-300";
-        const statusDot = isOnline ? "bg-green-500 animate-pulse" : "bg-red-500";
-
-        // Định dạng thời gian
-        const lastSeenFormatted = lastSeen > 0 
-          ? new Date(lastSeen).toLocaleTimeString('vi-VN') 
-          : 'Chưa có dữ liệu';
-
-        const cardHtml = `
-          <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg">
-            <!-- Header Card -->
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <div>
-                <h3 class="font-bold text-lg text-gray-800">MAC: ${mac}</h3>
-                <p class="text-xs text-gray-500">Firmware: v${device.firmware || '1.0.0'} | IP: ${device.ip || '0.0.0.0'}</p>
-              </div>
-              <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${statusClass}">
-                <span class="w-2 h-2 rounded-full ${statusDot}"></span>
-                <span>${statusText}</span>
-              </div>
-            </div>
-
-            <!-- Body Card - Số Liệu Xung -->
-            <div class="p-5 grid grid-cols-2 gap-4">
-              <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                <span class="text-xs text-blue-600 font-semibold uppercase">Xung Vào (IN)</span>
-                <p class="text-2xl font-black text-blue-900 mt-1">${(device.input_count || 0).toLocaleString()}</p>
-              </div>
-
-              <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                <span class="text-xs text-indigo-600 font-semibold uppercase">Xung Ra (OUT)</span>
-                <p class="text-2xl font-black text-indigo-900 mt-1">${(device.output_count || 0).toLocaleString()}</p>
-              </div>
-
-              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <span class="text-xs text-gray-500 font-semibold uppercase">Tỷ Lệ (Ratio)</span>
-                <p class="text-xl font-bold text-gray-800 mt-1">${device.ratio || '0.00'}</p>
-              </div>
-
-              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <span class="text-xs text-gray-500 font-semibold uppercase">Tín Hiệu Wi-Fi</span>
-                <p class="text-xl font-bold text-gray-800 mt-1">${device.wifi_signal || 0} dBm</p>
-              </div>
-            </div>
-
-            <!-- Footer Card -->
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
-              <span>Nửa chu kỳ: <strong>${device.pulse_width_us || 0} µs</strong></span>
-              <span>Lần cuối: <strong>${lastSeenFormatted}</strong></span>
-            </div>
-          </div>
-        `;
-
-        container.innerHTML += cardHtml;
-      });
-    }
-
-    // 4. VÒNG LẶP KIỂM TRA OVERTIME (CẬP NHẬT TRẠNG THÁI OFFLINE MỖI 3 GIÂY)
-    // Giúp giao diện chuyển ngay sang OFFLINE khi quá 30s mà không cần đợt sync mới từ Firebase
     setInterval(() => {
-      if (Object.keys(localDevicesData).length > 0) {
+      if (globalDeviceData) {
         renderDevices();
       }
-    }, 3000);
-  </script>
+    }, 1000);
+  }
+
+  function renderDevices() {
+    const tbody = document.getElementById("device-table-body");
+    const filterValue = document.getElementById("groupFilter").value;
+    const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
+    tbody.innerHTML = "";
+
+    if (!globalDeviceData) {
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
+      return;
+    }
+
+    const now = Date.now();
+    let count = 0;
+
+    for (let id in globalDeviceData) {
+      let dev = globalDeviceData[id];
+      let devGroup = dev.group || "Chưa Phân Nhóm";
+
+      if (filterValue !== "ALL" && devGroup !== filterValue) continue;
+
+      count++;
+      let devName   = dev.device_name || ("TRAM_" + id.substring(id.length - 4));
+      let macAddr   = dev.mac || id;
+      let fwVer     = dev.firmware || "1.0.0";
+      let ipAddr    = dev.ip || "--";
+
+      // Kiểm tra lần cuối nhận dữ liệu
+      if (!lastReceivedTimeMap[id] || dev.last_seen !== lastReceivedTimeMap[id].last_seen) {
+        lastReceivedTimeMap[id] = {
+          last_seen: dev.last_seen,
+          updatedAt: now
+        };
+      }
+
+      let timeDiffSec = (now - lastReceivedTimeMap[id].updatedAt) / 1000;
+      
+      // BỔ SUNG: Chuyển ngưỡng kiểm tra từ 10s sang 30s
+      let isOnline = (timeDiffSec <= 30) && (dev.status === "ONLINE");
+
+      // BỔ SUNG: Nếu vượt quá 30 giây mà trạng thái trên Firebase vẫn ghi "ONLINE", tự động set lại "OFFLINE" trên Firebase
+      if (!isOnline && dev.status === "ONLINE") {
+        dev.status = "OFFLINE"; // Cập nhật local lập tức
+        db.ref("devices/" + id + "/status").set("OFFLINE"); // Đồng bộ giá trị OFFLINE lên Firebase
+      }
+
+      let inCnt     = dev.input_count !== undefined ? dev.input_count : 0;
+      let outCnt    = dev.output_count !== undefined ? dev.output_count : 0;
+      let ratio     = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
+      let pulseUs   = dev.pulse_width_us !== undefined ? dev.pulse_width_us : "--";
+      let wifiRssi  = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
+
+      // Kiểm tra lệch tỷ lệ x2 (ngoài dải 1.95 đến 2.05)
+      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
+
+      // Trạng thái gọn gàng ONLINE / OFFLINE
+      let statusHTML = isOnline 
+        ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
+        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
+
+      let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
+      let ratioDisplay = isRatioError 
+        ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
+        : `<b>${ratio}x</b>`;
+
+      let actionTd = isAdmin ? `
+        <td>
+          <div class="action-group">
+            <button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>
+            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          </div>
+        </td>
+      ` : '';
+
+      let row = `<tr>
+        <td>${statusHTML}</td>
+        <td><b style="color: var(--text-main); font-size:14px;">${devName}</b></td>
+        <td><span class="badge-group">${devGroup}</span></td>
+        <td>
+          <div class="${pulseContainerClass}">
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          </div>
+          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
+        </td>
+        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
+        <td>
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub">IP: ${ipAddr}</span>
+        </td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
+      </tr>`;
+      tbody.innerHTML += row;
+    }
+
+    if (count === 0) {
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+    }
+  }
+
+  function updateGroupDropdown(data) {
+    const filterSelect = document.getElementById("groupFilter");
+    const currentSelected = filterSelect.value;
+    
+    let groups = new Set();
+    for (let id in data) {
+      groups.add(data[id].group || "Chưa Phân Nhóm");
+    }
+
+    let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
+    groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
+    filterSelect.innerHTML = optionsHTML;
+    filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
+  }
+
+  function openEditModal(deviceId, currentName, currentGroup) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    document.getElementById("editDeviceId").value = deviceId;
+    document.getElementById("editDeviceName").value = currentName;
+    document.getElementById("editGroupName").value = currentGroup;
+    document.getElementById("editModal").style.display = "flex";
+  }
+
+  function viewHourlyLog(macAddress) {
+    const container = document.getElementById("logContainer");
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+    document.getElementById("logModal").style.display = "flex";
+
+    db.ref("logs/" + macAddress).limitToLast(24).once("value", (snapshot) => {
+      let logs = snapshot.val();
+      if (!logs) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+        return;
+      }
+      
+      let html = "";
+      for (let k in logs) {
+        let item = logs[k];
+        let date = new Date(item.timestamp).toLocaleString("vi-VN");
+        let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
+        let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
+
+        html += `
+          <div class="log-item">
+            <span>${date}</span>
+            <span>IN: <b>${item.hourly_in}</b> | OUT: <b>${item.hourly_out}</b> | Ratio: <span style="${ratioColor}">${item.ratio}x</span></span>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    });
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = "none";
+  }
+
+  function saveDeviceChanges() {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+    const deviceId = document.getElementById("editDeviceId").value;
+    const newName = document.getElementById("editDeviceName").value.trim();
+    const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
+
+    if (!newName) return alert("Vui lòng nhập tên trạm!");
+
+    db.ref("devices/" + deviceId).update({
+      device_name: newName,
+      group: newGroup
+    }).then(() => {
+      alert("Cập nhật thành công!");
+      closeModal("editModal");
+    }).catch(err => alert("Lỗi khi lưu: " + err.message));
+  }
+
+  function deleteDevice(deviceId, deviceName) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+    if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
+      db.ref("devices/" + deviceId).remove()
+        .then(() => alert(`Đã xóa "${deviceName}"!`))
+        .catch(err => alert("Lỗi khi xóa: " + err.message));
+    }
+  }
+</script>
+
 </body>
 </html>
