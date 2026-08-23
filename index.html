@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Theo Dõi Funchomper - Firebase Realtime</title>
+  <title>Theo Dõi Funchomper - Realtime System</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -132,7 +132,7 @@
       margin-left: auto;
     }
 
-    /* BỔ SUNG: Thanh Tab Switcher */
+    /* Thanh Tab Switcher */
     .nav-tabs {
       display: flex;
       gap: 10px;
@@ -253,7 +253,7 @@
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
     <h2>FUNCHOMPER SYSTEM</h2>
-    <p>Đăng nhập bằng Firebase Auth</p>
+    <p>Đăng nhập hệ thống tài khoản</p>
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
         <label for="email">Email Hệ Thống</label>
@@ -278,7 +278,7 @@
     </div>
   </div>
 
-  <!-- BỔ SUNG: NÚT CHUYỂN TAB -->
+  <!-- NÚT CHUYỂN TAB -->
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('devicesTab', this)">
       <i class="fa-solid fa-server"></i> Thiết Bị Realtime
@@ -315,7 +315,7 @@
             </tr>
           </thead>
           <tbody id="device-table-body">
-            <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
+            <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang tải dữ liệu trực tuyến...</td></tr>
           </tbody>
         </table>
       </div>
@@ -401,7 +401,7 @@
   </div>
 </div>
 
-<!-- FIREBASE SDKs -->
+<!-- SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -617,7 +617,7 @@
     filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
   }
 
-  // BỔ SUNG: DROPDOWN LỌC LOG
+  // DROPDOWN LỌC LOG
   function updateLogDeviceDropdown(data) {
     const filterSelect = document.getElementById("logDeviceFilter");
     const currentSelected = filterSelect.value;
@@ -631,7 +631,7 @@
     filterSelect.value = currentSelected || "ALL";
   }
 
-  // BỔ SUNG: TRUY VẤN VÀ HIỂN THỊ LOG TỔNG HỢP Ở TAB LOGS
+  // TRUY VẤN VÀ HIỂN THỊ LOG TỔNG HỢP Ở TAB LOGS
   function fetchGlobalLogs() {
     const tbody = document.getElementById("log-table-body");
     const selectedMac = document.getElementById("logDeviceFilter").value;
@@ -668,7 +668,6 @@
         }
       }
 
-      // Sắp xếp log mới nhất lên đầu
       logRows.sort((a, b) => b.timestamp - a.timestamp);
 
       if (logRows.length === 0) {
