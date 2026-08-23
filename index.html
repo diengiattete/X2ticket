@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Theo Dõi Funchomper</title>
+  <title>Theo Dõi Funchomper - Firebase Realtime</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -319,6 +319,7 @@
 
   let globalDeviceData = null;
   let currentUser = null;
+  let lastReceivedTimeMap = {}; // Lưu thời gian cập nhật của từng trạm trên Web Client
 
   // LẮNG NGHE TRẠNG THÁI XÁC THỰC
   auth.onAuthStateChanged((user) => {
@@ -371,6 +372,7 @@
     });
   }
 
+  // LẮNG NGHE DỮ LIỆU REALTIME VÀ KIỂM TRA TIMEOUT 10S
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
@@ -381,6 +383,13 @@
     }, (error) => {
       alert("Lỗi truy cập dữ liệu: " + error.message);
     });
+
+    // Vòng lặp đếm giây liên tục mỗi 1s để cập nhật trạng thái Offline khi mất kết nối
+    setInterval(() => {
+      if (globalDeviceData) {
+        renderDevices();
+      }
+    }, 1000);
   }
 
   function renderDevices() {
@@ -395,7 +404,9 @@
       return;
     }
 
+    const now = Date.now();
     let count = 0;
+
     for (let id in globalDeviceData) {
       let dev = globalDeviceData[id];
       let devGroup = dev.group || "Chưa Phân Nhóm";
@@ -407,8 +418,18 @@
       let macAddr   = dev.mac || id;
       let fwVer     = dev.firmware || "1.0.0";
       let ipAddr    = dev.ip || "--";
-      let status    = dev.status || "ONLINE";
-      let isOnline  = status.toUpperCase() === "ONLINE";
+
+      // Xử lý đếm thời gian từ lần cuối ESP32 gửi dữ liệu
+      if (!lastReceivedTimeMap[id] || dev.last_seen !== lastReceivedTimeMap[id].last_seen) {
+        lastReceivedTimeMap[id] = {
+          last_seen: dev.last_seen,
+          updatedAt: now
+        };
+      }
+
+      // Tính số giây trôi qua từ lần cập nhật mới nhất
+      let timeDiffSec = (now - lastReceivedTimeMap[id].updatedAt) / 1000;
+      let isOnline = (timeDiffSec <= 10) && (dev.status === "ONLINE");
 
       let inCnt     = dev.input_count !== undefined ? dev.input_count : 0;
       let outCnt    = dev.output_count !== undefined ? dev.output_count : 0;
@@ -418,7 +439,7 @@
 
       let statusHTML = isOnline 
         ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
-        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
+        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${Math.floor(timeDiffSec)}s)</span>`;
 
       let actionTd = isAdmin ? `
         <td>
