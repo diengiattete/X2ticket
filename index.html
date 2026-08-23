@@ -437,10 +437,11 @@
       let pulseUs   = dev.pulse_width_us !== undefined ? dev.pulse_width_us : "--";
       let wifiRssi  = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
 
+     // Thay thế đoạn statusHTML cũ bằng đoạn này:
       let statusHTML = isOnline 
         ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
-        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${Math.floor(timeDiffSec)}s)</span>`;
-
+        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
+      
       let actionTd = isAdmin ? `
         <td>
           <div class="action-group">
