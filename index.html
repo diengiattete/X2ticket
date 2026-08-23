@@ -93,7 +93,7 @@
       display: flex; 
       flex-direction: column;
       gap: 12px;
-      margin-bottom: 20px; 
+      margin-bottom: 16px; 
       padding-bottom: 16px; 
       border-bottom: 1px solid var(--border-color); 
     }
@@ -132,6 +132,35 @@
       margin-left: auto;
     }
 
+    /* BỔ SUNG: Thanh Tab Switcher */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
     .card { 
       background: var(--bg-surface); 
       backdrop-filter: blur(12px);
@@ -143,8 +172,10 @@
     .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .card-title i { color: var(--accent-blue); }
 
+    .filter-box { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
     .filter-box select { 
-      width: 100%;
+      flex: 1;
+      min-width: 150px;
       background: var(--bg-input); 
       color: var(--text-main); 
       border: 1px solid var(--border-color); 
@@ -211,6 +242,7 @@
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
       .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
+      .filter-box { width: auto; }
     }
   </style>
 </head>
@@ -246,36 +278,82 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
-      <div class="filter-box">
-        <select id="groupFilter" onchange="renderDevices()">
-          <option value="ALL">-- Tất cả nhóm --</option>
-        </select>
+  <!-- BỔ SUNG: NÚT CHUYỂN TAB -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('devicesTab', this)">
+      <i class="fa-solid fa-server"></i> Thiết Bị Realtime
+    </button>
+    <button class="tab-btn" onclick="switchTab('logsTab', this)">
+      <i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký Hệ Thống
+    </button>
+  </div>
+
+  <!-- TAB 1: DANH SÁCH THIẾT BỊ REALTIME -->
+  <div id="devicesTab" class="tab-content active">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
+        <div class="filter-box">
+          <select id="groupFilter" onchange="renderDevices()">
+            <option value="ALL">-- Tất cả nhóm --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr id="tableHeaderRow">
+              <th>Trạng Thái</th>
+              <th>Tên Trạm / Thiết Bị</th>
+              <th>Nhóm</th>
+              <th>Thông Số Xung (IN / OUT / Ratio)</th>
+              <th>Cường Độ Wi-Fi</th>
+              <th>Địa Chỉ MAC / IP</th>
+              <th>FW</th>
+              <th id="thAction" style="text-align: right;">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="device-table-body">
+            <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr id="tableHeaderRow">
-            <th>Trạng Thái</th>
-            <th>Tên Trạm / Thiết Bị</th>
-            <th>Nhóm</th>
-            <th>Thông Số Xung (IN / OUT / Ratio)</th>
-            <th>Cường Độ Wi-Fi</th>
-            <th>Địa Chỉ MAC / IP</th>
-            <th>FW</th>
-            <th id="thAction" style="text-align: right;">Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody id="device-table-body">
-          <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
-        </tbody>
-      </table>
+  <!-- TAB 2: XEM NHẬT KÝ TỔNG HỢP (LOGS) -->
+  <div id="logsTab" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-list-check"></i> Nhật Ký Theo Dõi Tích Lũy Hàng Giờ</div>
+        <div class="filter-box">
+          <select id="logDeviceFilter" onchange="fetchGlobalLogs()">
+            <option value="ALL">-- Tất cả thiết bị --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Thời Gian</th>
+              <th>Tên Trạm / MAC</th>
+              <th>Số Xung Vào (IN)</th>
+              <th>Số Xung Ra (OUT)</th>
+              <th>Tỷ Lệ (Ratio)</th>
+              <th>Trạng Thái</th>
+            </tr>
+          </thead>
+          <tbody id="log-table-body">
+            <tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">Chọn thiết bị hoặc nhấn tải log...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
+
 </div>
 
 <!-- MODAL EDIT DEVICE -->
@@ -305,7 +383,7 @@
   </div>
 </div>
 
-<!-- MODAL XEM NHẬT KÝ LOG HÀNG GIỜ -->
+<!-- MODAL XEM NHẬT KÝ LOG CHI TIẾT THEO TỪNG THIẾT BỊ -->
 <div class="modal-overlay" id="logModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -345,6 +423,19 @@
   let globalDeviceData = null;
   let currentUser = null;
   let lastReceivedTimeMap = {};
+
+  // XỬ LÝ CHUYỂN TAB
+  function switchTab(tabId, element) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    element.classList.add('active');
+
+    if (tabId === 'logsTab') {
+      fetchGlobalLogs();
+    }
+  }
 
   // XÁC THỰC NGƯỜI DÙNG
   auth.onAuthStateChanged((user) => {
@@ -395,12 +486,13 @@
     auth.signOut().then(() => location.reload());
   }
 
-  // LẮNG NGHE DỮ LIỆU REALTIME VÀ KIỂM TRA TIMEOUT 30S
+  // LẮNG NGHE DỮ LIỆU REALTIME
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
       if (globalDeviceData) {
         updateGroupDropdown(globalDeviceData);
+        updateLogDeviceDropdown(globalDeviceData);
       }
       renderDevices();
     }, (error) => {
@@ -441,7 +533,6 @@
       let fwVer     = dev.firmware || "1.0.0";
       let ipAddr    = dev.ip || "--";
 
-      // Kiểm tra lần cuối nhận dữ liệu
       if (!lastReceivedTimeMap[id] || dev.last_seen !== lastReceivedTimeMap[id].last_seen) {
         lastReceivedTimeMap[id] = {
           last_seen: dev.last_seen,
@@ -450,14 +541,11 @@
       }
 
       let timeDiffSec = (now - lastReceivedTimeMap[id].updatedAt) / 1000;
-      
-      // BỔ SUNG: Chuyển ngưỡng kiểm tra từ 10s sang 30s
       let isOnline = (timeDiffSec <= 30) && (dev.status === "ONLINE");
 
-      // BỔ SUNG: Nếu vượt quá 30 giây mà trạng thái trên Firebase vẫn ghi "ONLINE", tự động set lại "OFFLINE" trên Firebase
       if (!isOnline && dev.status === "ONLINE") {
-        dev.status = "OFFLINE"; // Cập nhật local lập tức
-        db.ref("devices/" + id + "/status").set("OFFLINE"); // Đồng bộ giá trị OFFLINE lên Firebase
+        dev.status = "OFFLINE";
+        db.ref("devices/" + id + "/status").set("OFFLINE");
       }
 
       let inCnt     = dev.input_count !== undefined ? dev.input_count : 0;
@@ -466,10 +554,8 @@
       let pulseUs   = dev.pulse_width_us !== undefined ? dev.pulse_width_us : "--";
       let wifiRssi  = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
 
-      // Kiểm tra lệch tỷ lệ x2 (ngoài dải 1.95 đến 2.05)
       let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
 
-      // Trạng thái gọn gàng ONLINE / OFFLINE
       let statusHTML = isOnline 
         ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
         : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
@@ -529,6 +615,87 @@
     groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
     filterSelect.innerHTML = optionsHTML;
     filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
+  }
+
+  // BỔ SUNG: DROPDOWN LỌC LOG
+  function updateLogDeviceDropdown(data) {
+    const filterSelect = document.getElementById("logDeviceFilter");
+    const currentSelected = filterSelect.value;
+    
+    let optionsHTML = '<option value="ALL">-- Tất cả thiết bị --</option>';
+    for (let id in data) {
+      let name = data[id].device_name || id;
+      optionsHTML += `<option value="${id}">${name} (${id})</option>`;
+    }
+    filterSelect.innerHTML = optionsHTML;
+    filterSelect.value = currentSelected || "ALL";
+  }
+
+  // BỔ SUNG: TRUY VẤN VÀ HIỂN THỊ LOG TỔNG HỢP Ở TAB LOGS
+  function fetchGlobalLogs() {
+    const tbody = document.getElementById("log-table-body");
+    const selectedMac = document.getElementById("logDeviceFilter").value;
+    
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang tải dữ liệu nhật ký...</td></tr>`;
+
+    db.ref("logs").once("value", (snapshot) => {
+      let allLogs = snapshot.val();
+      if (!allLogs) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">Chưa có nhật ký nào được ghi nhận.</td></tr>`;
+        return;
+      }
+
+      let logRows = [];
+
+      for (let mac in allLogs) {
+        if (selectedMac !== "ALL" && mac !== selectedMac) continue;
+
+        let devName = (globalDeviceData && globalDeviceData[mac] && globalDeviceData[mac].device_name) 
+          ? globalDeviceData[mac].device_name 
+          : mac;
+
+        let deviceLogs = allLogs[mac];
+        for (let timestampKey in deviceLogs) {
+          let log = deviceLogs[timestampKey];
+          logRows.push({
+            mac: mac,
+            deviceName: devName,
+            timestamp: log.timestamp || parseInt(timestampKey),
+            hourly_in: log.hourly_in || 0,
+            hourly_out: log.hourly_out || 0,
+            ratio: log.ratio !== undefined ? parseFloat(log.ratio) : 0
+          });
+        }
+      }
+
+      // Sắp xếp log mới nhất lên đầu
+      logRows.sort((a, b) => b.timestamp - a.timestamp);
+
+      if (logRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">Không có log phù hợp.</td></tr>`;
+        return;
+      }
+
+      let html = "";
+      logRows.forEach(item => {
+        let dateStr = new Date(item.timestamp).toLocaleString("vi-VN");
+        let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
+        let ratioStatus = isErr 
+          ? `<span style="color: var(--accent-red); font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Lỗi (${item.ratio}x)</span>`
+          : `<span style="color: var(--accent-green);">Chuẩn (${item.ratio}x)</span>`;
+
+        html += `<tr>
+          <td><span style="font-family: monospace;">${dateStr}</span></td>
+          <td><b>${item.deviceName}</b> <span class="info-sub">${item.mac}</span></td>
+          <td><span class="pulse-counter pulse-in">${item.hourly_in}</span></td>
+          <td><span class="pulse-counter pulse-out">${item.hourly_out}</span></td>
+          <td><b>${item.ratio}x</b></td>
+          <td>${ratioStatus}</td>
+        </tr>`;
+      });
+
+      tbody.innerHTML = html;
+    });
   }
 
   function openEditModal(deviceId, currentName, currentGroup) {
