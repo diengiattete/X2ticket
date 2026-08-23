@@ -16,7 +16,6 @@
       --text-main: #f1f5f9;
       --text-muted: #94a3b8;
       --accent-blue: #38bdf8;
-      --accent-blue-glow: rgba(56, 189, 248, 0.25);
       --accent-green: #34d399;
       --accent-yellow: #fbbf24;
       --accent-red: #f87171;
@@ -32,7 +31,7 @@
       padding: 16px 8px; 
     }
     
-    .container { max-width: 1100px; margin: 0 auto; display: none; }
+    .container { max-width: 1280px; margin: 0 auto; display: none; }
 
     .login-overlay {
       position: fixed;
@@ -151,13 +150,24 @@
     }
 
     .table-container { overflow-x: auto; border-radius: 8px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 550px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 900px; }
     th { background: rgba(15, 23, 42, 0.7); padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
-    td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
 
+    /* Badge & Tag Styles */
     .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); padding: 3px 6px; border-radius: 4px; font-size: 11px; }
     .badge-fw { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); padding: 3px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
     .badge-group { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); padding: 3px 8px; border-radius: 12px; font-size: 11px; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .status-online { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .status-offline { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
+    
+    .pulse-counter { font-weight: 700; font-family: monospace; font-size: 13px; }
+    .pulse-in { color: #60a5fa; }
+    .pulse-out { color: #f43f5e; }
+    
+    .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
 
     .action-group { display: flex; gap: 6px; justify-content: flex-end; }
     .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; }
@@ -226,7 +236,7 @@
 
   <div class="card">
     <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Danh Sách Thiết Bị</div>
+      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
       <div class="filter-box">
         <select id="groupFilter" onchange="renderDevices()">
           <option value="ALL">-- Tất cả nhóm --</option>
@@ -238,15 +248,18 @@
       <table>
         <thead>
           <tr>
-            <th>Tên Trạm</th>
+            <th>Trạng Thái</th>
+            <th>Tên Trạm / Thiết Bị</th>
             <th>Nhóm</th>
-            <th>Địa Chỉ MAC</th>
+            <th>Thông Số Xung (IN / OUT / Ratio)</th>
+            <th>Phần Cứng / Wi-Fi</th>
+            <th>Địa Chỉ MAC / IP</th>
             <th>FW</th>
             <th style="text-align: right;">Thao Tác</th>
           </tr>
         </thead>
         <tbody id="device-table-body">
-          <tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
+          <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
         </tbody>
       </table>
     </div>
@@ -280,7 +293,7 @@
   </div>
 </div>
 
-<!-- FIREBASE SDKs (Thêm SDK Firebase Auth) -->
+<!-- FIREBASE SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -288,7 +301,7 @@
 <script>
   // Cấu hình Firebase
   const firebaseConfig = {
-    apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM", // Điền API Key trong Firebase Project Settings
+    apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
     authDomain: "trungio.firebaseapp.com",
     databaseURL: "https://trungio.firebaseio.com",
     projectId: "trungio"
@@ -300,24 +313,20 @@
 
   let globalDeviceData = null;
 
-  // LẮNG NGHE TRẠNG THÁI XÁC THỰC (Firebase Auth State Listener)
+  // LẮNG NGHE TRẠNG THÁI XÁC THỰC
   auth.onAuthStateChanged((user) => {
     if (user) {
-      // Người dùng đã đăng nhập thành công
       document.getElementById("loginScreen").style.display = "none";
       document.getElementById("dashboardScreen").style.display = "block";
       document.getElementById("userEmail").innerText = user.email;
-
-      // Kích hoạt đọc dữ liệu Firebase
       listenToDatabase();
     } else {
-      // Người dùng chưa đăng nhập hoặc đã Logout
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("dashboardScreen").style.display = "none";
     }
   });
 
-  // XỬ LÝ ĐĂNG NHẬP QUA FIREBASE AUTH
+  // XỬ LÝ ĐĂNG NHẬP
   function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
@@ -342,7 +351,7 @@
     });
   }
 
-  // ĐỌC DỮ LIỆU TỪ REALTIME DATABASE
+  // ĐỌC DỮ LIỆU REALTIME
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
@@ -351,18 +360,33 @@
       }
       renderDevices();
     }, (error) => {
-      alert("Lỗi truy cập dữ liệu (Từ chối quyền): " + error.message);
+      alert("Lỗi truy cập dữ liệu: " + error.message);
     });
   }
 
-  // HIỂN THỊ DANH SÁCH THIẾT BỊ
+  // HÀM QUY ĐỔI GIÂY SANG CHUỖI UPTIME
+  function formatUptime(seconds) {
+    if (!seconds) return "--";
+    const d = Math.floor(seconds / (3600 * 24));
+    const h = Math.floor((seconds % (3600 * 24)) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+
+    let res = "";
+    if (d > 0) res += d + "d ";
+    if (h > 0 || d > 0) res += h + "h ";
+    res += m + "m " + s + "s";
+    return res;
+  }
+
+  // HIỂN THỊ DANH SÁCH THIẾT BỊ VỚI ĐẦY ĐỦ THÔNG SỐ
   function renderDevices() {
     const tbody = document.getElementById("device-table-body");
     const filterValue = document.getElementById("groupFilter").value;
     tbody.innerHTML = "";
 
     if (!globalDeviceData) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>';
       return;
     }
 
@@ -374,14 +398,48 @@
       if (filterValue !== "ALL" && devGroup !== filterValue) continue;
 
       count++;
-      let devName = dev.device_name || ("TRAM_" + id.substring(id.length - 4));
-      let macAddr = dev.mac || id;
-      let fwVer   = dev.firmware || "1.0.0";
+      let devName   = dev.device_name || ("TRAM_" + id.substring(id.length - 4));
+      let macAddr   = dev.mac || id;
+      let fwVer     = dev.firmware || "1.0.0";
+      let ipAddr    = dev.ip || "--";
+      let hardware  = dev.hardware || "ESP32";
+      let status    = dev.status || "ONLINE";
+      let isOnline  = status.toUpperCase() === "ONLINE";
+
+      // Lấy thông số đếm xung & tín hiệu
+      let inCnt     = dev.input_count !== undefined ? dev.input_count : 0;
+      let outCnt    = dev.output_count !== undefined ? dev.output_count : 0;
+      let ratio     = dev.ratio !== undefined ? dev.ratio : 0.0;
+      let pulseUs   = dev.pulse_width_us !== undefined ? dev.pulse_width_us : "--";
+      let wifiRssi  = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
+      let uptime    = formatUptime(dev.uptime_sec);
+
+      let statusHTML = isOnline 
+        ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
+        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
 
       let row = `<tr>
-        <td><b style="color: var(--text-main);">${devName}</b></td>
+        <td>${statusHTML}</td>
+        <td>
+          <b style="color: var(--text-main); font-size:14px;">${devName}</b>
+          <span class="info-sub"><i class="fa-regular fa-clock"></i> Uptime: ${uptime}</span>
+        </td>
         <td><span class="badge-group">${devGroup}</span></td>
-        <td><span class="badge-mac">${macAddr}</span></td>
+        <td>
+          <div>
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          </div>
+          <span class="info-sub">Tỷ lệ: <b>${ratio}x</b> | Độ rộng: ${pulseUs} µs</span>
+        </td>
+        <td>
+          <span>${hardware}</span>
+          <span class="info-sub"><i class="fa-solid fa-wifi"></i> ${wifiRssi}</span>
+        </td>
+        <td>
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub">IP: ${ipAddr}</span>
+        </td>
         <td><span class="badge-fw">v${fwVer}</span></td>
         <td>
           <div class="action-group">
@@ -394,7 +452,7 @@
     }
 
     if (count === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>';
     }
   }
 
