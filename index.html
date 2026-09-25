@@ -207,279 +207,220 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-  const ADMIN_EMAIL = "trung@fun.io";
-  const firebaseConfig = {
-    apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
-    authDomain: "trungio.firebaseapp.com",
-    databaseURL: "https://trungio.firebaseio.com",
-    projectId: "trungio"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
-
-  let globalDeviceData = null;
-  let currentUser = null;
-  let lastReceivedTimeMap = {};
-
-  // XÁC THỰC NGƯỜI DÙNG
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      currentUser = user;
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("dashboardScreen").style.display = "block";
-
-      const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-      const badgeEl = document.getElementById("userBadge");
-      
-      badgeEl.className = isAdmin ? "role-badge" : "role-badge readonly";
-      badgeEl.innerHTML = isAdmin 
-        ? `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`
-        : `<i class="fa-solid fa-eye"></i> ${user.email} (READ ONLY)`;
-      document.getElementById("thAction").style.display = isAdmin ? "" : "none";
-
-      listenToDatabase();
-    } else {
-      currentUser = null;
-      document.getElementById("loginScreen").style.display = "flex";
-      document.getElementById("dashboardScreen").style.display = "none";
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Theo Dõi Funchomper - Firebase Realtime</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-body: #090d16;
+      --bg-surface: rgba(22, 30, 46, 0.85);
+      --bg-input: rgba(15, 23, 42, 0.9);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-yellow: #fbbf24;
+      --accent-red: #f87171;
+      --border-color: rgba(255, 255, 255, 0.08);
     }
-  });
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+    body { background: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-body) 75%); color: var(--text-main); min-height: 100vh; padding: 16px 8px; }
+    .container { max-width: 1280px; margin: 0 auto; display: none; }
+    
+    .login-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 999; padding: 16px; }
+    .login-overlay { background: radial-gradient(circle at center, #1e293b 0%, #050811 100%); }
+    .modal-overlay { background: rgba(5, 8, 17, 0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; }
+    
+    .login-box, .modal-box { background: var(--bg-surface); backdrop-filter: blur(16px); padding: 24px 20px; border-radius: 16px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); }
+    .modal-box { max-width: 520px; }
+    
+    .login-box { text-align: center; }
+    .login-box .icon-logo { font-size: 36px; color: var(--accent-blue); margin-bottom: 12px; }
+    .login-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    .form-input, .filter-box select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 14px; outline: none; }
+    .form-input:focus { border-color: var(--accent-blue); }
 
-  function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const btnLogin = document.getElementById("btnLogin");
+    .btn-login, .btn-primary, .btn-cancel, .btn-logout { padding: 10px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .btn-login, .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; width: 100%; }
+    .btn-primary { width: auto; }
+    .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+    .btn-logout { background: rgba(248, 113, 113, 0.08); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); margin-left: auto; }
 
-    btnLogin.innerText = "ĐANG XÁC THỰC...";
-    btnLogin.disabled = true;
+    .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+    .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .navbar h1 i { color: var(--accent-blue); }
+    .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+    
+    .role-badge { padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .role-badge.readonly { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
 
-    auth.signInWithEmailAndPassword(email, password)
-      .catch((error) => {
-        alert("Lỗi đăng nhập: " + error.message);
-        btnLogin.innerText = "ĐĂNG NHẬP";
-        btnLogin.disabled = false;
-      });
-  }
+    .card { background: var(--bg-surface); backdrop-filter: blur(12px); border-radius: 14px; border: 1px solid var(--border-color); padding: 16px 12px; }
+    .card-header { display: flex; flex-direction: column; margin-bottom: 16px; gap: 12px; }
+    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-title i { color: var(--accent-blue); }
 
-  function logout() { auth.signOut().then(() => location.reload()); }
+    .table-container { overflow-x: auto; border-radius: 8px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 850px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
+    th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
-  // LẮNG NGHE DỮ LIỆU REALTIME
-  function listenToDatabase() {
-    db.ref("devices").on("value", (snapshot) => {
-      globalDeviceData = snapshot.val();
-      if (globalDeviceData) updateGroupDropdown(globalDeviceData);
-      renderDevices();
-    }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
+    .badge-mac, .badge-fw, .badge-group { padding: 3px 6px; border-radius: 4px; font-size: 11px; }
+    .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); }
+    .badge-fw { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); font-weight: 600; }
+    .badge-group { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-radius: 12px; padding: 3px 8px; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .status-online { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .status-offline { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
+    
+    .pulse-container-normal { background: rgba(15, 23, 42, 0.5); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); }
+    .pulse-container-error { background: rgba(248, 113, 113, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent-red); color: var(--accent-red); font-weight: bold; }
+    .pulse-counter { font-weight: 700; font-family: monospace; }
+    .pulse-in { color: #60a5fa; }
+    .pulse-out { color: #f43f5e; }
+    
+    .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
+    .action-group { display: flex; gap: 6px; justify-content: flex-end; }
+    .btn-log, .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
+    .btn-log { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
+    .btn-edit { background: rgba(251, 191, 36, 0.1); color: var(--accent-yellow); border-color: rgba(251, 191, 36, 0.25); }
+    .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border-color: rgba(248, 113, 113, 0.25); }
 
-    setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
-  }
+    .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .log-list { max-height: 320px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
+    .log-item { padding: 8px 0; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .log-item:last-child { border-bottom: none; }
 
-  function renderDevices() {
-    const tbody = document.getElementById("device-table-body");
-    const filterValue = document.getElementById("groupFilter").value;
-    const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-
-    tbody.innerHTML = "";
-
-    if (!globalDeviceData) {
-      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
-      return;
+    @media (min-width: 640px) {
+      body { padding: 32px 16px; }
+      .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
     }
+  </style>
+</head>
+<body>
 
-    const now = Date.now();
-    let count = 0;
-
-    for (let id in globalDeviceData) {
-      let dev = globalDeviceData[id];
-      let devGroup = dev.group || "Chưa Phân Nhóm";
-
-      if (filterValue !== "ALL" && devGroup !== filterValue) continue;
-
-      count++;
-      let devName = dev.device_name || ("TRAM_" + id.substring(id.length - 4));
-      let macAddr = dev.mac || id;
-      let fwVer = dev.firmware || "1.0.0";
-      let ipAddr = dev.ip || "--";
-
-      if (!lastReceivedTimeMap[id] || dev.last_seen !== lastReceivedTimeMap[id].last_seen) {
-        lastReceivedTimeMap[id] = { last_seen: dev.last_seen, updatedAt: now };
-      }
-
-      let timeDiffSec = (now - lastReceivedTimeMap[id].updatedAt) / 1000;
-      let isOnline = (timeDiffSec <= 30) && (dev.status === "ONLINE");
-
-      if (!isOnline && dev.status === "ONLINE") {
-        dev.status = "OFFLINE";
-        db.ref("devices/" + id + "/status").set("OFFLINE");
-      }
-
-      let inCnt = dev.input_count ?? 0;
-      let outCnt = dev.output_count ?? 0;
-      let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
-      let pulseUs = dev.pulse_width_us ?? "--";
-      let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
-
-      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
-
-      let statusHTML = isOnline 
-        ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
-        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`;
-
-      let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
-      let ratioDisplay = isRatioError 
-        ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
-        : `<b>${ratio}x</b>`;
-
-      let actionTd = isAdmin ? `
-        <td>
-          <div class="action-group">
-            <button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>
-            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
-            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
-          </div>
-        </td>` : '';
-
-      tbody.innerHTML += `<tr>
-        <td>${statusHTML}</td>
-        <td><b style="color: var(--text-main); font-size:14px;">${devName}</b></td>
-        <td><span class="badge-group">${devGroup}</span></td>
-        <td>
-          <div class="${pulseContainerClass}">
-            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
-            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
-          </div>
-          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
-        </td>
-        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
-        <td><span class="badge-mac">${macAddr}</span><span class="info-sub">IP: ${ipAddr}</span></td>
-        <td><span class="badge-fw">v${fwVer}</span></td>
-        ${actionTd}
-      </tr>`;
-    }
-
-    if (count === 0) {
-      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
-    }
-  }
-
-  function updateGroupDropdown(data) {
-    const filterSelect = document.getElementById("groupFilter");
-    const currentSelected = filterSelect.value;
-    let groups = new Set();
-    for (let id in data) { groups.add(data[id].group || "Chưa Phân Nhóm"); }
-
-    let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
-    groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
-    filterSelect.innerHTML = optionsHTML;
-    filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
-  }
-
-  function openEditModal(deviceId, currentName, currentGroup) {
-    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
-    document.getElementById("editDeviceId").value = deviceId;
-    document.getElementById("editDeviceName").value = currentName;
-    document.getElementById("editGroupName").value = currentGroup;
-    document.getElementById("editModal").style.display = "flex";
-  }
-
-  // CẢI TIẾN HÀM XEM NHẬT KÝ THEO NGÀY
-  function viewHourlyLog(deviceId) {
-    const container = document.getElementById("logContainer");
-    const today = new Date().toISOString().split('T')[0]; // Định dạng YYYY-MM-DD
-
-    container.innerHTML = `
-      <div style="margin-bottom: 12px; display:flex; gap:10px; align-items:center; background: rgba(15,23,42,0.6); padding: 8px 12px; border-radius: 8px; border:1px solid var(--border-color);">
-        <label style="font-size:11px; color:var(--text-muted); font-weight:600;">CHỌN NGÀY:</label>
-        <input type="date" id="logDatePicker" class="form-input" value="${today}" onchange="fetchLogByDate('${deviceId}')" style="padding:6px 10px; font-size:13px; width: auto; color-scheme: dark;">
+<!-- MÀN HÌNH ĐĂNG NHẬP -->
+<div class="login-overlay" id="loginScreen">
+  <div class="login-box">
+    <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
+    <h2>FUNCHOMPER SYSTEM</h2>
+    <p>Đăng nhập bằng Firebase Auth</p>
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="email">Email Hệ Thống</label>
+        <input type="email" id="email" class="form-input" placeholder="nhap_email@domain.com" required autofocus autocomplete="username">
       </div>
-      <div id="logListContent"><div style="text-align:center; color:var(--text-muted); padding: 15px;">Đang tải nhật ký...</div></div>
-    `;
-    document.getElementById("logModal").style.display = "flex";
+      <div class="form-group">
+        <label for="password">Mật Khẩu</label>
+        <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-login" id="btnLogin">ĐĂNG NHẬP</button>
+    </form>
+  </div>
+</div>
 
-    fetchLogByDate(deviceId);
-  }
+<!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
+<div class="container" id="dashboardScreen">
+  <div class="navbar">
+    <h1><i class="fa-solid fa-microchip"></i> FUNCHOMPER</h1>
+    <div class="nav-controls">
+      <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
+      <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+    </div>
+  </div>
 
-  // HÀM TRUY VẤN DỮ LIỆU NHẬT KÝ LOG CỦA NGÀY ĐƯỢC CHỌN
-  function fetchLogByDate(deviceId) {
-    const datePicker = document.getElementById("logDatePicker");
-    if (!datePicker) return;
-    const dateVal = datePicker.value;
-    const listContainer = document.getElementById("logListContent");
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
+      <div class="filter-box">
+        <select id="groupFilter" onchange="renderDevices()">
+          <option value="ALL">-- Tất cả nhóm --</option>
+        </select>
+      </div>
+    </div>
 
-    if (!dateVal) return;
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Trạng Thái</th>
+            <th>Tên Trạm / Thiết Bị</th>
+            <th>Nhóm</th>
+            <th>Thông Số Xung (IN / OUT / Ratio)</th>
+            <th>Cường Độ Wi-Fi</th>
+            <th>Địa Chỉ MAC / IP</th>
+            <th>FW</th>
+            <th id="thAction" style="text-align: right;">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody id="device-table-body">
+          <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-    listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 15px;">Đang tải nhật ký ngày ${dateVal}...</div>`;
+<!-- MODAL EDIT DEVICE -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-pen-to-square" style="color:var(--accent-blue); margin-right:6px;"></i> Cập Nhật Trạm</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('editModal')"></i>
+    </div>
+    <input type="hidden" id="editDeviceId">
+    <div class="form-group">
+      <label for="editDeviceName">Tên Trạm / Thiết Bị</label>
+      <input type="text" id="editDeviceName" class="form-input" placeholder="Nhập tên trạm...">
+    </div>
+    <div class="form-group">
+      <label for="editGroupName">Tên Nhóm / Trung Tâm</label>
+      <input type="text" id="editGroupName" class="form-input" placeholder="Nhập tên nhóm...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('editModal')">Hủy</button>
+      <button class="btn-primary" onclick="saveDeviceChanges()">Lưu Thay Đổi</button>
+    </div>
+  </div>
+</div>
 
-    // Truy vấn theo cấu trúc /logs/{deviceId}/{YYYY-MM-DD}
-    db.ref("logs/" + deviceId + "/" + dateVal).once("value", (snapshot) => {
-      let logs = snapshot.val();
-      if (!logs) {
-        listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">Không có dữ liệu nhật ký cho ngày ${dateVal}.</div>`;
-        return;
-      }
+<!-- MODAL LOG NGUYÊN NGÀY -->
+<div class="modal-overlay" id="logModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung Theo Ngày</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('logModal')"></i>
+    </div>
+    <div class="log-list" id="logContainer">
+      <div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('logModal')">Đóng</button>
+    </div>
+  </div>
+</div>
 
-      let html = "";
-      let totalDayIn = 0;
-      let totalDayOut = 0;
+<!-- FIREBASE SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-      let hours = Object.keys(logs).sort(); // Sắp xếp giờ từ 00 -> 23
+<script>
+const _0x3ad8d5=_0x20f8;function _0x5429(){const _0x3f97cf=['innerText','trung@fun.io','<tr><td\x20colspan=\x22','</b>\x20|\x20OUT:\x20<b\x20style=\x22color:#f43f5e\x22>','status','editDeviceName','role-badge','toLowerCase','has','wifi_signal','pulse-container-normal','editDeviceId','editModal','groupFilter','email','\x27)\x22><i\x20class=\x22fa-solid\x20fa-pen\x22></i>\x20Sửa</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-delete\x22\x20onclick=\x22deleteDevice(\x27','ALL','<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>','preventDefault','color:\x20var(--accent-red);\x20font-weight:bold;','...</div>','ĐĂNG\x20NHẬP','2434537SlWJOg','value','add','2HpfZBO','Cập\x20nhật\x20thành\x20công!','display','836832RjmAXr','1667957Tljqmn','userBadge','pulse_width_us','</span>\x20|\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20OUT:\x20<span\x20class=\x22pulse-counter\x20pulse-out\x22>','<b>','update','then','length','substring','devices','reload','7253305PBMWfi','\x0a\x20\x20\x20\x20\x20\x20<div\x20style=\x22margin-bottom:\x2012px;\x20display:flex;\x20gap:10px;\x20align-items:center;\x20background:\x20rgba(15,23,42,0.6);\x20padding:\x208px\x2012px;\x20border-radius:\x208px;\x20border:1px\x20solid\x20var(--border-color);\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<label\x20style=\x22font-size:11px;\x20color:var(--text-muted);\x20font-weight:600;\x22>CHỌN\x20NGÀY:</label>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<input\x20type=\x22date\x22\x20id=\x22logDatePicker\x22\x20class=\x22form-input\x22\x20value=\x22','\x22\x20onchange=\x22fetchLogByDate(\x27','x</b>','style','x</span></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>','ref','role-badge\x20readonly','trungio.firebaseapp.com','dashboardScreen','group','ĐANG\x20XÁC\x20THỰC...','1.0.0','catch','innerHTML','initializeApp','TRAM_','Lỗi\x20khi\x20xóa:\x20','\x0a\x20\x20\x20\x20\x20\x20</tr>','\x20|\x20Độ\x20rộng:\x20','mac','pulse-container-error','logDatePicker','<option\x20value=\x22ALL\x22>--\x20Tất\x20cả\x20nhóm\x20--</option>','trim','</option>','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22background:\x20rgba(56,\x20189,\x20248,\x200.12);\x20border:\x201px\x20solid\x20rgba(56,\x20189,\x20248,\x200.25);\x20padding:\x2010px\x2012px;\x20border-radius:\x208px;\x20margin-bottom:\x2012px;\x20font-size:12px;\x20display:flex;\x20justify-content:space-between;\x20align-items:center;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20style=\x22font-weight:600;\x20color:var(--accent-blue);\x22>TỔNG\x20TÍCH\x20LŨY\x20TRONG\x20NGÀY:</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>IN:\x20<b\x20style=\x22color:#60a5fa\x22>','disabled','Chưa\x20Phân\x20Nhóm','</span><span\x20class=\x22info-sub\x22>IP:\x20','logContainer','thAction','2105937OPrktl','\x20(ADMIN)','logListContent','ratio','split','ONLINE','Lỗi\x20khi\x20lưu:\x20','<div\x20style=\x22text-align:center;\x20color:var(--text-muted);\x20padding:\x2020px;\x22>Không\x20có\x20dữ\x20liệu\x20nhật\x20ký\x20cho\x20ngày\x20','val','\x22\x20style=\x22text-align:center;\x20color:\x20var(--text-muted);\x20padding:30px;\x22>Chưa\x20có\x20thiết\x20bị\x20nào\x20trong\x20cơ\x20sở\x20dữ\x20liệu.</td></tr>','btnLogin','<div\x20class=\x22log-item\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>Khung\x20giờ:\x20<b\x20style=\x22color:var(--text-main);\x22>','flex','className','4jTaNlv',':00</b></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>IN:\x20<b\x20style=\x22color:#60a5fa\x22>','input_count','\x27,\x20\x27','10417860yiKqHQ','</span></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td><span\x20class=\x22badge-fw\x22>v','editGroupName','</b></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20','loginScreen','onAuthStateChanged','last_seen','<span\x20class=\x22status-badge\x20status-online\x22><i\x20class=\x22fa-solid\x20fa-circle\x22\x20style=\x22font-size:7px;\x22></i>\x20ONLINE</span>','none','once','color:\x20var(--accent-green);','.</div>','devices/','<i\x20class=\x22fa-solid\x20fa-eye\x22></i>\x20','sort','\x27)\x22\x20style=\x22padding:6px\x2010px;\x20font-size:13px;\x20width:\x20auto;\x20color-scheme:\x20dark;\x22>\x0a\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20<div\x20id=\x22logListContent\x22><div\x20style=\x22text-align:center;\x20color:var(--text-muted);\x20padding:\x2015px;\x22>Đang\x20tải\x20nhật\x20ký...</div></div>\x0a\x20\x20\x20\x20','database','hourly_in','set','Vui\x20lòng\x20nhập\x20tên\x20trạm!','Đã\x20xóa\x20\x22','</b>\x20|\x20Tỷ\x20lệ:\x20<span\x20style=\x22','getElementById','<i\x20class=\x22fa-solid\x20fa-user-shield\x22></i>\x20','block','forEach','OFFLINE','\x27)\x22><i\x20class=\x22fa-solid\x20fa-clock-rotate-left\x22></i>\x20Nhật\x20Ký</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-edit\x22\x20onclick=\x22openEditModal(\x27','<div\x20style=\x22text-align:center;\x20color:var(--text-muted);\x20padding:\x2015px;\x22>Đang\x20tải\x20nhật\x20ký\x20ngày\x20','message','1044942CKZzzc','\x20(READ\x20ONLY)','\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20IN:\x20<span\x20class=\x22pulse-counter\x20pulse-in\x22>','trungio','\x20µs</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td><i\x20class=\x22fa-solid\x20fa-wifi\x22></i>\x20','</span></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22info-sub\x22>Tỷ\x20lệ:\x20'];_0x5429=function(){return _0x3f97cf;};return _0x5429();}(function(_0x392149,_0x5d82bb){const _0x85b6d0=_0x20f8,_0x35f7ec=_0x392149();while(!![]){try{const _0x1003c4=parseInt(_0x85b6d0(0xbd))/0x1*(-parseInt(_0x85b6d0(0xb9))/0x2)+parseInt(_0x85b6d0(0xe8))/0x3*(-parseInt(_0x85b6d0(0xf6))/0x4)+parseInt(_0x85b6d0(0xc8))/0x5+parseInt(_0x85b6d0(0x99))/0x6+parseInt(_0x85b6d0(0xb6))/0x7+parseInt(_0x85b6d0(0xbc))/0x8+parseInt(_0x85b6d0(0xfa))/0x9;if(_0x1003c4===_0x5d82bb)break;else _0x35f7ec['push'](_0x35f7ec['shift']());}catch(_0x7e031f){_0x35f7ec['push'](_0x35f7ec['shift']());}}}(_0x5429,0xd3231));const ADMIN_EMAIL=_0x3ad8d5(0xa1),firebaseConfig={'apiKey':'AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM','authDomain':_0x3ad8d5(0xd0),'databaseURL':'https://trungio.firebaseio.com','projectId':_0x3ad8d5(0x9c)};function _0x20f8(_0x30acca,_0x5e6c88){_0x30acca=_0x30acca-0x8d;const _0x5429e8=_0x5429();let _0x20f826=_0x5429e8[_0x30acca];return _0x20f826;}firebase[_0x3ad8d5(0xd7)](firebaseConfig);const auth=firebase['auth'](),db=firebase[_0x3ad8d5(0x10a)]();let globalDeviceData=null,currentUser=null,lastReceivedTimeMap={};auth[_0x3ad8d5(0xff)](_0x5b7a63=>{const _0xeba4f8=_0x3ad8d5;if(_0x5b7a63){currentUser=_0x5b7a63,document['getElementById'](_0xeba4f8(0xfe))[_0xeba4f8(0xcc)][_0xeba4f8(0xbb)]='none',document[_0xeba4f8(0x91)]('dashboardScreen')[_0xeba4f8(0xcc)][_0xeba4f8(0xbb)]=_0xeba4f8(0x93);const _0x275a47=_0x5b7a63[_0xeba4f8(0xae)][_0xeba4f8(0xa7)]()===ADMIN_EMAIL[_0xeba4f8(0xa7)](),_0xfbfe7a=document['getElementById'](_0xeba4f8(0xbe));_0xfbfe7a[_0xeba4f8(0xf5)]=_0x275a47?_0xeba4f8(0xa6):_0xeba4f8(0xcf),_0xfbfe7a[_0xeba4f8(0xd6)]=_0x275a47?_0xeba4f8(0x92)+_0x5b7a63[_0xeba4f8(0xae)]+_0xeba4f8(0xe9):_0xeba4f8(0x107)+_0x5b7a63[_0xeba4f8(0xae)]+_0xeba4f8(0x9a),document['getElementById'](_0xeba4f8(0xe7))[_0xeba4f8(0xcc)][_0xeba4f8(0xbb)]=_0x275a47?'':'none',listenToDatabase();}else currentUser=null,document[_0xeba4f8(0x91)]('loginScreen')[_0xeba4f8(0xcc)][_0xeba4f8(0xbb)]=_0xeba4f8(0xf4),document[_0xeba4f8(0x91)](_0xeba4f8(0xd1))['style'][_0xeba4f8(0xbb)]=_0xeba4f8(0x102);});function handleLogin(_0x206866){const _0x575697=_0x3ad8d5;_0x206866[_0x575697(0xb2)]();const _0x1a72df=document[_0x575697(0x91)](_0x575697(0xae))[_0x575697(0xb7)]['trim'](),_0x3c9a00=document[_0x575697(0x91)]('password')[_0x575697(0xb7)][_0x575697(0xe0)](),_0x564c5b=document['getElementById'](_0x575697(0xf2));_0x564c5b[_0x575697(0xa0)]=_0x575697(0xd3),_0x564c5b[_0x575697(0xe3)]=!![],auth['signInWithEmailAndPassword'](_0x1a72df,_0x3c9a00)[_0x575697(0xd5)](_0x41c701=>{const _0x22348c=_0x575697;alert('Lỗi\x20đăng\x20nhập:\x20'+_0x41c701[_0x22348c(0x98)]),_0x564c5b[_0x22348c(0xa0)]=_0x22348c(0xb5),_0x564c5b[_0x22348c(0xe3)]=![];});}function logout(){const _0x5e57af=_0x3ad8d5;auth['signOut']()[_0x5e57af(0xc3)](()=>location[_0x5e57af(0xc7)]());}function listenToDatabase(){const _0x1cc00b=_0x3ad8d5;db['ref'](_0x1cc00b(0xc6))['on'](_0x1cc00b(0xb7),_0xea9743=>{const _0x32671c=_0x1cc00b;globalDeviceData=_0xea9743[_0x32671c(0xf0)]();if(globalDeviceData)updateGroupDropdown(globalDeviceData);renderDevices();},_0xeb80da=>alert('Lỗi\x20truy\x20cập\x20dữ\x20liệu:\x20'+_0xeb80da[_0x1cc00b(0x98)])),setInterval(()=>{if(globalDeviceData)renderDevices();},0x3e8);}function renderDevices(){const _0x1ca022=_0x3ad8d5,_0x460b71=document[_0x1ca022(0x91)]('device-table-body'),_0x52c7d8=document[_0x1ca022(0x91)](_0x1ca022(0xad))['value'],_0x2399cb=currentUser&&currentUser[_0x1ca022(0xae)][_0x1ca022(0xa7)]()===ADMIN_EMAIL[_0x1ca022(0xa7)]();_0x460b71[_0x1ca022(0xd6)]='';if(!globalDeviceData){_0x460b71['innerHTML']='<tr><td\x20colspan=\x22'+(_0x2399cb?0x8:0x7)+_0x1ca022(0xf1);return;}const _0x17a01a=Date['now']();let _0x14b281=0x0;for(let _0x58abe9 in globalDeviceData){let _0x5315b0=globalDeviceData[_0x58abe9],_0x4681b1=_0x5315b0[_0x1ca022(0xd2)]||_0x1ca022(0xe4);if(_0x52c7d8!=='ALL'&&_0x4681b1!==_0x52c7d8)continue;_0x14b281++;let _0x564873=_0x5315b0['device_name']||_0x1ca022(0xd8)+_0x58abe9[_0x1ca022(0xc5)](_0x58abe9[_0x1ca022(0xc4)]-0x4),_0x1e3aed=_0x5315b0[_0x1ca022(0xdc)]||_0x58abe9,_0x9743af=_0x5315b0['firmware']||_0x1ca022(0xd4),_0x5be52b=_0x5315b0['ip']||'--';(!lastReceivedTimeMap[_0x58abe9]||_0x5315b0[_0x1ca022(0x100)]!==lastReceivedTimeMap[_0x58abe9][_0x1ca022(0x100)])&&(lastReceivedTimeMap[_0x58abe9]={'last_seen':_0x5315b0[_0x1ca022(0x100)],'updatedAt':_0x17a01a});let _0x201bc8=(_0x17a01a-lastReceivedTimeMap[_0x58abe9]['updatedAt'])/0x3e8,_0x1cdf91=_0x201bc8<=0x1e&&_0x5315b0[_0x1ca022(0xa4)]==='ONLINE';!_0x1cdf91&&_0x5315b0['status']===_0x1ca022(0xed)&&(_0x5315b0[_0x1ca022(0xa4)]='OFFLINE',db[_0x1ca022(0xce)]('devices/'+_0x58abe9+'/status')[_0x1ca022(0x8d)](_0x1ca022(0x95)));let _0xfe3f20=_0x5315b0[_0x1ca022(0xf8)]??0x0,_0x72f934=_0x5315b0['output_count']??0x0,_0x4d78bf=_0x5315b0[_0x1ca022(0xeb)]!==undefined?parseFloat(_0x5315b0[_0x1ca022(0xeb)]):0x0,_0x30ab06=_0x5315b0[_0x1ca022(0xbf)]??'--',_0x473547=_0x5315b0[_0x1ca022(0xa9)]!==undefined?_0x5315b0[_0x1ca022(0xa9)]+'\x20dBm':'--',_0x1c6794=_0xfe3f20>0x0&&(_0x4d78bf<1.95||_0x4d78bf>2.05),_0x2d6aa6=_0x1cdf91?_0x1ca022(0x101):'<span\x20class=\x22status-badge\x20status-offline\x22><i\x20class=\x22fa-solid\x20fa-circle-xmark\x22\x20style=\x22font-size:9px;\x22></i>\x20OFFLINE</span>',_0x49bd0f=_0x1c6794?_0x1ca022(0xdd):_0x1ca022(0xaa),_0x5bf929=_0x1c6794?'<span\x20style=\x22color:\x20var(--accent-red);\x20font-weight:\x20bold;\x22><i\x20class=\x22fa-solid\x20fa-triangle-exclamation\x22></i>\x20LỖI\x20TỶ\x20LỆ\x20('+_0x4d78bf+'x)</span>':_0x1ca022(0xc1)+_0x4d78bf+_0x1ca022(0xcb),_0x276100=_0x2399cb?'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22action-group\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-log\x22\x20onclick=\x22viewHourlyLog(\x27'+_0x58abe9+_0x1ca022(0x96)+_0x58abe9+_0x1ca022(0xf9)+_0x564873+_0x1ca022(0xf9)+_0x4681b1+_0x1ca022(0xaf)+_0x58abe9+_0x1ca022(0xf9)+_0x564873+'\x27)\x22><i\x20class=\x22fa-solid\x20fa-trash-can\x22></i>\x20Xóa</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>':'';_0x460b71[_0x1ca022(0xd6)]+=_0x1ca022(0xb1)+_0x2d6aa6+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td><b\x20style=\x22color:\x20var(--text-main);\x20font-size:14px;\x22>'+_0x564873+'</b></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td><span\x20class=\x22badge-group\x22>'+_0x4681b1+_0x1ca022(0x9e)+_0x49bd0f+_0x1ca022(0x9b)+_0xfe3f20+_0x1ca022(0xc0)+_0x72f934+_0x1ca022(0x9f)+_0x5bf929+_0x1ca022(0xdb)+_0x30ab06+_0x1ca022(0x9d)+_0x473547+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td><span\x20class=\x22badge-mac\x22>'+_0x1e3aed+_0x1ca022(0xe5)+_0x5be52b+_0x1ca022(0xfb)+_0x9743af+'</span></td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20'+_0x276100+_0x1ca022(0xda);}_0x14b281===0x0&&(_0x460b71['innerHTML']=_0x1ca022(0xa2)+(_0x2399cb?0x8:0x7)+'\x22\x20style=\x22text-align:center;\x20color:\x20var(--text-muted);\x20padding:30px;\x22>Không\x20tìm\x20thấy\x20thiết\x20bị\x20phù\x20hợp.</td></tr>');}function updateGroupDropdown(_0x4e7e25){const _0x59919c=_0x3ad8d5,_0x2a05ff=document[_0x59919c(0x91)](_0x59919c(0xad)),_0x22a9c9=_0x2a05ff[_0x59919c(0xb7)];let _0x6c0c11=new Set();for(let _0x13e023 in _0x4e7e25){_0x6c0c11[_0x59919c(0xb8)](_0x4e7e25[_0x13e023]['group']||_0x59919c(0xe4));}let _0x3895be=_0x59919c(0xdf);_0x6c0c11[_0x59919c(0x94)](_0x36e130=>{const _0x1a2bf5=_0x59919c;_0x3895be+='<option\x20value=\x22'+_0x36e130+'\x22>'+_0x36e130+_0x1a2bf5(0xe1);}),_0x2a05ff[_0x59919c(0xd6)]=_0x3895be,_0x2a05ff[_0x59919c(0xb7)]=_0x6c0c11[_0x59919c(0xa8)](_0x22a9c9)||_0x22a9c9===_0x59919c(0xb0)?_0x22a9c9:_0x59919c(0xb0);}function openEditModal(_0xd6d994,_0x4cd334,_0x3ca9ed){const _0x4e1d35=_0x3ad8d5;if(!currentUser||currentUser[_0x4e1d35(0xae)][_0x4e1d35(0xa7)]()!==ADMIN_EMAIL[_0x4e1d35(0xa7)]())return;document[_0x4e1d35(0x91)](_0x4e1d35(0xab))['value']=_0xd6d994,document[_0x4e1d35(0x91)](_0x4e1d35(0xa5))[_0x4e1d35(0xb7)]=_0x4cd334,document['getElementById']('editGroupName')['value']=_0x3ca9ed,document[_0x4e1d35(0x91)](_0x4e1d35(0xac))[_0x4e1d35(0xcc)][_0x4e1d35(0xbb)]=_0x4e1d35(0xf4);}function viewHourlyLog(_0x595a6f){const _0x481f6c=_0x3ad8d5,_0x159e2c=document[_0x481f6c(0x91)](_0x481f6c(0xe6)),_0x587b4e=new Date()['toISOString']()[_0x481f6c(0xec)]('T')[0x0];_0x159e2c[_0x481f6c(0xd6)]=_0x481f6c(0xc9)+_0x587b4e+_0x481f6c(0xca)+_0x595a6f+_0x481f6c(0x109),document['getElementById']('logModal')[_0x481f6c(0xcc)][_0x481f6c(0xbb)]=_0x481f6c(0xf4),fetchLogByDate(_0x595a6f);}function fetchLogByDate(_0x5b7244){const _0x3423d9=_0x3ad8d5,_0x3e78b9=document[_0x3423d9(0x91)](_0x3423d9(0xde));if(!_0x3e78b9)return;const _0x2ef46a=_0x3e78b9[_0x3423d9(0xb7)],_0x5d41ee=document[_0x3423d9(0x91)](_0x3423d9(0xea));if(!_0x2ef46a)return;_0x5d41ee[_0x3423d9(0xd6)]=_0x3423d9(0x97)+_0x2ef46a+_0x3423d9(0xb4),db['ref']('logs/'+_0x5b7244+'/'+_0x2ef46a)[_0x3423d9(0x103)](_0x3423d9(0xb7),_0x282689=>{const _0x263325=_0x3423d9;let _0x22b4be=_0x282689[_0x263325(0xf0)]();if(!_0x22b4be){_0x5d41ee[_0x263325(0xd6)]=_0x263325(0xef)+_0x2ef46a+_0x263325(0x105);return;}let _0x37d521='',_0x21172e=0x0,_0x1f7d95=0x0,_0x2cde9a=Object['keys'](_0x22b4be)[_0x263325(0x108)]();for(let _0x5c8c42 of _0x2cde9a){let _0x5b30db=_0x22b4be[_0x5c8c42],_0x202fba=_0x5b30db[_0x263325(0x10b)]||0x0,_0x1d5e3f=_0x5b30db['hourly_out']||0x0,_0x20ce34=_0x5b30db[_0x263325(0xeb)]!==undefined?parseFloat(_0x5b30db[_0x263325(0xeb)]):0x0;_0x21172e+=_0x202fba,_0x1f7d95+=_0x1d5e3f;let _0xda3d16=_0x202fba>0x0&&(_0x20ce34<1.95||_0x20ce34>2.05),_0x1c9bc5=_0xda3d16?_0x263325(0xb3):_0x263325(0x104);_0x37d521+=_0x263325(0xf3)+_0x5c8c42+_0x263325(0xf7)+_0x202fba+_0x263325(0xa3)+_0x1d5e3f+_0x263325(0x90)+_0x1c9bc5+'\x22>'+_0x20ce34+_0x263325(0xcd);}let _0x4dc7ae=_0x263325(0xe2)+_0x21172e+'</b>\x20|\x20OUT:\x20<b\x20style=\x22color:#f43f5e\x22>'+_0x1f7d95+_0x263325(0xfd);_0x5d41ee[_0x263325(0xd6)]=_0x4dc7ae+_0x37d521;});}function closeModal(_0x166671){const _0x1b5471=_0x3ad8d5;document['getElementById'](_0x166671)['style'][_0x1b5471(0xbb)]=_0x1b5471(0x102);}function saveDeviceChanges(){const _0x2598a4=_0x3ad8d5;if(!currentUser||currentUser[_0x2598a4(0xae)][_0x2598a4(0xa7)]()!==ADMIN_EMAIL[_0x2598a4(0xa7)]())return;const _0x3287b4=document['getElementById'](_0x2598a4(0xab))[_0x2598a4(0xb7)],_0x14691c=document[_0x2598a4(0x91)](_0x2598a4(0xa5))[_0x2598a4(0xb7)]['trim'](),_0x31a654=document[_0x2598a4(0x91)](_0x2598a4(0xfc))[_0x2598a4(0xb7)][_0x2598a4(0xe0)]()||_0x2598a4(0xe4);if(!_0x14691c)return alert(_0x2598a4(0x8e));db[_0x2598a4(0xce)](_0x2598a4(0x106)+_0x3287b4)[_0x2598a4(0xc2)]({'device_name':_0x14691c,'group':_0x31a654})['then'](()=>{const _0x166577=_0x2598a4;alert(_0x166577(0xba)),closeModal('editModal');})[_0x2598a4(0xd5)](_0x437ffe=>alert(_0x2598a4(0xee)+_0x437ffe[_0x2598a4(0x98)]));}function deleteDevice(_0x1732de,_0x2e65ba){const _0x179145=_0x3ad8d5;if(!currentUser||currentUser['email'][_0x179145(0xa7)]()!==ADMIN_EMAIL[_0x179145(0xa7)]())return;confirm('Xóa\x20thiết\x20bị\x20\x22'+_0x2e65ba+'\x22?')&&db[_0x179145(0xce)]('devices/'+_0x1732de)['remove']()[_0x179145(0xc3)](()=>alert(_0x179145(0x8f)+_0x2e65ba+'\x22!'))[_0x179145(0xd5)](_0x2361c9=>alert(_0x179145(0xd9)+_0x2361c9['message']));}
+</script>
 
-      for (let hour of hours) {
-        let item = logs[hour];
-        let hourlyIn = item.hourly_in || 0;
-        let hourlyOut = item.hourly_out || 0;
-        let ratio = item.ratio !== undefined ? parseFloat(item.ratio) : 0;
-
-        totalDayIn += hourlyIn;
-        totalDayOut += hourlyOut;
-
-        let isErr = (hourlyIn > 0) && (ratio < 1.95 || ratio > 2.05);
-        let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
-
-        html += `<div class="log-item">
-          <span>Khung giờ: <b style="color:var(--text-main);">${hour}:00</b></span>
-          <span>IN: <b style="color:#60a5fa">${hourlyIn}</b> | OUT: <b style="color:#f43f5e">${hourlyOut}</b> | Tỷ lệ: <span style="${ratioColor}">${ratio}x</span></span>
-        </div>`;
-      }
-
-      let summaryHtml = `
-        <div style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:600; color:var(--accent-blue);">TỔNG TÍCH LŨY TRONG NGÀY:</span>
-          <span>IN: <b style="color:#60a5fa">${totalDayIn}</b> | OUT: <b style="color:#f43f5e">${totalDayOut}</b></span>
-        </div>
-      `;
-
-      listContainer.innerHTML = summaryHtml + html;
-    });
-  }
-
-  function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
-
-  function saveDeviceChanges() {
-    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
-
-    const deviceId = document.getElementById("editDeviceId").value;
-    const newName = document.getElementById("editDeviceName").value.trim();
-    const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
-
-    if (!newName) return alert("Vui lòng nhập tên trạm!");
-
-    db.ref("devices/" + deviceId).update({ device_name: newName, group: newGroup })
-      .then(() => { alert("Cập nhật thành công!"); closeModal("editModal"); })
-      .catch(err => alert("Lỗi khi lưu: " + err.message));
-  }
-
-  function deleteDevice(deviceId, deviceName) {
-    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
-    if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
-      db.ref("devices/" + deviceId).remove()
-        .then(() => alert(`Đã xóa "${deviceName}"!`))
-        .catch(err => alert("Lỗi khi xóa: " + err.message));
-    }
-  }
+</body>
+</html>
 </script>
 
 </body>
