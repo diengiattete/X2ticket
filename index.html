@@ -88,8 +88,8 @@
 
     .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
     .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-    .log-list { max-height: 280px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
-    .log-item { padding: 6px 0; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; }
+    .log-list { max-height: 320px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
+    .log-item { padding: 8px 0; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; }
     .log-item:last-child { border-bottom: none; }
 
     @media (min-width: 640px) {
@@ -185,11 +185,11 @@
   </div>
 </div>
 
-<!-- MODAL LOG HÀNG GIỜ -->
+<!-- MODAL LOG NGUYÊN NGÀY -->
 <div class="modal-overlay" id="logModal">
   <div class="modal-box">
     <div class="modal-header">
-      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung 24 Giờ Gần Nhất</span>
+      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung Theo Ngày</span>
       <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('logModal')"></i>
     </div>
     <div class="log-list" id="logContainer">
@@ -385,30 +385,74 @@
     document.getElementById("editModal").style.display = "flex";
   }
 
-  function viewHourlyLog(macAddress) {
+  // CẢI TIẾN HÀM XEM NHẬT KÝ THEO NGÀY
+  function viewHourlyLog(deviceId) {
     const container = document.getElementById("logContainer");
-    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+    const today = new Date().toISOString().split('T')[0]; // Định dạng YYYY-MM-DD
+
+    container.innerHTML = `
+      <div style="margin-bottom: 12px; display:flex; gap:10px; align-items:center; background: rgba(15,23,42,0.6); padding: 8px 12px; border-radius: 8px; border:1px solid var(--border-color);">
+        <label style="font-size:11px; color:var(--text-muted); font-weight:600;">CHỌN NGÀY:</label>
+        <input type="date" id="logDatePicker" class="form-input" value="${today}" onchange="fetchLogByDate('${deviceId}')" style="padding:6px 10px; font-size:13px; width: auto; color-scheme: dark;">
+      </div>
+      <div id="logListContent"><div style="text-align:center; color:var(--text-muted); padding: 15px;">Đang tải nhật ký...</div></div>
+    `;
     document.getElementById("logModal").style.display = "flex";
 
-    db.ref("logs/" + macAddress).limitToLast(24).once("value", (snapshot) => {
+    fetchLogByDate(deviceId);
+  }
+
+  // HÀM TRUY VẤN DỮ LIỆU NHẬT KÝ LOG CỦA NGÀY ĐƯỢC CHỌN
+  function fetchLogByDate(deviceId) {
+    const datePicker = document.getElementById("logDatePicker");
+    if (!datePicker) return;
+    const dateVal = datePicker.value;
+    const listContainer = document.getElementById("logListContent");
+
+    if (!dateVal) return;
+
+    listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 15px;">Đang tải nhật ký ngày ${dateVal}...</div>`;
+
+    // Truy vấn theo cấu trúc /logs/{deviceId}/{YYYY-MM-DD}
+    db.ref("logs/" + deviceId + "/" + dateVal).once("value", (snapshot) => {
       let logs = snapshot.val();
       if (!logs) {
-        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+        listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">Không có dữ liệu nhật ký cho ngày ${dateVal}.</div>`;
         return;
       }
+
       let html = "";
-      for (let k in logs) {
-        let item = logs[k];
-        let date = new Date(item.timestamp).toLocaleString("vi-VN");
-        let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
+      let totalDayIn = 0;
+      let totalDayOut = 0;
+
+      let hours = Object.keys(logs).sort(); // Sắp xếp giờ từ 00 -> 23
+
+      for (let hour of hours) {
+        let item = logs[hour];
+        let hourlyIn = item.hourly_in || 0;
+        let hourlyOut = item.hourly_out || 0;
+        let ratio = item.ratio !== undefined ? parseFloat(item.ratio) : 0;
+
+        totalDayIn += hourlyIn;
+        totalDayOut += hourlyOut;
+
+        let isErr = (hourlyIn > 0) && (ratio < 1.95 || ratio > 2.05);
         let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
 
         html += `<div class="log-item">
-          <span>${date}</span>
-          <span>IN: <b>${item.hourly_in}</b> | OUT: <b>${item.hourly_out}</b> | Ratio: <span style="${ratioColor}">${item.ratio}x</span></span>
+          <span>Khung giờ: <b style="color:var(--text-main);">${hour}:00</b></span>
+          <span>IN: <b style="color:#60a5fa">${hourlyIn}</b> | OUT: <b style="color:#f43f5e">${hourlyOut}</b> | Tỷ lệ: <span style="${ratioColor}">${ratio}x</span></span>
         </div>`;
       }
-      container.innerHTML = html;
+
+      let summaryHtml = `
+        <div style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:600; color:var(--accent-blue);">TỔNG TÍCH LŨY TRONG NGÀY:</span>
+          <span>IN: <b style="color:#60a5fa">${totalDayIn}</b> | OUT: <b style="color:#f43f5e">${totalDayOut}</b></span>
+        </div>
+      `;
+
+      listContainer.innerHTML = summaryHtml + html;
     });
   }
 
