@@ -17,11 +17,12 @@
       --accent-green: #34d399;
       --accent-yellow: #fbbf24;
       --accent-red: #f87171;
+      --accent-orange: #f97316;
       --border-color: rgba(255, 255, 255, 0.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body { background: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-body) 75%); color: var(--text-main); min-height: 100vh; padding: 16px 8px; }
-    .container { max-width: 1280px; margin: 0 auto; display: none; }
+    .container { max-width: 1380px; margin: 0 auto; display: none; }
     
     .login-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 999; padding: 16px; }
     .login-overlay { background: radial-gradient(circle at center, #1e293b 0%, #050811 100%); }
@@ -60,7 +61,7 @@
     .card-title i { color: var(--accent-blue); }
 
     .table-container { overflow-x: auto; border-radius: 8px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 850px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
@@ -79,6 +80,9 @@
     .pulse-in { color: #60a5fa; }
     .pulse-out { color: #f43f5e; }
     
+    .env-box { display: flex; flex-direction: column; gap: 2px; font-family: monospace; font-size: 12px; }
+    .env-item { display: flex; align-items: center; gap: 6px; }
+    
     .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
     .action-group { display: flex; gap: 6px; justify-content: flex-end; }
     .btn-log, .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
@@ -88,8 +92,8 @@
 
     .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
     .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-    .log-list { max-height: 320px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
-    .log-item { padding: 8px 0; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .log-list { max-height: 280px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
+    .log-item { padding: 6px 0; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; }
     .log-item:last-child { border-bottom: none; }
 
     @media (min-width: 640px) {
@@ -148,6 +152,7 @@
             <th>Tên Trạm / Thiết Bị</th>
             <th>Nhóm</th>
             <th>Thông Số Xung (IN / OUT / Ratio)</th>
+            <th>Nhiệt Độ / Điện Áp</th>
             <th>Cường Độ Wi-Fi</th>
             <th>Địa Chỉ MAC / IP</th>
             <th>FW</th>
@@ -155,7 +160,7 @@
           </tr>
         </thead>
         <tbody id="device-table-body">
-          <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
+          <tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
         </tbody>
       </table>
     </div>
@@ -185,11 +190,11 @@
   </div>
 </div>
 
-<!-- MODAL LOG NGUYÊN NGÀY -->
+<!-- MODAL LOG HÀNG GIỜ -->
 <div class="modal-overlay" id="logModal">
   <div class="modal-box">
     <div class="modal-header">
-      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung Theo Ngày</span>
+      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung 24 Giờ Gần Nhất</span>
       <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('logModal')"></i>
     </div>
     <div class="log-list" id="logContainer">
@@ -207,7 +212,14 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-  function _0xac14(_0x21d910,_0x40e693){_0x21d910=_0x21d910-0x166;const _0x274c5d=_0x274c();let _0xac1416=_0x274c5d[_0x21d910];return _0xac1416;}function _0x274c(){const _0x17eeb2=['2730285GjXvlK','1240uIcyep','trungio.firebaseapp.com','16555yvJDAz','4336yqMUmS','trungio','AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM','120ihqrtb','40zrLLdL','836ahawHE','9449382SxHrgj','279081uQXxKK','496657gSztBh','https://trungio.firebaseio.com','3552210HmgaVI'];_0x274c=function(){return _0x17eeb2;};return _0x274c();}const _0x1d8225=_0xac14;(function(_0x427ecd,_0x4b774c){const _0x265ad8=_0xac14,_0x17777f=_0x427ecd();while(!![]){try{const _0x2fbc17=parseInt(_0x265ad8(0x16d))/0x1*(parseInt(_0x265ad8(0x172))/0x2)+-parseInt(_0x265ad8(0x169))/0x3+parseInt(_0x265ad8(0x16a))/0x4*(-parseInt(_0x265ad8(0x16c))/0x5)+-parseInt(_0x265ad8(0x173))/0x6+parseInt(_0x265ad8(0x166))/0x7*(parseInt(_0x265ad8(0x170))/0x8)+parseInt(_0x265ad8(0x168))/0x9*(parseInt(_0x265ad8(0x171))/0xa)+-parseInt(_0x265ad8(0x174))/0xb;if(_0x2fbc17===_0x4b774c)break;else _0x17777f['push'](_0x17777f['shift']());}catch(_0x1b7c3d){_0x17777f['push'](_0x17777f['shift']());}}}(_0x274c,0xe04ac));const ADMIN_EMAIL='trung@fun.io',firebaseConfig={'apiKey':_0x1d8225(0x16f),'authDomain':_0x1d8225(0x16b),'databaseURL':_0x1d8225(0x167),'projectId':_0x1d8225(0x16e)};
+  const ADMIN_EMAIL = "trung@fun.io";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
+    authDomain: "trungio.firebaseapp.com",
+    databaseURL: "https://trungio.firebaseio.com",
+    projectId: "trungio"
+  };
+
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
@@ -215,283 +227,237 @@
   let globalDeviceData = null;
   let currentUser = null;
 
-  // Lắng nghe trạng thái đăng nhập
-  auth.onAuthStateChanged(user => {
+  // XÁC THỰC NGƯỜI DÙNG
+  auth.onAuthStateChanged((user) => {
     if (user) {
       currentUser = user;
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboardScreen').style.display = 'block';
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("dashboardScreen").style.display = "block";
 
-      const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-      const badgeEl = document.getElementById('userBadge');
-      badgeEl.className = isAdmin ? 'role-badge' : 'role-badge readonly';
+      const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      const badgeEl = document.getElementById("userBadge");
+      
+      badgeEl.className = isAdmin ? "role-badge" : "role-badge readonly";
       badgeEl.innerHTML = isAdmin 
         ? `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`
         : `<i class="fa-solid fa-eye"></i> ${user.email} (READ ONLY)`;
+      document.getElementById("thAction").style.display = isAdmin ? "" : "none";
 
-      document.getElementById('thAction').style.display = isAdmin ? '' : 'none';
       listenToDatabase();
     } else {
       currentUser = null;
-      document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('dashboardScreen').style.display = 'none';
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("dashboardScreen").style.display = "none";
     }
   });
 
-  // Xử lý đăng nhập
   function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const btn = document.getElementById('btnLogin');
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const btnLogin = document.getElementById("btnLogin");
 
-    btn.disabled = true;
-    btn.innerText = 'ĐANG XÁC THỰC...';
+    btnLogin.innerText = "ĐANG XÁC THỰC...";
+    btnLogin.disabled = true;
 
     auth.signInWithEmailAndPassword(email, password)
-      .catch(err => {
-        alert('Đăng nhập thất bại: ' + err.message);
-        btn.disabled = false;
-        btn.innerText = 'ĐĂNG NHẬP';
+      .catch((error) => {
+        alert("Lỗi đăng nhập: " + error.message);
+        btnLogin.innerText = "ĐĂNG NHẬP";
+        btnLogin.disabled = false;
       });
   }
 
-  // Đăng xuất
-  function logout() {
-    auth.signOut();
-  }
+  function logout() { auth.signOut().then(() => location.reload()); }
 
-  // Lắng nghe dữ liệu thiết bị realtime từ Firebase
+  // LẮNG NGHE DỮ LIỆU REALTIME
   function listenToDatabase() {
-    db.ref('devices').on('value', snapshot => {
+    db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
-      updateGroupFilterOptions();
+      if (globalDeviceData) updateGroupDropdown(globalDeviceData);
       renderDevices();
-    });
+    }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
+
+    // Cập nhật đếm giây và trạng thái Online/Offline định kỳ mỗi 1 giây
+    setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
   }
 
-  // Cập nhật danh sách nhóm vào Select Filter
-  function updateGroupFilterOptions() {
-    const select = document.getElementById('groupFilter');
-    const currentVal = select.value;
-    const groups = new Set();
-
-    if (globalDeviceData) {
-      Object.values(globalDeviceData).forEach(dev => {
-        if (dev.group) groups.add(dev.group);
-      });
-    }
-
-    let html = '<option value="ALL">-- Tất cả nhóm --</option>';
-    groups.forEach(g => {
-      html += `<option value="${g}">${g}</option>`;
-    });
-
-    select.innerHTML = html;
-    if ([...groups].includes(currentVal) || currentVal === 'ALL') {
-      select.value = currentVal;
-    }
-  }
-
-  // Hiển thị danh sách thiết bị trên bảng
   function renderDevices() {
-    const tbody = document.getElementById('device-table-body');
-    const filterGroup = document.getElementById('groupFilter').value;
+    const tbody = document.getElementById("device-table-body");
+    const filterValue = document.getElementById("groupFilter").value;
+    const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
+    tbody.innerHTML = "";
 
     if (!globalDeviceData) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 9 : 8}" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
       return;
     }
 
-    const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-    let html = '';
+    const now = Date.now();
+    let count = 0;
 
-    Object.keys(globalDeviceData).forEach(key => {
-      const dev = globalDeviceData[key];
-      if (filterGroup !== 'ALL' && dev.group !== filterGroup) return;
+    for (let id in globalDeviceData) {
+      let dev = globalDeviceData[id];
+      let devGroup = dev.group || "Chưa Phân Nhóm";
 
-      const isOnline = dev.status === 'ONLINE';
-      const statusBadge = isOnline 
-        ? '<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>'
-        : '<span class="status-badge status-offline"><i class="fa-solid fa-circle" style="font-size:7px;"></i> OFFLINE</span>';
+      if (filterValue !== "ALL" && devGroup !== filterValue) continue;
 
-      const ratio = dev.ratio ? dev.ratio : 0;
-      const isErr = (dev.input_count > 0) && (ratio < 1.95 || ratio > 2.05);
-      const pulseClass = isErr ? 'pulse-container-error' : 'pulse-container-normal';
+      count++;
+      let devName = dev.device_name || ("TRAM_" + id.substring(id.length - 4));
+      let macAddr = dev.mac || id;
+      let fwVer = dev.firmware || "1.0.0";
+      let ipAddr = dev.ip || "--";
 
-      const devName = dev.name || ('TRAM_' + key.substring(0, 6));
-      const devGroup = dev.group || 'Chưa Phân Nhóm';
+      // -------------------------------------------------------------
+      // LOGIC XỬ LÝ OFFLINE SAU 30 GIÂY DỰA TRÊN LAST_SEEN REALTIME
+      // -------------------------------------------------------------
+      let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
+      let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
 
-      html += `<tr>
-        <td>${statusBadge}</td>
-        <td><b>${devName}</b><span class="info-sub">ID: ${key}</span></td>
+      // Nếu không gửi dữ liệu quá 30s hoặc không có last_seen -> OFFLINE
+      let isOnline = (timeDiffSec <= 30) && (lastSeenTime > 0);
+
+      if (!isOnline && dev.status === "ONLINE") {
+        dev.status = "OFFLINE";
+        db.ref("devices/" + id + "/status").set("OFFLINE");
+      }
+      // -------------------------------------------------------------
+
+      let inCnt = dev.input_count ?? 0;
+      let outCnt = dev.output_count ?? 0;
+      let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
+      let pulseUs = dev.pulse_width_us ?? "--";
+      let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
+
+      // Xử lý Nhiệt độ & Điện áp
+      let tempVal = dev.temperature ?? dev.temp;
+      let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
+      let voltVal = dev.voltage ?? dev.vcc;
+      let voltDisplay = voltVal !== undefined ? `${parseFloat(voltVal).toFixed(2)} V` : "--";
+
+      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
+
+      // Hiển thị Badge ONLINE / OFFLINE
+      let statusHTML = isOnline 
+        ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
+        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${timeDiffSec > 999 ? '>999' : timeDiffSec}s)</span>`;
+
+      let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
+      let ratioDisplay = isRatioError 
+        ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
+        : `<b>${ratio}x</b>`;
+
+      let actionTd = isAdmin ? `
+        <td>
+          <div class="action-group">
+            <button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>
+            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          </div>
+        </td>` : '';
+
+      tbody.innerHTML += `<tr>
+        <td>${statusHTML}</td>
+        <td><b style="color: var(--text-main); font-size:14px;">${devName}</b></td>
         <td><span class="badge-group">${devGroup}</span></td>
         <td>
-          <div class="${pulseClass}">
-            IN: <span class="pulse-counter pulse-in">${dev.input_count || 0}</span> | 
-            OUT: <span class="pulse-counter pulse-out">${dev.output_count || 0}</span>
+          <div class="${pulseContainerClass}">
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
           </div>
-          <span class="info-sub">Tỷ lệ: <b>${parseFloat(ratio).toFixed(2)}x</b> | Độ rộng: ${dev.pulse_width_us || 0} µs</span>
+          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
         </td>
-        <td><i class="fa-solid fa-wifi"></i> ${dev.wifi_signal || 0} dBm</td>
-        <td><span class="badge-mac">${dev.mac || 'N/A'}</span><span class="info-sub">IP: ${dev.ip || 'N/A'}</span></td>
-        <td><span class="badge-fw">v${dev.fw_ver || '1.0.0'}</span></td>
-        ${isAdmin ? `<td style="text-align: right;">
-          <div class="action-group">
-            <button class="btn-log" onclick="openLogModal('${key}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>
-            <button class="btn-edit" onclick="openEditModal('${key}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
-            <button class="btn-delete" onclick="deleteDevice('${key}')"><i class="fa-solid fa-trash"></i> Xóa</button>
+        <td>
+          <div class="env-box">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
           </div>
-        </td>` : `<td style="text-align: right;">
-          <button class="btn-log" onclick="openLogModal('${key}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>
-        </td>`}
+        </td>
+        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
+        <td><span class="badge-mac">${macAddr}</span><span class="info-sub">IP: ${ipAddr}</span></td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
       </tr>`;
-    });
+    }
 
-    tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>';
-  }
-
-  // Mở Modal Sửa
-  function openEditModal(id, name, group) {
-    document.getElementById('editDeviceId').value = id;
-    document.getElementById('editDeviceName').value = name.startsWith('TRAM_') ? '' : name;
-    document.getElementById('editGroupName').value = group === 'Chưa Phân Nhóm' ? '' : group;
-    document.getElementById('editModal').style.display = 'flex';
-  }
-
-  // Lưu chỉnh sửa thiết bị
-  function saveDeviceChanges() {
-    const id = document.getElementById('editDeviceId').value;
-    const name = document.getElementById('editDeviceName').value.trim();
-    const group = document.getElementById('editGroupName').value.trim();
-
-    if (!name) { alert('Vui lòng nhập tên trạm!'); return; }
-
-    db.ref('devices/' + id).update({
-      name: name,
-      group: group || 'Chưa Phân Nhóm'
-    }).then(() => {
-      closeModal('editModal');
-    }).catch(err => alert('Lỗi khi lưu: ' + err.message));
-  }
-
-  // Xóa thiết bị
-  function deleteDevice(id) {
-    if (confirm(`Bạn có chắc chắn muốn xóa trạm này không?`)) {
-      db.ref('devices/' + id).remove().catch(err => alert('Lỗi khi xóa: ' + err.message));
+    if (count === 0) {
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 9 : 8}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
     }
   }
 
-  // Mở Modal Nhật Ký
-  function openLogModal(deviceId) {
-    const today = new Date().toISOString().split('T')[0];
-    const logContainer = document.getElementById('logContainer');
+  function updateGroupDropdown(data) {
+    const filterSelect = document.getElementById("groupFilter");
+    const currentSelected = filterSelect.value;
+    let groups = new Set();
+    for (let id in data) { groups.add(data[id].group || "Chưa Phân Nhóm"); }
 
-    logContainer.innerHTML = `
-      <div style="margin-bottom: 12px; display:flex; gap:10px; align-items:center; background: rgba(15,23,42,0.6); padding: 8px 12px; border-radius: 8px; border:1px solid var(--border-color);">
-        <label style="font-size:11px; color:var(--text-muted); font-weight:600;">CHỌN NGÀY:</label>
-        <input type="date" id="logDatePicker" class="form-input" value="${today}" onchange="fetchLogByDate('${deviceId}')" style="padding:6px 10px; font-size:13px; width: auto; color-scheme: dark;">
-      </div>
-      <div id="logListContent"><div style="text-align:center; color:var(--text-muted); padding: 15px;">Đang tải nhật ký...</div></div>
-    `;
-
-    document.getElementById('logModal').style.display = 'flex';
-    fetchLogByDate(deviceId);
+    let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
+    groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
+    filterSelect.innerHTML = optionsHTML;
+    filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
   }
 
-  // Hàm phụ trợ lấy ngày liền trước (YYYY-MM-DD)
-  function getPreviousDateStr(dateStr) {
-    let d = new Date(dateStr);
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().split('T')[0];
+  function openEditModal(deviceId, currentName, currentGroup) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    document.getElementById("editDeviceId").value = deviceId;
+    document.getElementById("editDeviceName").value = currentName;
+    document.getElementById("editGroupName").value = currentGroup;
+    document.getElementById("editModal").style.display = "flex";
   }
 
-  // Đọc nhật ký và TRỪ SỐ CỘNG DỒN NGÀY TRƯỚC
-  function fetchLogByDate(deviceId) {
-    const datePicker = document.getElementById("logDatePicker");
-    if (!datePicker) return;
-    const dateVal = datePicker.value;
-    const listContainer = document.getElementById("logListContent");
+  function viewHourlyLog(macAddress) {
+    const container = document.getElementById("logContainer");
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+    document.getElementById("logModal").style.display = "flex";
 
-    if (!dateVal) return;
-
-    listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 15px;">Đang tải và tính toán nhật ký ngày ${dateVal}...</div>`;
-
-    const prevDateVal = getPreviousDateStr(dateVal);
-
-    // 1. Đọc ngày liền trước để lấy mốc cộng dồn ban đầu
-    db.ref("logs/" + deviceId + "/" + prevDateVal).once("value", (prevSnapshot) => {
-      let prevLogs = prevSnapshot.val();
-      let baselineIn = 0;
-      let baselineOut = 0;
-
-      if (prevLogs) {
-        let prevHours = Object.keys(prevLogs).sort();
-        let lastPrevHour = prevHours[prevHours.length - 1];
-        baselineIn = prevLogs[lastPrevHour].hourly_in || 0;
-        baselineOut = prevLogs[lastPrevHour].hourly_out || 0;
+    db.ref("logs/" + macAddress).limitToLast(24).once("value", (snapshot) => {
+      let logs = snapshot.val();
+      if (!logs) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+        return;
       }
+      let html = "";
+      for (let k in logs) {
+        let item = logs[k];
+        let date = new Date(item.timestamp).toLocaleString("vi-VN");
+        let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
+        let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
 
-      // 2. Đọc ngày được chọn
-      db.ref("logs/" + deviceId + "/" + dateVal).once("value", (snapshot) => {
-        let logs = snapshot.val();
-        if (!logs) {
-          listContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">Không có dữ liệu nhật ký cho ngày ${dateVal}.</div>`;
-          return;
-        }
-
-        let html = "";
-        let hours = Object.keys(logs).sort();
-
-        let lastAccumulatedIn = baselineIn;
-        let lastAccumulatedOut = baselineOut;
-
-        let totalActualDayIn = 0;
-        let totalActualDayOut = 0;
-
-        for (let hour of hours) {
-          let item = logs[hour];
-          let currentAccIn = item.hourly_in || 0;
-          let currentAccOut = item.hourly_out || 0;
-
-          // Tính xung phát sinh thực tế trong khung giờ
-          let actualHourIn = (currentAccIn >= lastAccumulatedIn) ? (currentAccIn - lastAccumulatedIn) : currentAccIn;
-          let actualHourOut = (currentAccOut >= lastAccumulatedOut) ? (currentAccOut - lastAccumulatedOut) : currentAccOut;
-
-          totalActualDayIn += actualHourIn;
-          totalActualDayOut += actualHourOut;
-
-          let hourRatio = (actualHourIn > 0) ? (actualHourOut / actualHourIn) : 0.0;
-          let isErr = (actualHourIn > 0) && (hourRatio < 1.95 || hourRatio > 2.05);
-          let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
-
-          html += `<div class="log-item">
-            <span>Khung giờ: <b style="color:var(--text-main);">${hour}:00</b></span>
-            <span>IN: <b style="color:#60a5fa">+${actualHourIn}</b> | OUT: <b style="color:#f43f5e">+${actualHourOut}</b> | Tỷ lệ: <span style="${ratioColor}">${hourRatio.toFixed(2)}x</span></span>
-          </div>`;
-
-          lastAccumulatedIn = currentAccIn;
-          lastAccumulatedOut = currentAccOut;
-        }
-
-        let dayRatio = (totalActualDayIn > 0) ? (totalActualDayOut / totalActualDayIn) : 0.0;
-
-        let summaryHtml = `
-          <div style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:600; color:var(--accent-blue);">TỔNG THỰC TẾ TRONG NGÀY:</span>
-            <span>IN: <b style="color:#60a5fa">+${totalActualDayIn}</b> | OUT: <b style="color:#f43f5e">+${totalActualDayOut}</b> (Ratio: <b>${dayRatio.toFixed(2)}x</b>)</span>
-          </div>
-        `;
-
-        listContainer.innerHTML = summaryHtml + html;
-      });
+        html += `<div class="log-item">
+          <span>${date}</span>
+          <span>IN: <b>${item.hourly_in}</b> | OUT: <b>${item.hourly_out}</b> | Ratio: <span style="${ratioColor}">${item.ratio}x</span></span>
+        </div>`;
+      }
+      container.innerHTML = html;
     });
   }
 
-  // Đóng modal
-  function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+  function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+  function saveDeviceChanges() {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+    const deviceId = document.getElementById("editDeviceId").value;
+    const newName = document.getElementById("editDeviceName").value.trim();
+    const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
+
+    if (!newName) return alert("Vui lòng nhập tên trạm!");
+
+    db.ref("devices/" + deviceId).update({ device_name: newName, group: newGroup })
+      .then(() => { alert("Cập nhật thành công!"); closeModal("editModal"); })
+      .catch(err => alert("Lỗi khi lưu: " + err.message));
+  }
+
+  function deleteDevice(deviceId, deviceName) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
+      db.ref("devices/" + deviceId).remove()
+        .then(() => alert(`Đã xóa "${deviceName}"!`))
+        .catch(err => alert("Lỗi khi xóa: " + err.message));
+    }
   }
 </script>
+
 </body>
 </html>
