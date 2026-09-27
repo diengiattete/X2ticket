@@ -83,7 +83,7 @@
     .env-box { display: flex; flex-direction: column; gap: 2px; font-family: monospace; font-size: 12px; }
     .env-item { display: flex; align-items: center; gap: 6px; }
     
-    .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
+    .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
     .action-group { display: flex; gap: 6px; justify-content: flex-end; }
     .btn-log, .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
     .btn-log { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
@@ -227,6 +227,24 @@
   let globalDeviceData = null;
   let currentUser = null;
 
+  // ================= TỰ ĐỘNG LẤY IP WAN CHO MASTER (CÁCH B) =================
+  async function updateMasterPublicIP() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      if (data && data.ip) {
+        // Ghi IP WAN công khai lên node của Master Gateway
+        db.ref("devices/Gateway ESP8266").update({
+          ip_wan: data.ip,
+          ip: data.ip
+        });
+        console.log("[IP WAN] Đã tự động cập nhật IP WAN từ trình duyệt:", data.ip);
+      }
+    } catch (error) {
+      console.error("[IP WAN] Không thể lấy IP WAN từ Client:", error);
+    }
+  }
+
   // XÁC THỰC NGƯỜI DÙNG
   auth.onAuthStateChanged((user) => {
     if (user) {
@@ -242,6 +260,9 @@
         ? `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`
         : `<i class="fa-solid fa-eye"></i> ${user.email} (READ ONLY)`;
       document.getElementById("thAction").style.display = isAdmin ? "" : "none";
+
+      // Lấy IP WAN ngay sau khi truy cập Dashboard thành công
+      updateMasterPublicIP();
 
       listenToDatabase();
     } else {
@@ -307,22 +328,21 @@
       let devName = dev.device_name || ("TRAM_" + id.substring(id.length - 4));
       let macAddr = dev.mac || id;
       let fwVer = dev.firmware || "1.0.0";
-      let ipAddr = dev.ip || "--";
+      
+      // Lấy IP WAN và IP Local
+      let ipWan = dev.ip_wan || dev.ip || "--";
+      let ipLocal = dev.ip_local || "--";
 
-      // -------------------------------------------------------------
       // LOGIC XỬ LÝ OFFLINE SAU 30 GIÂY DỰA TRÊN LAST_SEEN REALTIME
-      // -------------------------------------------------------------
       let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
       let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
 
-      // Nếu không gửi dữ liệu quá 30s hoặc không có last_seen -> OFFLINE
       let isOnline = (timeDiffSec <= 30) && (lastSeenTime > 0);
 
       if (!isOnline && dev.status === "ONLINE") {
         dev.status = "OFFLINE";
         db.ref("devices/" + id + "/status").set("OFFLINE");
       }
-      // -------------------------------------------------------------
 
       let inCnt = dev.input_count ?? 0;
       let outCnt = dev.output_count ?? 0;
@@ -375,7 +395,11 @@
           </div>
         </td>
         <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
-        <td><span class="badge-mac">${macAddr}</span><span class="info-sub">IP: ${ipAddr}</span></td>
+        <td>
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+        </td>
         <td><span class="badge-fw">v${fwVer}</span></td>
         ${actionTd}
       </tr>`;
