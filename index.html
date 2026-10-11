@@ -29,7 +29,7 @@
     .modal-overlay { background: rgba(5, 8, 17, 0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; }
     
     .login-box, .modal-box { background: var(--bg-surface); backdrop-filter: blur(16px); padding: 24px 20px; border-radius: 16px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); }
-    .modal-box { max-width: 600px; }
+    .modal-box { max-width: 620px; }
     
     .login-box { text-align: center; }
     .login-box .icon-logo { font-size: 36px; color: var(--accent-blue); margin-bottom: 12px; }
@@ -91,8 +91,13 @@
     .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border-color: rgba(248, 113, 113, 0.25); }
 
     .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-    .log-list { max-height: 320px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
+    .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+    
+    .log-filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .log-filter-bar label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .log-filter-bar input[type="date"] { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none; }
+
+    .log-list { max-height: 280px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
     .log-item { padding: 8px 6px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
     .log-item:last-child { border-bottom: none; }
 
@@ -190,17 +195,28 @@
   </div>
 </div>
 
-<!-- MODAL LOG HÀNG GIỜ -->
+<!-- MODAL NHẬT KÝ THEO NGÀY -->
 <div class="modal-overlay" id="logModal">
   <div class="modal-box">
     <div class="modal-header">
-      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung & Môi Trường (24h)</span>
+      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung & Môi Trường</span>
       <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('logModal')"></i>
     </div>
+    
+    <!-- THANH LỌC THEO NGÀY -->
+    <div class="log-filter-bar">
+      <label for="logDateFilter"><i class="fa-regular fa-calendar"></i> Chọn Ngày:</label>
+      <input type="date" id="logDateFilter" onchange="filterLogsByDate()">
+      <button class="btn-cancel" style="padding: 5px 10px; font-size: 11px;" onclick="resetLogDateFilter()">Xem Tất Cả</button>
+    </div>
+
+    <input type="hidden" id="currentLogMac">
     <div class="log-list" id="logContainer">
       <div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>
     </div>
+    
     <div class="modal-footer">
+      <span id="logCountBadge" style="font-size: 11px; color: var(--text-muted);">Hiển thị: 0 bản ghi</span>
       <button class="btn-cancel" onclick="closeModal('logModal')">Đóng</button>
     </div>
   </div>
@@ -220,13 +236,18 @@
     projectId: "trungio"
   };
 
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  
   const auth = firebase.auth();
   const db = firebase.database();
 
   let globalDeviceData = null;
   let currentUser = null;
+  let cachedRawLogs = [];
 
+  // TỰ ĐỘNG LẤY IP WAN CHO MASTER
   async function updateMasterPublicIP() {
     try {
       const response = await fetch('https://api.ipify.org?format=json');
@@ -236,12 +257,14 @@
           ip_wan: data.ip,
           ip: data.ip
         });
+        console.log("[IP WAN] Đã tự động cập nhật IP WAN từ trình duyệt:", data.ip);
       }
     } catch (error) {
       console.error("[IP WAN] Không thể lấy IP WAN từ Client:", error);
     }
   }
 
+  // XÁC THỰC NGƯỜI DÙNG
   auth.onAuthStateChanged((user) => {
     if (user) {
       currentUser = user;
@@ -285,6 +308,7 @@
 
   function logout() { auth.signOut().then(() => location.reload()); }
 
+  // LẮNG NGHE DỮ LIỆU REALTIME
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
@@ -340,6 +364,7 @@
       let pulseUs = dev.pulse_width_us ?? "--";
       let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
 
+      // Lấy giá trị nhiệt độ và điện áp hỗ trợ cả key tiếng Anh lẫn viết tắt
       let tempVal = dev.temperature ?? dev.temp;
       let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
       let voltVal = dev.voltage ?? dev.vcc;
@@ -418,38 +443,85 @@
     document.getElementById("editModal").style.display = "flex";
   }
 
-  // CẬP NHẬT HIỂN THỊ NHIỆT ĐỘ VÀ ĐIỆN ÁP TRONG HÀM XEM NHẬT KÝ
+  // XEM NHẬT KÝ & LỌC THEO NGÀY
   function viewHourlyLog(macAddress) {
     const container = document.getElementById("logContainer");
     container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+    document.getElementById("currentLogMac").value = macAddress;
+    document.getElementById("logDateFilter").value = "";
     document.getElementById("logModal").style.display = "flex";
 
-    db.ref("logs/" + macAddress).limitToLast(24).once("value", (snapshot) => {
+    db.ref("logs/" + macAddress).limitToLast(200).once("value", (snapshot) => {
       let logs = snapshot.val();
       if (!logs) {
+        cachedRawLogs = [];
         container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+        document.getElementById("logCountBadge").innerText = "Hiển thị: 0 bản ghi";
         return;
       }
-      let html = "";
+
+      cachedRawLogs = [];
       for (let k in logs) {
-        let item = logs[k];
-        let date = new Date(item.timestamp).toLocaleString("vi-VN");
-        let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
-        let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
-
-        // Lấy giá trị temperature và voltage từ từng bản ghi log (nếu có)
-        let logTemp = (item.temperature !== undefined) ? `${parseFloat(item.temperature).toFixed(1)}°C` : ((item.temp !== undefined) ? `${parseFloat(item.temp).toFixed(1)}°C` : "--");
-        let logVolt = (item.voltage !== undefined) ? `${parseFloat(item.voltage).toFixed(2)}V` : ((item.vcc !== undefined) ? `${parseFloat(item.vcc).toFixed(2)}V` : "--");
-
-        html += `<div class="log-item">
-          <div><i class="fa-regular fa-clock" style="color:var(--text-muted)"></i> ${date}</div>
-          <div>IN: <b>${item.hourly_in ?? 0}</b> | OUT: <b>${item.hourly_out ?? 0}</b> | Ratio: <span style="${ratioColor}">${item.ratio ?? 0}x</span></div>
-          <div style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${logTemp}</div>
-          <div style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${logVolt}</div>
-        </div>`;
+        cachedRawLogs.push(logs[k]);
       }
-      container.innerHTML = html;
+      cachedRawLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+      displayLogItems(cachedRawLogs);
     });
+  }
+
+  function displayLogItems(logsArray) {
+    const container = document.getElementById("logContainer");
+    if (logsArray.length === 0) {
+      container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Không tìm thấy bản ghi nhật ký phù hợp.</div>`;
+      document.getElementById("logCountBadge").innerText = "Hiển thị: 0 bản ghi";
+      return;
+    }
+
+    let html = "";
+    logsArray.forEach(item => {
+      let dateObj = new Date(item.timestamp);
+      let dateStr = dateObj.toLocaleString("vi-VN");
+      let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
+      let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
+
+      let logTemp = (item.temperature !== undefined) ? `${parseFloat(item.temperature).toFixed(1)}°C` : ((item.temp !== undefined) ? `${parseFloat(item.temp).toFixed(1)}°C` : "--");
+      let logVolt = (item.voltage !== undefined) ? `${parseFloat(item.voltage).toFixed(2)}V` : ((item.vcc !== undefined) ? `${parseFloat(item.vcc).toFixed(2)}V` : "--");
+
+      html += `<div class="log-item">
+        <div><i class="fa-regular fa-clock" style="color:var(--text-muted)"></i> ${dateStr}</div>
+        <div>IN: <b>${item.hourly_in ?? 0}</b> | OUT: <b>${item.hourly_out ?? 0}</b> | Ratio: <span style="${ratioColor}">${item.ratio ?? 0}x</span></div>
+        <div style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${logTemp}</div>
+        <div style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${logVolt}</div>
+      </div>`;
+    });
+
+    container.innerHTML = html;
+    document.getElementById("logCountBadge").innerText = `Hiển thị: ${logsArray.length} bản ghi`;
+  }
+
+  function filterLogsByDate() {
+    const selectedDateVal = document.getElementById("logDateFilter").value;
+    if (!selectedDateVal) {
+      displayLogItems(cachedRawLogs);
+      return;
+    }
+
+    const filtered = cachedRawLogs.filter(item => {
+      let itemDate = new Date(item.timestamp);
+      let year = itemDate.getFullYear();
+      let month = String(itemDate.getMonth() + 1).padStart(2, '0');
+      let day = String(itemDate.getDate()).padStart(2, '0');
+      let itemDateStr = `${year}-${month}-${day}`;
+      return itemDateStr === selectedDateVal;
+    });
+
+    displayLogItems(filtered);
+  }
+
+  function resetLogDateFilter() {
+    document.getElementById("logDateFilter").value = "";
+    displayLogItems(cachedRawLogs);
   }
 
   function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
