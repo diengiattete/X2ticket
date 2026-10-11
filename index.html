@@ -41,8 +41,6 @@
     .form-input, .filter-box select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 14px; outline: none; }
     .form-input:focus { border-color: var(--accent-blue); }
 
-    .error-msg { background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: var(--accent-red); padding: 10px; border-radius: 8px; font-size: 12px; margin-bottom: 16px; text-align: left; display: none; }
-
     .btn-login, .btn-primary, .btn-cancel, .btn-logout { padding: 10px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .btn-login, .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; width: 100%; }
     .btn-primary { width: auto; }
@@ -112,13 +110,10 @@
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
     <h2>FUNCHOMPER SYSTEM</h2>
     <p>Đăng nhập bằng Firebase Auth</p>
-    
-    <div id="loginError" class="error-msg"></div>
-
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
         <label for="email">Email Hệ Thống</label>
-        <input type="email" id="email" class="form-input" placeholder="trung@fun.io" required autofocus autocomplete="username">
+        <input type="email" id="email" class="form-input" placeholder="nhap_email@domain.com" required autofocus autocomplete="username">
       </div>
       <div class="form-group">
         <label for="password">Mật Khẩu</label>
@@ -211,7 +206,7 @@
   </div>
 </div>
 
-<!-- FIREBASE SDKs v8 -->
+<!-- FIREBASE SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -225,11 +220,7 @@
     projectId: "trungio"
   };
 
-  // Tránh khởi tạo Firebase trùng lặp
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  
+  firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
 
@@ -252,9 +243,6 @@
   }
 
   auth.onAuthStateChanged((user) => {
-    const errorBox = document.getElementById("loginError");
-    errorBox.style.display = "none";
-
     if (user) {
       currentUser = user;
       document.getElementById("loginScreen").style.display = "none";
@@ -283,32 +271,15 @@
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
     const btnLogin = document.getElementById("btnLogin");
-    const errorBox = document.getElementById("loginError");
 
-    errorBox.style.display = "none";
     btnLogin.innerText = "ĐANG XÁC THỰC...";
     btnLogin.disabled = true;
 
     auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        btnLogin.innerText = "ĐĂNG NHẬP";
-        btnLogin.disabled = false;
-      })
       .catch((error) => {
+        alert("Lỗi đăng nhập: " + error.message);
         btnLogin.innerText = "ĐĂNG NHẬP";
         btnLogin.disabled = false;
-        errorBox.style.display = "block";
-        
-        // Việt hóa các mã lỗi phổ biến của Firebase Auth
-        let errorMsg = error.message;
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-          errorMsg = "Email hoặc mật khẩu không chính xác!";
-        } else if (error.code === 'auth/invalid-email') {
-          errorMsg = "Định dạng email không hợp lệ!";
-        } else if (error.code === 'auth/too-many-requests') {
-          errorMsg = "Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần. Thử lại sau!";
-        }
-        errorBox.innerText = "⚠️ Lỗi đăng nhập: " + errorMsg;
       });
   }
 
@@ -319,7 +290,7 @@
       globalDeviceData = snapshot.val();
       if (globalDeviceData) updateGroupDropdown(globalDeviceData);
       renderDevices();
-    }, (error) => console.error("Lỗi truy cập dữ liệu: " + error.message));
+    }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
 
     setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
   }
@@ -370,4 +341,142 @@
       let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
 
       let tempVal = dev.temperature ?? dev.temp;
-      let tempDisplay = tempVal !==
+      let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
+      let voltVal = dev.voltage ?? dev.vcc;
+      let voltDisplay = voltVal !== undefined ? `${parseFloat(voltVal).toFixed(2)} V` : "--";
+
+      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
+
+      let statusHTML = isOnline 
+        ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
+        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${timeDiffSec > 999 ? '>999' : timeDiffSec}s)</span>`;
+
+      let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
+      let ratioDisplay = isRatioError 
+        ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
+        : `<b>${ratio}x</b>`;
+
+      let actionTd = isAdmin ? `
+        <td>
+          <div class="action-group">
+            <button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>
+            <button class="btn-edit" onclick="openEditModal('${id}', '${devName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+            <button class="btn-delete" onclick="deleteDevice('${id}', '${devName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          </div>
+        </td>` : '';
+
+      tbody.innerHTML += `<tr>
+        <td>${statusHTML}</td>
+        <td><b style="color: var(--text-main); font-size:14px;">${devName}</b></td>
+        <td><span class="badge-group">${devGroup}</span></td>
+        <td>
+          <div class="${pulseContainerClass}">
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          </div>
+          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
+        </td>
+        <td>
+          <div class="env-box">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+          </div>
+        </td>
+        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
+        <td>
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+        </td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
+      </tr>`;
+    }
+
+    if (count === 0) {
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 9 : 8}" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+    }
+  }
+
+  function updateGroupDropdown(data) {
+    const filterSelect = document.getElementById("groupFilter");
+    const currentSelected = filterSelect.value;
+    let groups = new Set();
+    for (let id in data) { groups.add(data[id].group || "Chưa Phân Nhóm"); }
+
+    let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
+    groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
+    filterSelect.innerHTML = optionsHTML;
+    filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
+  }
+
+  function openEditModal(deviceId, currentName, currentGroup) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    document.getElementById("editDeviceId").value = deviceId;
+    document.getElementById("editDeviceName").value = currentName;
+    document.getElementById("editGroupName").value = currentGroup;
+    document.getElementById("editModal").style.display = "flex";
+  }
+
+  // CẬP NHẬT HIỂN THỊ NHIỆT ĐỘ VÀ ĐIỆN ÁP TRONG HÀM XEM NHẬT KÝ
+  function viewHourlyLog(macAddress) {
+    const container = document.getElementById("logContainer");
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+    document.getElementById("logModal").style.display = "flex";
+
+    db.ref("logs/" + macAddress).limitToLast(24).once("value", (snapshot) => {
+      let logs = snapshot.val();
+      if (!logs) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+        return;
+      }
+      let html = "";
+      for (let k in logs) {
+        let item = logs[k];
+        let date = new Date(item.timestamp).toLocaleString("vi-VN");
+        let isErr = (item.hourly_in > 0) && (item.ratio < 1.95 || item.ratio > 2.05);
+        let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
+
+        // Lấy giá trị temperature và voltage từ từng bản ghi log (nếu có)
+        let logTemp = (item.temperature !== undefined) ? `${parseFloat(item.temperature).toFixed(1)}°C` : ((item.temp !== undefined) ? `${parseFloat(item.temp).toFixed(1)}°C` : "--");
+        let logVolt = (item.voltage !== undefined) ? `${parseFloat(item.voltage).toFixed(2)}V` : ((item.vcc !== undefined) ? `${parseFloat(item.vcc).toFixed(2)}V` : "--");
+
+        html += `<div class="log-item">
+          <div><i class="fa-regular fa-clock" style="color:var(--text-muted)"></i> ${date}</div>
+          <div>IN: <b>${item.hourly_in ?? 0}</b> | OUT: <b>${item.hourly_out ?? 0}</b> | Ratio: <span style="${ratioColor}">${item.ratio ?? 0}x</span></div>
+          <div style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${logTemp}</div>
+          <div style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${logVolt}</div>
+        </div>`;
+      }
+      container.innerHTML = html;
+    });
+  }
+
+  function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+  function saveDeviceChanges() {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+    const deviceId = document.getElementById("editDeviceId").value;
+    const newName = document.getElementById("editDeviceName").value.trim();
+    const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
+
+    if (!newName) return alert("Vui lòng nhập tên trạm!");
+
+    db.ref("devices/" + deviceId).update({ device_name: newName, group: newGroup })
+      .then(() => { alert("Cập nhật thành công!"); closeModal("editModal"); })
+      .catch(err => alert("Lỗi khi lưu: " + err.message));
+  }
+
+  function deleteDevice(deviceId, deviceName) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
+      db.ref("devices/" + deviceId).remove()
+        .then(() => alert(`Đã xóa "${deviceName}"!`))
+        .catch(err => alert("Lỗi khi xóa: " + err.message));
+    }
+  }
+</script>
+
+</body>
+</html>
