@@ -247,17 +247,17 @@
   let currentUser = null;
   let cachedRawLogs = [];
 
-  // TỰ ĐỘNG LẤY IP WAN CHO MASTER
+  // ĐÃ CHUYỂN HƯỚNG LƯU IP WAN VÀO NODE RIÊNG BIỆT 'system/gateway_ip'
+  // ĐỂ KHÔNG TẠO RA THIẾT BỊ ẢO TRÊN GIAO DIỆN NỮA
   async function updateMasterPublicIP() {
     try {
       const response = await fetch('https://api.ipify.org?format=json');
       const data = await response.json();
       if (data && data.ip) {
-        db.ref("devices/Gateway ESP8266").update({
+        db.ref("system/gateway_ip").set({
           ip_wan: data.ip,
-          ip: data.ip
+          updated_at: Date.now()
         });
-        console.log("[IP WAN] Đã tự động cập nhật IP WAN từ trình duyệt:", data.ip);
       }
     } catch (error) {
       console.error("[IP WAN] Không thể lấy IP WAN từ Client:", error);
@@ -308,7 +308,6 @@
 
   function logout() { auth.signOut().then(() => location.reload()); }
 
-  // LẮNG NGHE DỮ LIỆU REALTIME
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
@@ -336,6 +335,13 @@
 
     for (let id in globalDeviceData) {
       let dev = globalDeviceData[id];
+
+      // TỰ ĐỘNG XÓA BỎ HOÀN TOÀN TRÊN FIREBASE NẾU CÒN SÓT LẠI TRÊN DATABASE
+      if (id.toLowerCase().includes('8266') || (dev.device_name && dev.device_name.toLowerCase().includes('8266'))) {
+        db.ref("devices/" + id).remove(); // Xóa sạch khỏi database ngay lập tức
+        continue;
+      }
+
       let devGroup = dev.group || "Chưa Phân Nhóm";
 
       if (filterValue !== "ALL" && devGroup !== filterValue) continue;
@@ -364,7 +370,6 @@
       let pulseUs = dev.pulse_width_us ?? "--";
       let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
 
-      // Lấy giá trị nhiệt độ và điện áp hỗ trợ cả key tiếng Anh lẫn viết tắt
       let tempVal = dev.temperature ?? dev.temp;
       let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
       let voltVal = dev.voltage ?? dev.vcc;
@@ -427,7 +432,10 @@
     const filterSelect = document.getElementById("groupFilter");
     const currentSelected = filterSelect.value;
     let groups = new Set();
-    for (let id in data) { groups.add(data[id].group || "Chưa Phân Nhóm"); }
+    for (let id in data) { 
+      if (id.toLowerCase().includes('8266') || (data[id].device_name && data[id].device_name.toLowerCase().includes('8266'))) continue;
+      groups.add(data[id].group || "Chưa Phân Nhóm"); 
+    }
 
     let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
     groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
@@ -443,7 +451,6 @@
     document.getElementById("editModal").style.display = "flex";
   }
 
-  // XEM NHẬT KÝ & LỌC THEO NGÀY
   function viewHourlyLog(macAddress) {
     const container = document.getElementById("logContainer");
     container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
