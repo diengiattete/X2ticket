@@ -354,7 +354,6 @@
       let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
       let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
 
-      // ĐÃ SỬA LẠI: Kết hợp kiểm tra trạng thái từ Firebase (dev.status === "ONLINE") cùng thời gian thực
       let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 30) && (lastSeenTime > 0);
 
       if (!isOnline && dev.status === "ONLINE") {
@@ -375,9 +374,13 @@
 
       let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
 
+      // Nếu offline quá 120s thì ẩn số giây phía sau
       let statusHTML = isOnline 
         ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
-        : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${timeDiffSec > 999 ? '>999' : timeDiffSec}s)</span>`;
+        : (timeDiffSec > 120 
+            ? `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`
+            : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${timeDiffSec}s)</span>`
+          );
 
       let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
       let ratioDisplay = isRatioError 
