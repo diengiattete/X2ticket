@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Theo Dõi Funchomper - Firebase Realtime</title>
-  <!-- Favicon hình tay cầm chơi game to bằng icon của Gemini -->
+  <!-- Favicon hình tay cầm chơi game -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2280%22>🎮</text></svg>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -56,6 +56,9 @@
     
     .role-badge { padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
     .role-badge.readonly { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
+    
+    /* Badge hiển thị phiên bản góc trên cùng bên phải */
+    .app-version-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: rgba(148, 163, 184, 0.1); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.25); font-family: monospace; }
 
     .card { background: var(--bg-surface); backdrop-filter: blur(12px); border-radius: 14px; border: 1px solid var(--border-color); padding: 16px 12px; }
     .card-header { display: flex; flex-direction: column; margin-bottom: 16px; gap: 12px; }
@@ -120,7 +123,7 @@
 <div class="login-overlay" id="loginScreen">
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
-    <h2>FUNCHOMPER SYSTEM 2.5</h2>
+    <h2>FUNCHOMPER SYSTEM v2.4</h2>
     <p>Đăng nhập bằng Firebase Auth</p>
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
@@ -139,10 +142,11 @@
 <!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
 <div class="container" id="dashboardScreen">
   <div class="navbar">
-    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER 2.5</h1>
+    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER</h1>
     <div class="nav-controls">
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+      <span class="app-version-badge">v2.4</span>
     </div>
   </div>
 
@@ -383,6 +387,17 @@
     });
 
     sortedGroups.forEach(devGroup => {
+      // Sắp xếp các thiết bị trong cùng 1 nhóm theo thứ tự chữ cái A-Z của Tên Tùy Chọn (custom_name)
+      groupsMap[devGroup].sort((a, b) => {
+        let isGatewayA = a.id.toLowerCase().includes('gateway') || (a.dev.type && a.dev.type === 'gateway');
+        let isGatewayB = b.id.toLowerCase().includes('gateway') || (b.dev.type && b.dev.type === 'gateway');
+        
+        let nameA = a.dev.custom_name || (isGatewayA ? "Gateway Trung Tâm" : a.id);
+        let nameB = b.dev.custom_name || (isGatewayB ? "Gateway Trung Tâm" : b.id);
+        
+        return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+      });
+
       tbody.innerHTML += `
         <tr style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
           <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 12px; font-size: 14px;">
@@ -416,7 +431,6 @@
         let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
         let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
 
-        // Ngưỡng xác định online/offline đổi thành 60 giây
         let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 60) && (lastSeenTime > 0);
 
         let inCnt = dev.input_count ?? 0;
@@ -432,7 +446,6 @@
 
         let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
 
-        // Định dạng hiển thị trạng thái và thời gian cuối online phía dưới
         let statusHTML = "";
         if (isOnline) {
           statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`;
