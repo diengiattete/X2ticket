@@ -120,7 +120,7 @@
 <div class="login-overlay" id="loginScreen">
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
-    <h2>FUNCHOMPER SYSTEM v2.4</h2>
+    <h2>FUNCHOMPER SYSTEM 2.5</h2>
     <p>Đăng nhập bằng Firebase Auth</p>
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
@@ -139,7 +139,7 @@
 <!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
 <div class="container" id="dashboardScreen">
   <div class="navbar">
-    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER v2.4</h1>
+    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER 2.5</h1>
     <div class="nav-controls">
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
@@ -312,7 +312,6 @@
 
   function logout() { auth.signOut().then(() => location.reload()); }
 
-  // Hàm gửi lệnh restart riêng cho từng Master dựa vào ID thiết bị trên Firebase
   function restartSpecificMaster(deviceId, deviceDisplayName) {
     if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
     if (confirm(`Bạn có chắc chắn muốn khởi động lại Master "${deviceDisplayName}" (${deviceId}) không?`)) {
@@ -417,7 +416,8 @@
         let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
         let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
 
-        let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 30) && (lastSeenTime > 0);
+        // Ngưỡng xác định online/offline đổi thành 60 giây
+        let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 60) && (lastSeenTime > 0);
 
         let inCnt = dev.input_count ?? 0;
         let outCnt = dev.output_count ?? 0;
@@ -432,12 +432,17 @@
 
         let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
 
-        let statusHTML = isOnline 
-          ? `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`
-          : (timeDiffSec > 120 
-              ? `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>`
-              : `<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE (${timeDiffSec}s)</span>`
-            );
+        // Định dạng hiển thị trạng thái và thời gian cuối online phía dưới
+        let statusHTML = "";
+        if (isOnline) {
+          statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`;
+        } else {
+          let lastSeenStr = lastSeenTime > 0 ? new Date(lastSeenTime).toLocaleString("vi-VN") : "Chưa xác định";
+          statusHTML = `
+            <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
+            <span class="info-sub" style="color: var(--accent-red);">Lần cuối: ${lastSeenStr}</span>
+          `;
+        }
 
         let pulseColumnHTML = "";
         if (isGateway) {
