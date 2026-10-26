@@ -315,13 +315,13 @@
 
   function logout() { auth.signOut().then(() => location.reload()); }
 
-  function restartSpecificMaster(deviceId, deviceDisplayName) {
+ function restartSpecificMaster(deviceId, deviceDisplayName) {
     if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
     if (confirm(`Bạn có chắc chắn muốn khởi động lại Master "${deviceDisplayName}" (${deviceId}) không?`)) {
-      db.ref("system/commands/" + deviceId).set({
-        action: "restart",
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        requested_by: currentUser.email
+      // Ghi trực tiếp lệnh vào nhánh devices của thiết bị đó
+      db.ref("devices/" + deviceId).update({
+        command: "restart",
+        command_time: firebase.database.ServerValue.TIMESTAMP
       }).then(() => {
         alert(`Đã gửi lệnh khởi động lại tới ${deviceId}! Thiết bị sẽ reboot sau vài giây.`);
       }).catch(err => {
