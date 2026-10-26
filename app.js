@@ -127,6 +127,19 @@ function listenToDatabase() {
     if (newData) {
       for (let id in newData) {
         let dev = newData[id];
+        
+        // TỰ ĐỘNG XÓA THIẾT BỊ CÓ FIRMWARE v1.0.0 KHỎI FIREBASE
+        if (dev.firmware === "1.0.0") {
+          db.ref("devices/" + id).remove()
+            .then(() => {
+              console.log(`Đã tự động xóa thiết bị cũ/lạ: ${id}`);
+            })
+            .catch((err) => {
+              console.error(`Lỗi khi xóa thiết bị ${id}:`, err);
+            });
+          continue; // Bỏ qua không xử lý render thiết bị này nữa
+        }
+
         let currentLastSeen = dev.last_seen ? Number(dev.last_seen) : 0;
 
         if (!lastSeenTracker[id]) {
@@ -137,6 +150,14 @@ function listenToDatabase() {
         }
       }
     }
+
+    globalDeviceData = newData;
+    if (globalDeviceData) updateGroupDropdown(globalDeviceData);
+    renderDevices();
+  }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
+
+  setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
+}
 
     globalDeviceData = newData;
     if (globalDeviceData) updateGroupDropdown(globalDeviceData);
