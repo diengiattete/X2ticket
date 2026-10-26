@@ -47,7 +47,7 @@
     .btn-login, .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; width: 100%; }
     .btn-primary { width: auto; }
     .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
-    .btn-logout { background: rgba(248, 113, 113, 0.08); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); margin-left: auto; }
+    .btn-logout { background: rgba(248, 113, 113, 0.08); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); }
 
     .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
     .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
@@ -90,11 +90,12 @@
     .device-esp-id { font-size: 11px; font-family: monospace; color: var(--accent-blue); font-weight: 600; }
     .device-custom-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
 
-    .action-group { display: flex; gap: 6px; justify-content: flex-end; }
-    .btn-log, .btn-edit, .btn-delete { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
+    .action-group { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+    .btn-log, .btn-edit, .btn-delete, .btn-restart { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
     .btn-log { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
     .btn-edit { background: rgba(251, 191, 36, 0.1); color: var(--accent-yellow); border-color: rgba(251, 191, 36, 0.25); }
     .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border-color: rgba(248, 113, 113, 0.25); }
+    .btn-restart { background: rgba(249, 115, 22, 0.15); color: var(--accent-orange); border-color: rgba(249, 115, 22, 0.3); }
 
     .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
     .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
@@ -119,7 +120,7 @@
 <div class="login-overlay" id="loginScreen">
   <div class="login-box">
     <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
-    <h2>FUNCHOMPER SYSTEM v2.3</h2>
+    <h2>FUNCHOMPER SYSTEM v2.4</h2>
     <p>Đăng nhập bằng Firebase Auth</p>
     <form onsubmit="handleLogin(event)">
       <div class="form-group">
@@ -138,7 +139,7 @@
 <!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
 <div class="container" id="dashboardScreen">
   <div class="navbar">
-    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER</h1>
+    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER v2.4</h1>
     <div class="nav-controls">
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
@@ -311,6 +312,22 @@
 
   function logout() { auth.signOut().then(() => location.reload()); }
 
+  // Hàm gửi lệnh restart riêng cho từng Master dựa vào ID thiết bị trên Firebase
+  function restartSpecificMaster(deviceId, deviceDisplayName) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    if (confirm(`Bạn có chắc chắn muốn khởi động lại Master "${deviceDisplayName}" (${deviceId}) không?`)) {
+      db.ref("system/commands/" + deviceId).set({
+        action: "restart",
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        requested_by: currentUser.email
+      }).then(() => {
+        alert(`Đã gửi lệnh khởi động lại tới ${deviceId}! Thiết bị sẽ reboot sau vài giây.`);
+      }).catch(err => {
+        alert("Lỗi khi gửi lệnh: " + err.message);
+      });
+    }
+  }
+
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
       globalDeviceData = snapshot.val();
@@ -340,7 +357,6 @@
     for (let id in globalDeviceData) {
       let dev = globalDeviceData[id];
 
-      // Loại bỏ các thiết bị 8266 cũ nếu cần, giữ lại Gateway bình thường
       if (id.toLowerCase().includes('8266') || (dev.device_name && dev.device_name.toLowerCase().includes('8266'))) {
         continue;
       }
@@ -445,6 +461,7 @@
         let actionTd = `
           <td>
             <div class="action-group">
+              ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Khởi Động Lại</button>` : ''}
               ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
               ${isAdmin ? `
                 <button class="btn-edit" onclick="openEditModal('${id}', '${safeCustomName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
@@ -554,7 +571,6 @@
       let dateObj = new Date(item.timestamp);
       let dateStr = dateObj.toLocaleString("vi-VN");
       
-      // Hỗ trợ linh hoạt nhiều kiểu tên key khác nhau từ database logs
       let inVal = item.hourly_in ?? item.input_count ?? item.in ?? 0;
       let outVal = item.hourly_out ?? item.output_count ?? item.out ?? 0;
       let ratioVal = item.ratio ?? 0;
@@ -576,6 +592,7 @@
     container.innerHTML = html;
     document.getElementById("logCountBadge").innerText = `Hiển thị: ${logsToDisplay.length} / ${currentFilteredLogs.length} bản ghi`;
   }
+
   function handleLogScroll(e) {
     const container = e.target;
     if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
