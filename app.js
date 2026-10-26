@@ -157,7 +157,7 @@ function listenToDatabase() {
   }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
 
   setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
-} // <--- Dấu ngoặc đóng của hàm listenToDatabase phải khớp chính xác ở đây
+}
 
 function formatWithoutYear(timestamp) {
   if (!timestamp) return "Chưa xác định";
