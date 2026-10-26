@@ -31,7 +31,7 @@
     .modal-overlay { background: rgba(5, 8, 17, 0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; }
     
     .login-box, .modal-box { background: var(--bg-surface); backdrop-filter: blur(16px); padding: 24px 20px; border-radius: 16px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); }
-    .modal-box { max-width: 620px; }
+    .modal-box { max-width: 650px; }
     
     .login-box { text-align: center; }
     .login-box .icon-logo { font-size: 36px; color: var(--accent-blue); margin-bottom: 12px; }
@@ -43,11 +43,12 @@
     .form-input, .filter-box select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 14px; outline: none; }
     .form-input:focus { border-color: var(--accent-blue); }
 
-    .btn-login, .btn-primary, .btn-cancel, .btn-logout { padding: 10px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .btn-login, .btn-primary, .btn-cancel, .btn-logout, .btn-users { padding: 10px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .btn-login, .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; width: 100%; }
     .btn-primary { width: auto; }
     .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
     .btn-logout { background: rgba(248, 113, 113, 0.08); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); }
+    .btn-users { background: rgba(52, 211, 153, 0.12); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
 
     .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
     .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
@@ -110,6 +111,9 @@
     .log-item { padding: 8px 6px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
     .log-item:last-child { border-bottom: none; }
 
+    .user-perm-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: auto; }
+    .user-perm-table th, .user-perm-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid var(--border-color); }
+
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
       .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
@@ -144,8 +148,9 @@
     <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER</h1>
     <div class="nav-controls">
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
+      <button class="btn-users" id="btnUsersPerm" style="display:none;" onclick="openUsersModal()"><i class="fa-solid fa-user-gear"></i> Phân Quyền & Tạo User</button>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-      <span class="app-version-badge">v2.9</span>
+      <span class="app-version-badge">v3.1</span>
     </div>
   </div>
 
@@ -205,6 +210,57 @@
   </div>
 </div>
 
+<!-- MODAL PHÂN QUYỀN VÀ TẠO USER (ADMIN ONLY) -->
+<div class="modal-overlay" id="usersModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span><i class="fa-solid fa-user-shield" style="color:var(--accent-green); margin-right:6px;"></i> Quản Lý User & Phân Quyền Group</span>
+      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('usersModal')"></i>
+    </div>
+    
+    <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+      <div style="font-size: 12px; font-weight:600; color:var(--accent-blue); margin-bottom:8px;">Tạo Tài Khoản Mới / Cập Nhật Quyền User</div>
+      
+      <div class="form-group" style="margin-bottom:8px;">
+        <label for="permUserEmail">Email Tài Khoản</label>
+        <input type="email" id="permUserEmail" class="form-input" placeholder="user@domain.com">
+      </div>
+
+      <div class="form-group" style="margin-bottom:8px;">
+        <label for="permUserPassword">Mật Khẩu (Để trống nếu chỉ cập nhật quyền)</label>
+        <input type="password" id="permUserPassword" class="form-input" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)...">
+      </div>
+
+      <div class="form-group" style="margin-bottom:8px;">
+        <label for="permGroups">Nhóm Được Xem (Phân cách bằng dấu phẩy, dùng * để xem tất cả)</label>
+        <input type="text" id="permGroups" class="form-input" placeholder="KhuVucA, KhuVucB hoặc *">
+      </div>
+
+      <button class="btn-primary" id="btnSaveUser" style="margin-top:4px;" onclick="saveUserAndPermissions()">TẠO TÀI KHOẢN & LƯU QUYỀN</button>
+    </div>
+
+    <div style="font-size: 13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Danh Sách Phân Quyền Hiện Tại</div>
+    <div class="log-list" style="max-height: 200px;">
+      <table class="user-perm-table">
+        <thead>
+          <tr>
+            <th>Email Tài Khoản</th>
+            <th>Nhóm Được Xem</th>
+            <th style="text-align:right;">Xóa Quyền</th>
+          </tr>
+        </thead>
+        <tbody id="userPermTableBody">
+          <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Đang tải danh sách...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('usersModal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL NHẬT KÝ THEO NGÀY -->
 <div class="modal-overlay" id="logModal">
   <div class="modal-box">
@@ -254,9 +310,18 @@
 
   let globalDeviceData = null;
   let currentUser = null;
+  let allowedGroupsList = ["*"]; 
   let cachedRawLogs = [];
   let currentFilteredLogs = [];
   let currentLogLimit = 50;
+
+  function encodeEmail(email) {
+    return email.replace(/\./g, '_dot_').replace(/@/g, '_at_');
+  }
+
+  function decodeEmail(key) {
+    return key.replace(/_dot_/g, '.').replace(/_at_/g, '@');
+  }
 
   async function updateMasterPublicIP() {
     try {
@@ -281,20 +346,48 @@
 
       const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
       const badgeEl = document.getElementById("userBadge");
-      
+      const btnUsersPerm = document.getElementById("btnUsersPerm");
+
       badgeEl.className = isAdmin ? "role-badge" : "role-badge readonly";
       badgeEl.innerHTML = isAdmin 
         ? `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`
-        : `<i class="fa-solid fa-eye"></i> ${user.email} (READ ONLY)`;
+        : `<i class="fa-solid fa-eye"></i> ${user.email}`;
 
-      updateMasterPublicIP();
-      listenToDatabase();
+      btnUsersPerm.style.display = isAdmin ? "inline-block" : "none";
+
+      fetchUserPermissions(user.email, () => {
+        updateMasterPublicIP();
+        listenToDatabase();
+      });
     } else {
       currentUser = null;
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("dashboardScreen").style.display = "none";
     }
   });
+
+  function fetchUserPermissions(email, callback) {
+    const isAdmin = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+    if (isAdmin) {
+      allowedGroupsList = ["*"];
+      if (callback) callback();
+      return;
+    }
+
+    const emailKey = encodeEmail(email.toLowerCase());
+    db.ref("users_permission/" + emailKey).once("value", (snapshot) => {
+      const permData = snapshot.val();
+      if (permData && permData.allowed_groups) {
+        allowedGroupsList = permData.allowed_groups;
+      } else {
+        allowedGroupsList = []; 
+      }
+      if (callback) callback();
+    }, (err) => {
+      allowedGroupsList = [];
+      if (callback) callback();
+    });
+  }
 
   function handleLogin(e) {
     e.preventDefault();
@@ -315,10 +408,9 @@
 
   function logout() { auth.signOut().then(() => location.reload()); }
 
- function restartSpecificMaster(deviceId, deviceDisplayName) {
+  function restartSpecificMaster(deviceId, deviceDisplayName) {
     if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
     if (confirm(`Bạn có chắc chắn muốn khởi động lại Master "${deviceDisplayName}" (${deviceId}) không?`)) {
-      // Ghi trực tiếp lệnh vào nhánh devices của thiết bị đó
       db.ref("devices/" + deviceId).update({
         command: "restart",
         command_time: firebase.database.ServerValue.TIMESTAMP
@@ -340,7 +432,6 @@
     setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
   }
 
-  // Hàm định dạng ngày giờ bỏ năm (Ví dụ: 15/10, 14:30:00)
   function formatWithoutYear(timestamp) {
     if (!timestamp) return "Chưa xác định";
     let dateObj = new Date(timestamp);
@@ -348,6 +439,11 @@
     let day = String(dateObj.getDate()).padStart(2, '0');
     let month = String(dateObj.getMonth() + 1).padStart(2, '0');
     return `${day}/${month}, ${timeStr}`;
+  }
+
+  function isGroupAllowed(devGroup) {
+    if (allowedGroupsList.includes("*")) return true;
+    return allowedGroupsList.includes(devGroup);
   }
 
   function renderDevices() {
@@ -375,6 +471,8 @@
 
       let devGroup = dev.group || "Chưa Phân Nhóm";
 
+      if (!isGroupAllowed(devGroup)) continue;
+
       if (filterValue !== "ALL" && devGroup !== filterValue) continue;
 
       if (!groupsMap[devGroup]) {
@@ -385,7 +483,7 @@
     }
 
     if (totalCount === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp hoặc tài khoản chưa được cấp quyền xem nhóm này.</td></tr>`;
       return;
     }
 
@@ -484,7 +582,6 @@
         }
 
         let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
-        // Đã đổi chữ "Khởi Động Lại" thành "Restart" để giảm kích thước nút
         let actionTd = `
           <td>
             <div class="action-group">
@@ -532,7 +629,10 @@
     let groups = new Set();
     for (let id in data) { 
       if (id.toLowerCase().includes('8266') || (data[id].device_name && data[id].device_name.toLowerCase().includes('8266'))) continue;
-      groups.add(data[id].group || "Chưa Phân Nhóm"); 
+      let devGroup = data[id].group || "Chưa Phân Nhóm";
+      if (isGroupAllowed(devGroup)) {
+        groups.add(devGroup); 
+      }
     }
 
     let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
@@ -547,6 +647,127 @@
     document.getElementById("editDeviceName").value = currentCustomName;
     document.getElementById("editGroupName").value = currentGroup;
     document.getElementById("editModal").style.display = "flex";
+  }
+
+  function openUsersModal() {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    document.getElementById("usersModal").style.display = "flex";
+    loadUserPermissionsList();
+  }
+
+  function loadUserPermissionsList() {
+    const tbody = document.getElementById("userPermTableBody");
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Đang tải danh sách...</td></tr>`;
+
+    db.ref("users_permission").once("value", (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Chưa có phân quyền nào.</td></tr>`;
+        return;
+      }
+
+      let html = "";
+      for (let emailKey in data) {
+        let originalEmail = decodeEmail(emailKey);
+        let groupsArr = data[emailKey].allowed_groups || [];
+        let groupsStr = groupsArr.join(", ");
+
+        html += `<tr>
+          <td><b>${originalEmail}</b></td>
+          <td><span class="badge-group">${groupsStr}</span></td>
+          <td style="text-align:right;">
+            <button class="btn-delete" style="padding:2px 6px;" onclick="deleteUserPermission('${emailKey}', '${originalEmail}')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>`;
+      }
+      tbody.innerHTML = html;
+    });
+  }
+
+  // HÀM TẠO TÀI KHOẢN TRÊN FIREBASE AUTH VÀ LƯU QUYỀN VÀO REALTIME DATABASE
+  async function saveUserAndPermissions() {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+    const email = document.getElementById("permUserEmail").value.trim().toLowerCase();
+    const password = document.getElementById("permUserPassword").value.trim();
+    const groupsRaw = document.getElementById("permGroups").value.trim();
+    const btnSave = document.getElementById("btnSaveUser");
+
+    if (!email) {
+      alert("Vui lòng nhập Email tài khoản!");
+      return;
+    }
+
+    let groupsArray = groupsRaw.split(',').map(g => g.trim()).filter(g => g.length > 0);
+    if (groupsArray.length === 0) groupsArray = ["*"];
+
+    const emailKey = encodeEmail(email);
+
+    btnSave.innerText = "ĐANG XỬ LÝ...";
+    btnSave.disabled = true;
+
+    try {
+      // 1. Tạo tài khoản trên Firebase Auth nếu có nhập mật khẩu
+      if (password) {
+        if (password.length < 6) {
+          alert("Mật khẩu phải có ít nhất 6 ký tự!");
+          btnSave.innerText = "TẠO TÀI KHOẢN & LƯU QUYỀN";
+          btnSave.disabled = false;
+          return;
+        }
+
+        // Gọi REST API tới Firebase Authentication Endpoint để tạo User mới mà không bị Đăng xuất Admin
+        const authApiUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`;
+        const response = await fetch(authApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            returnSecureToken: false
+          })
+        });
+
+        const authResult = await response.json();
+
+        if (authResult.error) {
+          if (authResult.error.message === "EMAIL_EXISTS") {
+            console.log("Email đã tồn tại trên Auth, tiếp tục cập nhật phân quyền...");
+          } else {
+            throw new Error("Lỗi Firebase Auth: " + authResult.error.message);
+          }
+        } else {
+          console.log("Tạo User Firebase Auth thành công:", authResult.email);
+        }
+      }
+
+      // 2. Lưu/cập nhật thông tin phân quyền vào Realtime Database
+      await db.ref("users_permission/" + emailKey).set({
+        allowed_groups: groupsArray,
+        updated_at: Date.now()
+      });
+
+      alert(`Thao tác thành công cho tài khoản ${email}!`);
+      document.getElementById("permUserEmail").value = "";
+      document.getElementById("permUserPassword").value = "";
+      document.getElementById("permGroups").value = "";
+      loadUserPermissionsList();
+
+    } catch (err) {
+      alert("Lỗi: " + err.message);
+    } finally {
+      btnSave.innerText = "TẠO TÀI KHOẢN & LƯU QUYỀN";
+      btnSave.disabled = false;
+    }
+  }
+
+  function deleteUserPermission(emailKey, email) {
+    if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+    if (confirm(`Xóa phân quyền của tài khoản "${email}"?`)) {
+      db.ref("users_permission/" + emailKey).remove()
+        .then(() => loadUserPermissionsList())
+        .catch(err => alert("Lỗi khi xóa: " + err.message));
+    }
   }
 
   function viewHourlyLog(macAddress) {
