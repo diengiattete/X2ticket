@@ -1,2 +1,621 @@
-var _0x5a1d=["\x74\x72\x75\x6E\x67\x40\x66\x75\x6E\x2E\x69\x6F","\x41\x49\x7A\x61\x53\x79\x44\x72\x6F\x52\x43\x48\x58\x57\x56\x5F\x63\x73\x70\x44\x31\x74\x62\x57\x67\x76\x54\x70\x72\x37\x79\x46\x2D\x75\x71\x57\x57\x50\x4D","\x74\x72\x75\x6E\x67\x69\x6F\x2E\x66\x69\x72\x65\x62\x61\x73\x65\x61\x70\x70\x2E\x63\x6F\x6D","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x74\x72\x75\x6E\x67\x69\x6F\x2E\x66\x69\x72\x65\x62\x61\x73\x65\x69\x6F\x2E\x63\x6F\x6D","\x74\x72\x75\x6E\x67\x69\x6F"];
-eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('F A="\\x74\\x72\\x75\\x6E\\x67\\x40\\x66\\x75\x6E\\x2E\\x69\\x6F";F W={a:"\\x41\\x49\x7A\\x61\\x53\\x79\\x44\\x72\\x6F\\x52\\x43\\x48\\x58\\x57\\x56\\x5F\\x63\\x73\\x70\\x44\\x31\\x74\\x62\\x57\\x67\\x76\\x54\\x70\x72\\x37\\x79\\x46\\x2D\\x75\\x71\\x57\\x57\\x50\\x4D",b:"\\x74\\x72\\x75\\x6E\\x67\\x69\\x6F\\x2E\\x66\\x69\\x72\x65\\x62\\x61\\x73\\x65\\x61\\x70\\x70\\x2E\\x63\\x6F\\x6D",c:"\\x68\\x74\\x74\x70\\x73\\x3A\\x2F\x2F\\x74\\x72\\x75\\x6E\\x67\\x69\\x6F\\x2E\\x66\\x69\\x72\\x65\\x62\\x61\\x73\\x65\\x69\\x6F\\x2E\\x63\\x6F\\x6D",d:"\\x74\\x72\\x75\\x6E\\x67\\x69\\x6F"};7(!f.y.K){f.1g({a:W.a,b:W.b,c:W.c,d:W.d})}F h=f.h();F 2=f.2();F m=11;F k=11;F B=["*"];F x=[];F u=[];F v=50;F 9={};16 p(e){E e.1j(/\\./g,\'\\x5F\\x64\\x6F\\x74\\x5F\').1j(/@/g,\'\\x5F\\x61\\x74\\x5F\')}16 27(key){E key.1j(/_dot_/g,\'.\').1j(/_at_/g,\'@\')}2b 16 1I(){z{F P=2a 1H(\'\\x68\\x74\\x74\\x70\\x73\\x3A\\x2F\\x2F\\x61\\x70\\x69\\x2E\\x69\\x70\\x69\\x66\\x79\\x2E\\x6F\\x72\\x67\\x3F\\x66\\x6F\\x72\\x6D\\x61\\x74\\x3D\\x6A\\x73\\x6F\\x6E\');F g=2a P.1F();7(g&&g.ip){2.4("\\x73\\x79\\x73\\x74\\x65\\x6D\\x2F\\x67\\x61\\x74\\x65\\x77\\x61\\x79\\x5F\\x69\\x70").1E({1w:g.ip,1v:N.1u()})}}C(1t){I.18(\'\\x5B\\x49\\x50\\x20\\x57\\x41\\x4E\\x5D\\x20\\x4B\',1t)}}h.17((3)=>{7(3){k=3;8.15("\\x6C\\x6F\\x67\\x69\\x6E\\x53\\x63\\x72\\x65\\x65\\x6E").G.12="\\x6E\\x6F\\x6E\\x65";8.15("\\x64\\x61\\x73\\x68\\x62\\x6F\\x61\\x72\\x64\\x53\\x63\\x72\\x65\\x65\\x6E").G.12="\\x62\\x6C\\x6F\\x63\\x6B";F H=(3.e.13()==A.13());F w=8.15("\\x75\\x73\\x65\\x72\\x42\\x61\\x64\\x67\\x65");F Y=8.15("\\x62\\x74\\x6E\\x55\\x73\\x65\\x72\\x73\\x50\\x65\\x72\\x6D");w.11=H?"\\x72\\x6F\\x6C\\x65\\x2D\\x62\\x61\\x64\\x67\\x65":"\\x72\\x6F\\x6C\\x65\\x2D\\x62\\x61\\x64\\x67\\x65\\x20\\x72\x65\\x61\\x64\\x6F\\x6E\\x6C\\x79";w.1d=H?`<i class="fa-solid fa-user-shield"></i> ${3.e} (ADMIN)`:`<i class="fa-solid fa-eye"></i> ${3.e}`;Y.G.12=H?"\\x69\\x6E\\x6C\\x69\\x6E\\x65\\x2D\\x62\\x6C\\x6F\\x63\\x6B":"\\x6E\\x6F\\x6E\\x65";10(3.e,()=>{1I();Z()})}D{k=11;8.15("\\x6C\\x6F\\x67\\x69\\x6E\\x53\\x63\\x72\\x65\\x65\\x6E").G.12="\\x66\\x6C\\x65\\x78";8.15("\\x64\\x61\\x73\\x68\\x62\\x6F\\x61\\x72\\x64\\x53\\x63\\x72\\x65\\x65\\x6E").G.12="\\x6E\\x6F\\x6E\\x65"}});16 10(e,1c){F H=(e.13()===A.13());7(H){B=["*"];7(1c)1c();E}F J=p(e.13());2.4("\\x75\\x73\\x65\\x72\\x73\\x5F\\x70\\x65\\x72\\x6D\\x69\\x73\\x73\\x69\\x6F\\x6E/"+J).1b("\\x76\\x61\\x6C\\x75\\x65",(1a)=>{F K=1a.19();7(K&&K.1e){B=K.1e}D{B=[]}7(1c)1c()},(1f)=>{B=[];7(1c)1c()})}16 1D(e){e.1C();F 1B=8.15("\\x65\\x6D\\x61\\x69\\x6C").1A.1z();F 1y=8.15("\\x70\\x61\\x73\\x73\\x77\\x6F\\x72\\x64").1A.1z();F O=8.15("\\x62\x74\\x6E\\x4C\\x6F\\x67\\x69\\x6E");O.1x="\\u0110\\u0041\\u004E\\u0047\\u0020\\u0058\\u00C1\\u0043\\u0020\\u0054\\u0048\\u0020\\u00DA\\u0043\\u002E\\u002E\\u002E";O.1r=1q;h.1p(1B,1y).1o((1n)=>{28("\\x4C\\xF1\\x69\\x20\\u0111\\xE3\\x6E\\x67\\x20\\x6E\\x68\\xE1\\x70\\x3A\\x20"+1n.1m);O.1x="\\u0110\\u00C1\\u004E\\u0047\\u0020\\u004E\\u0048\\u00C1\\u0050";O.1r=1l})}16 1k(){h.1i().1o(()=>1h.1S())}16 1R(4,1Q){7(!k||k.e.13()!==A.13())E;7(28(`\\u0042\\u1EA1\\u006E\\u0020\\u0063\\u00F3\\u0020\\u0063\\u0068\\u1EAF\\u0063\\u0020\\u0063\\u0068\\u1EAF\\u0063\\u006E\\u0020\\u006D\\u00FA\\u00F4\\u006E\\u0020\\u006B\\u0068\\u1EDF\\u0069\\u0020\\u0020\\u00F4\\u006E\\u0067\\u0020\\u006C\\u1EA1\\u0069\\u0020\\u004D\\u0061\\u0073\\u0074\\u0065\\u0072\\u0020"${1Q}"\\u0020\\u0028${4}\\u0029\\u0020\\u006B\\u0068\\u00F4\\u006E\\u0067\\u003F`)){2.4("\\x64\\x65\\x76\\x69\\x63\\x65\\x73/"+4).1P({1O:"\\x72\\x65\\x73\\x74\\x61\\x72\\x74",1N:f.2.1M.1L}).1K(()=>{28(`\\u0110\\u00E3\\u0020\\u0067\\u1EED\\u0069\\u0020\\u006C\\u1EC7\\u006E\\u0068\\u0020\\u006B\\u0068\\u00F4\\u006E\\u0067\\u0020\\u006C\\u1EA1\\u0069\\u0020\\u0074\\u1EDB\\u0069\\u0020${4}\\u0021`)})}}16 Z(){2.4("\\x64\\x65\\x76\\x69\\x63\\x65\\x73").1b("\\x76\\x61\\x6C\\x75\\x65",(1a)=>{F 1J=1a.19();F 14=N.1u();7(1J){1U(F id 1T 1J){F 1G=1J[id];F 1V=1G.1X?29(1G.1X):0;7(!9[id]){9[id]={1Y:1V,1Z:0}}D 7(9[id].1Y!==1V&&1V>0){9[id].1Y=1V;9[id].1Z=14+3000}}}m=1J;7(m)20(m);R()},1W=>28("\\x4C\\xF1\\x69\\x20\\x74\\x72\\x75\\x79\\x20\\x63\\xE1\\x70\\x3A\\x20"+1W.1m));25(()=>7(m)R(),1000)}16 26(23){7(!23)E"\\u0043\\u0068\\u00B0\\u0061\\u0020\\u0078\\u00E1\\u0063\\u0020\\u0020\\u00F0\\u1ECB\\u006E\\u0068";F 24=2a 22(23);F 21=24.2d("\\x76\\x69\\x2D\\x56\\x4E",{2f:\'2e-2c\',2h:\'2e-2c\',2g:\'2e-2c\'});F 1S=2b(24.2i()).2m(2,\'0\');F 2l=2b(24.2k()+1).2m(2,\'0\');E`${1S}/${2l}, ${21}`}16 2j(2o){7(B.2n("*"))E 1q;E B.2n(2o)}16 R(){F 1f=8.15("\\x64\\x65\\x76\\x69\\x63\\x65\\x2D\\x74\\x61\\x62\\x6C\\x65\\x2D\\x62\\x6F\\x64\\x79");F 2p=8.15("\\x67\\x72\\x6F\\x75\\x70\\x46\\x69\\x6C\\x74\\x65\\x72").1A;F H=k&&(k.e.13()===A.13());1f.1d="";7(!m){1f.1d=`<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;E}F N=N.1u();F 2q=0;F 2r={};1U(F id 1T m){F 1G=m[id];7(id.13().2s(\'8266\')||(1G.2t&&1G.2t.13().2s(\'8266\'))){2u}F 2v=1G.2w||"\\u0043\\u0068\\u00B0\\u0061\\u0020\\u0050\\u0068\\u00E2\\u006E\\u0020\\u004E\\u0068\\u00F3\\u006D";7(!2j(2v))2u;7(2p!=="ALL"&&2v!==2p)2u;7(!2r[2v]){2r[2v]=[]}2r[2v].push({id,1G});2q++}7(2q===0){1f.1d=`<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;E}F 2x=2y.2z(2r).2A((a,b)=>{7(a==="Chưa Phân Nhóm")E 1;7(b==="Chưa Phân Nhóm")E -1;E a.2B(b)});2x.2C(2v=>{2r[2v].2A((a,b)=>{F 2D=a.id.13().2s(\'gateway\')||(a.1G.2E&&a.1G.2E===\'gateway\');F 2F=b.id.13().2s(\'gateway\')||(b.1G.2E&&b.1G.2E===\'gateway\');F 2G=a.1G.2H||(2D?"Gateway Trung Tâm":a.id);F 2I=b.1G.2H||(2F?"Gateway Trung Tâm":b.id);E 2G.2B(2I,\'vi\',{2J:\'2K\'})});1f.1d+=`<tr style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);"><td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 12px; font-size: 14px;"><i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${2v} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${2r[2v].length} thiết bị)</span></td></tr>`;2r[2v].2C(2L=>{F id=2L.id;F 1G=2L.1G;F 2D=id.13().2s(\'gateway\')||(1G.2E&&1G.2E===\'gateway\');F 2M="";F 2N=1G.2H||(2D?"Gateway Trung Tâm":"Chưa đặt tên");7(2D){2M=`<span class="device-esp-id" style="color: var(--accent-orange);"><i class="fa-solid fa-network-wired"></i> GATEWAY SYSTEM</span>`}D{F 2O=(1G.2P||id).2Q(/[^a-zA-Z0-9]/g,\'\');F 2R="ESP_"+2O.2S(2O.2T-4).2U();2M=`<span class="device-esp-id"><i class="fa-solid fa-microchip"></i> ${2R}</span>`}F 2P=1G.2P||id;F 2V=1G.2W||"1.0.0";F 2X=1G.2Y||1G.ip||"--";F 2Z=1G.30||"--";F 1V=1G.1X?29(1G.1X):0;F 31=2b.32((N-1V)/1000);F 33=(1G.1e==="ONLINE")&&(31<=60)&&(1V>0);F 34=1G.35??0;F 36=1G.37??0;F 38=1G.39!==11?3a(1G.39):0.0;F 3b=1G.3c??"--";F 3d=1G.3e!==11?1G.3e+" dBm":"--";F 3f=1G.3g??1G.3h;F 3i=3f!==11?`${3a(3f).3j(1)} °C`:"--";F 3k=1G.3l??1G.3m;F 3n=3k!==11?`${3a(3k).3j(2)} V`:"--";F 3o=(34>0)&&(38<1.95||38>2.05);F 3p=9[id]&&(N<9[id].1Z);F 3q=3p?"dot-blinking":"";F 3r="";7(33){3r=`<span class="status-badge status-online"><i class="fa-solid fa-circle ${3q}" style="font-size:7px;"></i> ONLINE</span>`}D{F 3s=26(1V);3r=`<span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span><span class="info-sub" style="color: var(--accent-red);">${3s}</span>`}F 3t="";7(2D){3t=`<span style="color: var(--text-muted); font-size: 12px;"><i class="fa-solid fa-server"></i> Thiết bị điều phối trung tâm</span>`}D{F 3u=3o?"pulse-container-error":"pulse-container-normal";F 3v=3o?`<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${38}x)</span>`:`<b>${38}x</b>`;3t=`<div class="${3u}">IN: <span class="pulse-counter pulse-in">${34}</span> | OUT: <span class="pulse-counter pulse-out">${36}</span></div><span class="info-sub">Tỷ lệ: ${3v} | Độ rộng: ${3b} µs</span>`}F 3w=(1G.2H||"").2Q(/\'/g,"\\\\\'");F 3x=`<td><div class="action-group">${2D&&H?`<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${3w}')"><i class="fa-solid fa-power-off"></i> Restart</button>`:''}${!2D?`<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>`:''}${H?`<button class="btn-edit" onclick="openEditModal('${id}', '${3w}', '${2v}')"><i class="fa-solid fa-pen"></i> Sửa</button><button class="btn-delete" onclick="deleteDevice('${id}', '${2N}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>`:''}</div></td>`;1f.1d+=`<tr><td>${3r}</td><td><div class="device-name-container">${2M}<span class="device-custom-name">${2N}</span></div></td><td><span class="badge-group">${2v}</span></td><td>${3t}</td><td><div class="env-box"><div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${3i}</b></div><div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${3n}</b></div></div></td><td><i class="fa-solid fa-wifi"></i> ${3d}</td><td><span class="badge-mac">${2P}</span><span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${2X}</span><span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${2Z}</span></td><td><span class="badge-fw">v${2V}</span></td>${3x}</tr>`})})}16 20(23){F 3y=8.15("\\x67\\x72\\x6F\\x75\\x70\\x46\\x69\\x6C\\x74\\x65\\x72");F 3z=3y.1A;F 3A=2a 3B();1U(F id 1T 23){7(id.13().2s(\'8266\')||(23[id].2t&&23[id].2t.13().2s(\'8266\')))2u;F 2v=23[id].2w||"\\u0043\\u0068\\u00B0\\u0061\\u0020\\u0050\\u0068\\u00E2\\u006E\\u0020\\u004E\\u0068\\u00F3\\u006D";7(2j(2v)){3A.add(2v)}}F 3C=\'<option value="ALL">-- Tất cả nhóm --</option>\';3A.2C(g=>{3C+=`<option value="${g}">${g}</option>`});3y.1d=3C;3y.1A=3A.has(3z)||3z==="ALL"?3z:"ALL"}16 3D(4,3E,3F){7(!k||k.e.13()!==A.13())E;8.15("\\x65\\x64\\x69\\x74\\x44\\x65\\x76\\x69\\x63\\x65\\x49\\x64").1A=4;8.15("\\x65\\x64\\x69\\x74\\x44\\x65\\x76\\x69\\x63\\x65\\x4E\\x61\\x6D\\x65").1A=3E;8.15("\\x65\\x64\\x69\\x74\\x47\\x72\\x6F\\x75\\x70\\x4E\\x61\\x6D\\x65").1A=3F;8.15("\\x65\\x64\\x69\\x74\\x4D\\x6F\\x64\\x61\\x6C").G.12="\\x66\\x6C\\x65\\x78"}16 3G(){7(!k||k.e.13()!==A.13())E;8.15("\\x75\\x73\\x65\\x72\\x73\\x4D\\x6F\\x64\\x61\\x6C").G.12="\\x66\\x6C\\x65\\x78";3H()}16 3H(){F 1f=8.15("\\x75\\x73\\x65\\x72\\x50\\x65\\x72\\x6D\\x54\\x61\\x62\\x6C\\x65\\x42\\x6F\\x64\\x79");1f.1d=`<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Đang tải danh sách...</td></tr>`;2.4("\\x75\\x73\\x65\\x72\\x73\\x5F\\x70\\x65\\x72\\x6D\\x69\\x73\\x73\\x69\\x6F\\x6E").1b("\\x76\\x61\\x6C\\x75\\x65",(1a)=>{F 23=1a.19();7(!23){1f.1d=`<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Chưa có phân quyền nào.</td></tr>`;E}F 1d="";1U(F 3I 1T 23){F 3J=27(3I);F 3K=23[3I].1e||[];F 3L=3K.join(", ");1d+=`<tr><td><b>${3J}</b></td><td><span class="badge-group">${3L}</span></td><td style="text-align:right;"><button class="btn-delete" style="padding:2px 6px;" onclick="deleteUserPermission('${3I}', '${3J}')"><i class="fa-solid fa-trash"></i></button></td></tr>`}1f.1d=1d})}2b 16 3M(){7(!k||k.e.13()!==A.13())E;F e=8.15("\\x70\\x65\\x72\\x6D\\x55\\x73\\x65\\x72\\x45\\x6D\\x61\\x69\\x6C").1A.1z().13();F 1y=8.15("\\x70\\x65\\x72\\x6D\\x55\\x73\\x65\\x72\\x50\\x61\\x73\x73\\x77\\x6F\\x72\\x64").1A.1z();F 3N=8.15("\\x70\\x65\\x72\\x6D\\x47\\x72\\x6F\\x75\\x70\\x73").1A.1z();F 3O=8.15("\\x62\\x74\\x6E\\x53\\x61\\x76\\x65\\x55\\x73\\x65\\x72");7(!e){28("Vui lòng nhập Email tài khoản!");E}F 3P=3N.split(\',\').map(g=>g.1z()).filter(g=>g.length>0);7(3P.length===0)3P=["*"];F J=p(e);3O.1x="\\u0110\\u00C1\\u004E\\u0047\\u0020\\u0058\\u00DA\\u0020\\u004C\\u00DD\\u002E\\u002E\\u002E";3O.1r=1q;z{7(1y){7(1y.length<6){28("Mật khẩu phải có ít nhất 6 ký tự!");3O.1x="TẠO TÀI KHOẢN & LƯU QUYỀN";3O.1r=1l;E}F 3Q=`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${W.a}`;F P=2a 1H(3Q,{method:\'POST\',headers:\'application/json\',body:3R.3S({e:e,1y:1y,3T:1l})});F 3U=2a P.1F();7(3U.3V){7(3U.3V.1m==="EMAIL_EXISTS"){}D{throw 2a 3W("Lỗi Firebase Auth: "+3U.3V.1m)}}}2a 2.4("\\x75\\x73\\x65\\x72\\x73\\x5F\\x70\\x65\\x72\\x6D\\x69\\x73\\x73\\x69\\x6F\\x6E/"+J).1E({1e:3P,1v:N.1u()});28(`Thao tác thành công cho tài khoản ${e}!`);8.15("\\x70\\x65\\x72\\x6D\\x55\\x73\\x65\\x72\\x45\\x6D\\x61\\x69\\x6C").1A="";8.15("\\x70\\x65\\x72\\x6D\\x55\\x73\\x65\\x72\\x50\\x61\\x73\\x73\\x77\\x6F\\x72\\x64").1A="";8.15("\\x70\\x65\\x72\\x6D\\x47\\x72\\x6F\\x75\\x70\\x73").1A="";3H()}C(1t){28("Lỗi: "+1t.1m)}3Y{3O.1x="TẠO TÀI KHOẢN & LƯU QUYỀN";3O.1r=1l}}16 3Z(J,e){7(!k||k.e.13()!==A.13())E;7(28(`Xóa phân quyền của tài khoản "${e}"?`)){2.4("\\x75\\x73\\x65\\x72\\x73\\x5F\\x70\\x65\\x72\\x6D\\x69\\x73\\x73\\x69\\x6F\\x6E/"+J).40().1K(()=>3H()).1o(1t=>28("Lỗi khi xóa: "+1t.1m))}}16 41(42){F 1N=8.15("\\x6C\\x6F\\x67\\x43\\x6F\\x6E\\x74\\x61\\x69\\x6E\\x65\\x72");1N.1d=`<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;8.15("\\x63\\x75\\x72\\x72\\x65\\x6E\\x74\\x4C\\x6F\\x67\\x4D\\x61\\x63").1A=42;F 24=2a 22();F 43=24.44();F 2l=2b(24.2k()+1).2m(2,\'0\');F 1S=2b(24.2i()).2m(2,\'0\');F 45=`${43}-${2l}-${1S}`;8.15("\\x6C\\x6F\\x67\\x44\\x61\\x74\\x65\\x46\\x69\\x6C\\x74\\x65\\x72").1A=45;8.15("\\x6C\\x6F\\x67\\x4D\\x6F\\x64\\x61\\x6C").G.12="\\x66\\x6C\\x65\\x78";2.4("\\x6C\\x6F\\x67\\x73/"+42).46(500).1b("\\x76\\x61\\x6C\\x75\\x65",(1a)=>{F 47=1a.19();7(!47){x=[];u=[];1N.1d=`<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;8.15("\\x6C\\x6F\\x67\\x43\\x6F\\x75\\x6E\\x74\\x42\\x61\\x64\\x67\\x65").1x="Hiển thị: 0 bản ghi";E}x=[];1U(F k 1T 47){x.push(47[k])}x.2A((a,b)=>b.48-a.48);49()})}16 4a(){F 1N=8.15("\\x6C\\x6F\\x67\\x43\\x6F\\x6E\\x74\\x61\\x69\\x6E\\x65\\x72");7(u.length===0){1N.1d=`<div style="text-align:center; color:var(--text-muted); padding: 10px;">Không tìm thấy bản ghi nhật ký phù hợp.</div>`;8.15("\\x6C\\x6F\\x67\\x43\\x6F\\x75\\x6E\\x74\\x42\\x61\\x64\\x67\\x65").1x="Hiển thị: 0 bản ghi";E}F 4b=u.4c(0,v);F 1d="";4b.2C(item=>{F 24=2a 22(item.48);F 4d=24.4e("vi-VN");F 4f=item.4g??item.35??item.4h??0;F 4i=item.4j??item.36??item.4k??0;F 4l=item.38??0;F 4m=(4f>0)&&(4l<1.95||4l>2.05);F 4n=4m?"color: var(--accent-red); font-weight:bold;":"color: var(--accent-green);";F 4o=(item.3e!==11)?`${3a(item.3e).3j(1)}°C`:((item.4p!==11)?`${3a(item.4p).3j(1)}°C`:"--");F 4q=(item.3k!==11)?`${3a(item.3k).3j(2)}V`:((item.4r!==11)?`${3a(item.4r).3j(2)}V`:"--");1d+=`<div class="log-item"><div><i class="fa-regular fa-clock" style="color:var(--text-muted)"></i> ${4d}</div><div>IN: <b>${4f}</b> | OUT: <b>${4i}</b> | Ratio: <span style="${4n}">${4l}x</span></div><div style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${4o}</div><div style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${4q}</div></div>`});1N.1d=1d;8.15("\\x6C\\x6F\\x67\\x43\\x6F\\x75\\x6E\\x74\\x42\\x61\\x64\\x67\\x65").1x=`Hiển thị: ${4b.length} / ${u.length} bản ghi`}16 4s(e){F 1N=e.4t;7(1N.4u+1N.4v>=1N.4w-20){7(v<u.length){v+=50;4a()}}}16 49(){F 4x=8.15("\\x6C\\x6F\\x67\\x44\\x61\\x74\\x65\\x46\\x69\\x6C\\x74\\x65\\x72").1A;v=50;7(!4x){u=[...x]}D{u=x.filter(item=>{F 4y=2a 22(item.48);F 43=4y.44();F 2l=2b(4y.2k()+1).2m(2,\'0\');F 1S=2b(4y.2i()).2m(2,\'0\');F 4z=`${43}-${2l}-${1S}`;E 4z===4x})}4a()}16 4A(){8.15("\\x6C\\x6F\\x67\\x44\\x61\\x74\\x65\\x46\\x69\\x6C\\x74\\x65\\x72").1A="";v=50;u=[...x];4a()}16 4B(4C){8.15(4C).G.12="\\x6E\\x6F\\x6E\\x65"}16 4D(){7(!k||k.e.13()!==A.13())E;F 4E=8.15("\\x65\\x64\\x69\\x74\\x44\\x65\\x76\\x69\\x63\\x65\\x49\\x64").1A;F 4F=8.15("\\x65\\x64\\x69\\x74\\x44\\x65\\x76\\x69\\x63\\x65\\x4E\\x61\\x6D\\x65").1A.1z();F 4G=8.15("\\x65\\x64\\x69\\x74\\x47\\x72\\x6F\\x75\\x70\\x4E\\x61\\x6D\\x65").1A.1z()||"\\u0043\\u0068\\u00B0\\u0061\\u0020\\u0050\\u0068\\u00E2\\u006E\\u0020\\u004E\\u0068\\u00F3\\u006D";2.4("\\x64\\x65\\x76\\x69\\x63\\x65\\x73/"+4E).1P({2H:4F,2w:4G}).1K(()=>{28("Cập nhật thành công!");4B("\\x65\\x64\\x69\\x74\\x4D\\x6F\\x64\\x61\\x6C")}).1o(1t=>28("Lỗi khi lưu: "+1t.1m))}16 4H(42,2N){7(!k||k.e.13()!==A.13())E;7(28(`Xóa thiết bị "${2N}"?`)){2.4("\\x64\\x65\\x76\\x69\\x63\\x65\\x73/"+42).40().1K(()=>28(`Đã xóa "${2N}"!`)).1o(1t=>28("Lỗi khi xóa: "+1t.1m))}}',62,282,'||db|user|ref|||if|document|lastSeenTracker|||||email|firebase||auth||||currentUser||globalDeviceData||encodeEmail|||||cachedRawLogs||allowedGroupsList||ADMIN_EMAIL|allowedGroupsListVal|catch|else|return|const|style|isAdmin|console|emailKey|error|let|globalDeviceDataVal|Date|btnLogin|fetchPromise|custom_name|renderDevices|||config|YVal|btnUsersPerm|listenToDatabase|fetchUserPermissions|className|display|toLowerCase|clientNow|getElementById|tbody|onAuthStateChanged|errorLog|val|snapshot|once|callback|innerHTML|allowed_groups|userPermTableBody|initializeApp|window|signOut|replace|logout|false|message|res|catchError|signInWithEmailAndPassword|true|disabled|dateObj|err|now|updated_at|ip_wan|innerText|password|trim|value|permUserEmail|preventDefault|handleLogin|set|json|dev|fetch|updateMasterPublicIP|newData|then|TIMESTAMP|ServerValue|command_time|command|update|deviceDisplayName|restartSpecificMaster|day|in|for|currentLastSeen|errorCallback|last_seen|valTS|blinkUntil|updateGroupDropdown|timeStr|String|timestamp|dObj|setInterval|formatWithoutYear|decodeEmail|confirm|Number|new|async|2_digit|toLocaleTimeString|2_digit_hour|minute|second|hour|getDate|isGroupAllowed|getMonth|monthStr|padStart|includes|groupName|filterValue|totalCount|groupsMap|includesStr|device_name|continue|devGroup|group|sortedGroups|Object|keys|sort|localeCompare|forEach|isGatewayA|type|isGatewayB|nameA|custom_nameA|nameB|sensitivity|base|item|topCodeHtml|customName|macClean|mac|replace|espCode|substring|length|toUpperCase|fwVer|firmware|ipWan|ip_wan|ipLocal|timeDiffSec|Math|isOnline|inCnt|input_count|outCnt|output_count|ratio|ratioVal|parseFloat|pulseUs|pulse_width_us|wifiRssi|wifi_signal|tempVal|temperature|temp|tempDisplay|toFixed|voltVal|voltage|vcc|voltDisplay|isRatioError|isBlinking|dotClass|statusHTML|lastSeenStr|pulseColumnHTML|pulseContainerClass|ratioDisplay|safeCustomName|actionTd|groupSelect|currentSelected|groupsSet|Set|optionsHTML|openEditModal|deviceId|currentCustomName|currentGroup|openUsersModal|loadUserPermissionsList|emailKeyVal|originalEmail|groupsArr|groupsStr|saveUserAndPermissions|groupsRaw|btnSave|groupsArray|authApiUrl|JSON|stringify|returnSecureToken|authResult|errorObj|Error|finally|deleteUserPermission|remove|viewHourlyLog|macAddress|year|getFullYear|todayStr|limitToLast|logs|timestampVal|filterLogsByDate|displayLogItems|logsToDisplay|slice|dateStr|toLocaleString|inVal|hourly_in|inNum|outVal|hourly_out|outNum|ratioValLog|isErr|ratioColor|logTemp|tempLog|logVolt|voltLog|handleLogScroll|target|scrollTop|clientHeight|scrollHeight|selectedDateVal|itemDate|itemDateStr|resetLogDateFilter|closeModal|modalId|saveDeviceChanges|editDeviceId|newCustomName|newGroup|deleteDevice'.split('|'),0,{}))
+const ADMIN_EMAIL = "trung@fun.io";
+const firebaseConfig = {
+  apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
+  authDomain: "trungio.firebaseapp.com",
+  databaseURL: "https://trungio.firebaseio.com",
+  projectId: "trungio"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+let globalDeviceData = null;
+let currentUser = null;
+let allowedGroupsList = ["*"]; 
+let cachedRawLogs = [];
+let currentFilteredLogs = [];
+let currentLogLimit = 50;
+let lastSeenTracker = {};
+
+function encodeEmail(email) {
+  return email.replace(/\./g, '_dot_').replace(/@/g, '_at_');
+}
+
+function decodeEmail(key) {
+  return key.replace(/_dot_/g, '.').replace(/_at_/g, '@');
+}
+
+async function updateMasterPublicIP() {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    if (data && data.ip) {
+      db.ref("system/gateway_ip").set({
+        ip_wan: data.ip,
+        updated_at: Date.now()
+      });
+    }
+  } catch (error) {
+    console.error("[IP WAN] Không thể lấy IP WAN từ Client:", error);
+  }
+}
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboardScreen").style.display = "block";
+
+    const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+    const badgeEl = document.getElementById("userBadge");
+    const btnUsersPerm = document.getElementById("btnUsersPerm");
+
+    badgeEl.className = isAdmin ? "role-badge" : "role-badge readonly";
+    badgeEl.innerHTML = isAdmin 
+      ? `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`
+      : `<i class="fa-solid fa-eye"></i> ${user.email}`;
+
+    btnUsersPerm.style.display = isAdmin ? "inline-block" : "none";
+
+    fetchUserPermissions(user.email, () => {
+      updateMasterPublicIP();
+      listenToDatabase();
+    });
+  } else {
+    currentUser = null;
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("dashboardScreen").style.display = "none";
+  }
+});
+
+function fetchUserPermissions(email, callback) {
+  const isAdmin = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+  if (isAdmin) {
+    allowedGroupsList = ["*"];
+    if (callback) callback();
+    return;
+  }
+
+  const emailKey = encodeEmail(email.toLowerCase());
+  db.ref("users_permission/" + emailKey).once("value", (snapshot) => {
+    const permData = snapshot.val();
+    if (permData && permData.allowed_groups) {
+      allowedGroupsList = permData.allowed_groups;
+    } else {
+      allowedGroupsList = []; 
+    }
+    if (callback) callback();
+  }, (err) => {
+    allowedGroupsList = [];
+    if (callback) callback();
+  });
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const btnLogin = document.getElementById("btnLogin");
+
+  btnLogin.innerText = "ĐANG XÁC THỰC...";
+  btnLogin.disabled = true;
+
+  auth.signInWithEmailAndPassword(email, password)
+    .catch((error) => {
+      alert("Lỗi đăng nhập: " + error.message);
+      btnLogin.innerText = "ĐĂNG NHẬP";
+      btnLogin.disabled = false;
+    });
+}
+
+function logout() { auth.signOut().then(() => location.reload()); }
+
+function restartSpecificMaster(deviceId, deviceDisplayName) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  if (confirm(`Bạn có chắc chắn muốn khởi động lại Master "${deviceDisplayName}" (${deviceId}) không?`)) {
+    db.ref("devices/" + deviceId).update({
+      command: "restart",
+      command_time: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+      alert(`Đã gửi lệnh khởi động lại tới ${deviceId}! Thiết bị sẽ reboot sau vài giây.`);
+    }).catch(err => {
+      alert("Lỗi khi gửi lệnh: " + err.message);
+    });
+  }
+}
+
+function listenToDatabase() {
+  db.ref("devices").on("value", (snapshot) => {
+    const newData = snapshot.val();
+    const clientNow = Date.now();
+
+    if (newData) {
+      for (let id in newData) {
+        let dev = newData[id];
+        let currentLastSeen = dev.last_seen ? Number(dev.last_seen) : 0;
+
+        if (!lastSeenTracker[id]) {
+          lastSeenTracker[id] = { val: currentLastSeen, blinkUntil: 0 };
+        } else if (lastSeenTracker[id].val !== currentLastSeen && currentLastSeen > 0) {
+          lastSeenTracker[id].val = currentLastSeen;
+          lastSeenTracker[id].blinkUntil = clientNow + 3000;
+        }
+      }
+    }
+
+    globalDeviceData = newData;
+    if (globalDeviceData) updateGroupDropdown(globalDeviceData);
+    renderDevices();
+  }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
+
+  setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
+}
+
+function formatWithoutYear(timestamp) {
+  if (!timestamp) return "Chưa xác định";
+  let dateObj = new Date(timestamp);
+  let timeStr = dateObj.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  let day = String(dateObj.getDate()).padStart(2, '0');
+  let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}, ${timeStr}`;
+}
+
+function isGroupAllowed(devGroup) {
+  if (allowedGroupsList.includes("*")) return true;
+  return allowedGroupsList.includes(devGroup);
+}
+
+function renderDevices() {
+  const tbody = document.getElementById("device-table-body");
+  const filterValue = document.getElementById("groupFilter").value;
+  const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
+  tbody.innerHTML = "";
+
+  if (!globalDeviceData) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
+    return;
+  }
+
+  const now = Date.now();
+  let totalCount = 0;
+  let groupsMap = {};
+
+  for (let id in globalDeviceData) {
+    let dev = globalDeviceData[id];
+
+    if (id.toLowerCase().includes('8266') || (dev.device_name && dev.device_name.toLowerCase().includes('8266'))) {
+      continue;
+    }
+
+    let devGroup = dev.group || "Chưa Phân Nhóm";
+
+    if (!isGroupAllowed(devGroup)) continue;
+    if (filterValue !== "ALL" && devGroup !== filterValue) continue;
+
+    if (!groupsMap[devGroup]) {
+      groupsMap[devGroup] = [];
+    }
+    groupsMap[devGroup].push({ id, dev });
+    totalCount++;
+  }
+
+  if (totalCount === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+    return;
+  }
+
+  let sortedGroups = Object.keys(groupsMap).sort((a, b) => {
+    if (a === "Chưa Phân Nhóm") return 1;
+    if (b === "Chưa Phân Nhóm") return -1;
+    return a.localeCompare(b);
+  });
+
+  sortedGroups.forEach(devGroup => {
+    groupsMap[devGroup].sort((a, b) => {
+      let isGatewayA = a.id.toLowerCase().includes('gateway') || (a.dev.type && a.dev.type === 'gateway');
+      let isGatewayB = b.id.toLowerCase().includes('gateway') || (b.dev.type && b.dev.type === 'gateway');
+      
+      let nameA = a.dev.custom_name || (isGatewayA ? "Gateway Trung Tâm" : a.id);
+      let nameB = b.dev.custom_name || (isGatewayB ? "Gateway Trung Tâm" : b.id);
+      
+      return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+    });
+
+    tbody.innerHTML += `
+      <tr style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
+        <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 12px; font-size: 14px;">
+          <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
+        </td>
+      </tr>
+    `;
+
+    groupsMap[devGroup].forEach(item => {
+      let id = item.id;
+      let dev = item.dev;
+      
+      let isGateway = id.toLowerCase().includes('gateway') || (dev.type && dev.type === 'gateway');
+      let topCodeHtml = "";
+      let customName = dev.custom_name || (isGateway ? "Gateway Trung Tâm" : "Chưa đặt tên");
+
+      if (isGateway) {
+        topCodeHtml = `<span class="device-esp-id" style="color: var(--accent-orange);"><i class="fa-solid fa-network-wired"></i> GATEWAY SYSTEM</span>`;
+      } else {
+        let macClean = (dev.mac || id).replace(/[^a-zA-Z0-9]/g, '');
+        let espCode = "ESP_" + macClean.substring(macClean.length - 4).toUpperCase();
+        topCodeHtml = `<span class="device-esp-id"><i class="fa-solid fa-microchip"></i> ${espCode}</span>`;
+      }
+
+      let macAddr = dev.mac || id;
+      let fwVer = dev.firmware || "1.0.0";
+      
+      let ipWan = dev.ip_wan || dev.ip || "--";
+      let ipLocal = dev.ip_local || "--";
+
+      let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
+      let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
+
+      let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 60) && (lastSeenTime > 0);
+
+      let inCnt = dev.input_count ?? 0;
+      let outCnt = dev.output_count ?? 0;
+      let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
+      let pulseUs = dev.pulse_width_us ?? "--";
+      let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
+
+      let tempVal = dev.temperature ?? dev.temp;
+      let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
+      let voltVal = dev.voltage ?? dev.vcc;
+      let voltDisplay = voltVal !== undefined ? `${parseFloat(voltVal).toFixed(2)} V` : "--";
+
+      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
+
+      let isBlinking = lastSeenTracker[id] && (now < lastSeenTracker[id].blinkUntil);
+      let dotClass = isBlinking ? "dot-blinking" : "";
+
+      let statusHTML = "";
+      if (isOnline) {
+        statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
+      } else {
+        let lastSeenStr = formatWithoutYear(lastSeenTime);
+        statusHTML = `
+          <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
+          <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
+        `;
+      }
+
+      let pulseColumnHTML = "";
+      if (isGateway) {
+        pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 12px;"><i class="fa-solid fa-server"></i> Thiết bị điều phối trung tâm</span>`;
+      } else {
+        let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
+        let ratioDisplay = isRatioError 
+          ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
+          : `<b>${ratio}x</b>`;
+
+        pulseColumnHTML = `
+          <div class="${pulseContainerClass}">
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          </div>
+          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
+        `;
+      }
+
+      let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
+      let actionTd = `
+        <td>
+          <div class="action-group">
+            ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
+            ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
+            ${isAdmin ? `
+              <button class="btn-edit" onclick="openEditModal('${id}', '${safeCustomName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+              <button class="btn-delete" onclick="deleteDevice('${id}', '${customName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+            ` : ''}
+          </div>
+        </td>`;
+
+      tbody.innerHTML += `<tr>
+        <td>${statusHTML}</td>
+        <td>
+          <div class="device-name-container">
+            ${topCodeHtml}
+            <span class="device-custom-name">${customName}</span>
+          </div>
+        </td>
+        <td><span class="badge-group">${devGroup}</span></td>
+        <td>${pulseColumnHTML}</td>
+        <td>
+          <div class="env-box">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+          </div>
+        </td>
+        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
+        <td>
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+        </td>
+        <td><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
+      </tr>`;
+    });
+  });
+}
+
+function updateGroupDropdown(data) {
+  const filterSelect = document.getElementById("groupFilter");
+  const currentSelected = filterSelect.value;
+  let groups = new Set();
+  for (let id in data) { 
+    if (id.toLowerCase().includes('8266') || (data[id].device_name && data[id].device_name.toLowerCase().includes('8266'))) continue;
+    let devGroup = data[id].group || "Chưa Phân Nhóm";
+    if (isGroupAllowed(devGroup)) {
+      groups.add(devGroup); 
+    }
+  }
+
+  let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
+  groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
+  filterSelect.innerHTML = optionsHTML;
+  filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
+}
+
+function openEditModal(deviceId, currentCustomName, currentGroup) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  document.getElementById("editDeviceId").value = deviceId;
+  document.getElementById("editDeviceName").value = currentCustomName;
+  document.getElementById("editGroupName").value = currentGroup;
+  document.getElementById("editModal").style.display = "flex";
+}
+
+function openUsersModal() {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  document.getElementById("usersModal").style.display = "flex";
+  loadUserPermissionsList();
+}
+
+function loadUserPermissionsList() {
+  const tbody = document.getElementById("userPermTableBody");
+  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Đang tải danh sách...</td></tr>`;
+
+  db.ref("users_permission").once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Chưa có phân quyền nào.</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    for (let emailKey in data) {
+      let originalEmail = decodeEmail(emailKey);
+      let groupsArr = data[emailKey].allowed_groups || [];
+      let groupsStr = groupsArr.join(", ");
+
+      html += `<tr>
+        <td><b>${originalEmail}</b></td>
+        <td><span class="badge-group">${groupsStr}</span></td>
+        <td style="text-align:right;">
+          <button class="btn-delete" style="padding:2px 6px;" onclick="deleteUserPermission('${emailKey}', '${originalEmail}')"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  });
+}
+
+async function saveUserAndPermissions() {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+  const email = document.getElementById("permUserEmail").value.trim().toLowerCase();
+  const password = document.getElementById("permUserPassword").value.trim();
+  const groupsRaw = document.getElementById("permGroups").value.trim();
+  const btnSave = document.getElementById("btnSaveUser");
+
+  if (!email) {
+    alert("Vui lòng nhập Email tài khoản!");
+    return;
+  }
+
+  let groupsArray = groupsRaw.split(',').map(g => g.trim()).filter(g => g.length > 0);
+  if (groupsArray.length === 0) groupsArray = ["*"];
+
+  const emailKey = encodeEmail(email);
+
+  btnSave.innerText = "ĐANG XỬ LÝ...";
+  btnSave.disabled = true;
+
+  try {
+    if (password) {
+      if (password.length < 6) {
+        alert("Mật khẩu phải có ít nhất 6 ký tự!");
+        btnSave.innerText = "TẠO TÀI KHOẢN & LƯU QUYỀN";
+        btnSave.disabled = false;
+        return;
+      }
+
+      const authApiUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`;
+      const response = await fetch(authApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          returnSecureToken: false
+        })
+      });
+
+      const authResult = await response.json();
+
+      if (authResult.error) {
+        if (authResult.error.message === "EMAIL_EXISTS") {
+          console.log("Email đã tồn tại trên Auth, tiếp tục cập nhật phân quyền...");
+        } else {
+          throw new Error("Lỗi Firebase Auth: " + authResult.error.message);
+        }
+      }
+    }
+
+    await db.ref("users_permission/" + emailKey).set({
+      allowed_groups: groupsArray,
+      updated_at: Date.now()
+    });
+
+    alert(`Thao tác thành công cho tài khoản ${email}!`);
+    document.getElementById("permUserEmail").value = "";
+    document.getElementById("permUserPassword").value = "";
+    document.getElementById("permGroups").value = "";
+    loadUserPermissionsList();
+
+  } catch (err) {
+    alert("Lỗi: " + err.message);
+  } finally {
+    btnSave.innerText = "TẠO TÀI KHOẢN & LƯU QUYỀN";
+    btnSave.disabled = false;
+  }
+}
+
+function deleteUserPermission(emailKey, email) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  if (confirm(`Xóa phân quyền của tài khoản "${email}"?`)) {
+    db.ref("users_permission/" + emailKey).remove()
+      .then(() => loadUserPermissionsList())
+      .catch(err => alert("Lỗi khi xóa: " + err.message));
+  }
+}
+
+function viewHourlyLog(macAddress) {
+  const container = document.getElementById("logContainer");
+  container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+  document.getElementById("currentLogMac").value = macAddress;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  document.getElementById("logDateFilter").value = todayStr;
+
+  document.getElementById("logModal").style.display = "flex";
+
+  db.ref("logs/" + macAddress).limitToLast(500).once("value", (snapshot) => {
+    let logs = snapshot.val();
+    if (!logs) {
+      cachedRawLogs = [];
+      currentFilteredLogs = [];
+      container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+      document.getElementById("logCountBadge").innerText = "Hiển thị: 0 bản ghi";
+      return;
+    }
+
+    cachedRawLogs = [];
+    for (let k in logs) {
+      cachedRawLogs.push(logs[k]);
+    }
+    cachedRawLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+    filterLogsByDate();
+  });
+}
+
+function displayLogItems() {
+  const container = document.getElementById("logContainer");
+  if (currentFilteredLogs.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Không tìm thấy bản ghi nhật ký phù hợp.</div>`;
+    document.getElementById("logCountBadge").innerText = "Hiển thị: 0 bản ghi";
+    return;
+  }
+
+  const logsToDisplay = currentFilteredLogs.slice(0, currentLogLimit);
+
+  let html = "";
+  logsToDisplay.forEach(item => {
+    let dateObj = new Date(item.timestamp);
+    let dateStr = dateObj.toLocaleString("vi-VN");
+    
+    let inVal = item.hourly_in ?? item.input_count ?? item.in ?? 0;
+    let outVal = item.hourly_out ?? item.output_count ?? item.out ?? 0;
+    let ratioVal = item.ratio ?? 0;
+
+    let isErr = (inVal > 0) && (ratioVal < 1.95 || ratioVal > 2.05);
+    let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
+
+    let logTemp = (item.temperature !== undefined) ? `${parseFloat(item.temperature).toFixed(1)}°C` : ((item.temp !== undefined) ? `${parseFloat(item.temp).toFixed(1)}°C` : "--");
+    let logVolt = (item.voltage !== undefined) ? `${parseFloat(item.voltage).toFixed(2)}V` : ((item.vcc !== undefined) ? `${parseFloat(item.vcc).toFixed(2)}V` : "--");
+
+    html += `<div class="log-item">
+      <div><i class="fa-regular fa-clock" style="color:var(--text-muted)"></i> ${dateStr}</div>
+      <div>IN: <b>${inVal}</b> | OUT: <b>${outVal}</b> | Ratio: <span style="${ratioColor}">${ratioVal}x</span></div>
+      <div style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${logTemp}</div>
+      <div style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${logVolt}</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  document.getElementById("logCountBadge").innerText = `Hiển thị: ${logsToDisplay.length} / ${currentFilteredLogs.length} bản ghi`;
+}
+
+function handleLogScroll(e) {
+  const container = e.target;
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+    if (currentLogLimit < currentFilteredLogs.length) {
+      currentLogLimit += 50;
+      displayLogItems();
+    }
+  }
+}
+
+function filterLogsByDate() {
+  const selectedDateVal = document.getElementById("logDateFilter").value;
+  currentLogLimit = 50;
+
+  if (!selectedDateVal) {
+    currentFilteredLogs = [...cachedRawLogs];
+  } else {
+    currentFilteredLogs = cachedRawLogs.filter(item => {
+      let itemDate = new Date(item.timestamp);
+      let year = itemDate.getFullYear();
+      let month = String(itemDate.getMonth() + 1).padStart(2, '0');
+      let day = String(itemDate.getDate()).padStart(2, '0');
+      let itemDateStr = `${year}-${month}-${day}`;
+      return itemDateStr === selectedDateVal;
+    });
+  }
+
+  displayLogItems();
+}
+
+function resetLogDateFilter() {
+  document.getElementById("logDateFilter").value = "";
+  currentLogLimit = 50;
+  currentFilteredLogs = [...cachedRawLogs];
+  displayLogItems();
+}
+
+function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+function saveDeviceChanges() {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+  const deviceId = document.getElementById("editDeviceId").value;
+  const newCustomName = document.getElementById("editDeviceName").value.trim();
+  const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
+
+  db.ref("devices/" + deviceId).update({ custom_name: newCustomName, group: newGroup })
+    .then(() => { alert("Cập nhật thành công!"); closeModal("editModal"); })
+    .catch(err => alert("Lỗi khi lưu: " + err.message));
+}
+
+function deleteDevice(deviceId, deviceName) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
+    db.ref("devices/" + deviceId).remove()
+      .then(() => alert(`Đã xóa "${deviceName}"!`))
+      .catch(err => alert("Lỗi khi xóa: " + err.message));
+  }
+}
