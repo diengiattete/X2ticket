@@ -30,9 +30,7 @@ function decodeEmail(key) {
 }
 
 async function updateMasterPublicIP() {
-  // Bỏ qua fetch api.ipify.org từ phía client để tránh lỗi CORS.
-  // IP WAN của Master đã được thiết bị ESP32 tự đẩy lên Firebase.
-  console.log("[IP WAN] Bỏ qua check IP từ browser để tránh CORS.");
+  console.log("[IP WAN] Bỏ qua tra cứu IP phía client để tránh lỗi CORS.");
 }
 
 auth.onAuthStateChanged((user) => {
@@ -128,15 +126,9 @@ function listenToDatabase() {
       for (let id in newData) {
         let dev = newData[id];
         
-        // TỰ ĐỘNG XÓA THIẾT BỊ CÓ FIRMWARE v1.0.0 KHỎI FIREBASE
+        // Tự động xóa thiết bị mang firmware v1.0.0 khỏi Firebase
         if (dev.firmware === "1.0.0") {
-          db.ref("devices/" + id).remove()
-            .then(() => {
-              console.log(`Đã tự động xóa thiết bị cũ/lạ: ${id}`);
-            })
-            .catch((err) => {
-              console.error(`Lỗi khi xóa thiết bị ${id}:`, err);
-            });
+          db.ref("devices/" + id).remove().catch(err => console.error(err));
           continue; 
         }
 
@@ -249,9 +241,8 @@ function renderDevices() {
       if (isGateway) {
         topCodeHtml = `<span class="device-esp-id" style="color: var(--accent-orange);"><i class="fa-solid fa-network-wired"></i> GATEWAY SYSTEM</span>`;
       } else {
-        let macClean = (dev.mac || id).replace(/[^a-zA-Z0-9]/g, '');
-        let espCode = "ESP_" + macClean.substring(macClean.length - 4).toUpperCase();
-        topCodeHtml = `<span class="device-esp-id"><i class="fa-solid fa-microchip"></i> ${espCode}</span>`;
+        let cleanId = id.replace(/^ESP_/, '');
+        topCodeHtml = `<span class="device-esp-id"><i class="fa-solid fa-microchip"></i> ESP_${cleanId}</span>`;
       }
 
       let macAddr = dev.mac || id;
