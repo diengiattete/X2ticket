@@ -57,7 +57,6 @@
     .role-badge { padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
     .role-badge.readonly { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
     
-    /* Badge hiển thị phiên bản góc trên cùng bên phải */
     .app-version-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: rgba(148, 163, 184, 0.1); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.25); font-family: monospace; }
 
     .card { background: var(--bg-surface); backdrop-filter: blur(12px); border-radius: 14px; border: 1px solid var(--border-color); padding: 16px 12px; }
@@ -146,7 +145,7 @@
     <div class="nav-controls">
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-      <span class="app-version-badge">v2.6</span>
+      <span class="app-version-badge">v2.9</span>
     </div>
   </div>
 
@@ -341,6 +340,16 @@
     setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
   }
 
+  // Hàm định dạng ngày giờ bỏ năm (Ví dụ: 15/10, 14:30:00)
+  function formatWithoutYear(timestamp) {
+    if (!timestamp) return "Chưa xác định";
+    let dateObj = new Date(timestamp);
+    let timeStr = dateObj.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    let day = String(dateObj.getDate()).padStart(2, '0');
+    let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}, ${timeStr}`;
+  }
+
   function renderDevices() {
     const tbody = document.getElementById("device-table-body");
     const filterValue = document.getElementById("groupFilter").value;
@@ -387,7 +396,6 @@
     });
 
     sortedGroups.forEach(devGroup => {
-      // Sắp xếp các thiết bị trong cùng 1 nhóm theo thứ tự chữ cái A-Z của Tên Tùy Chọn (custom_name)
       groupsMap[devGroup].sort((a, b) => {
         let isGatewayA = a.id.toLowerCase().includes('gateway') || (a.dev.type && a.dev.type === 'gateway');
         let isGatewayB = b.id.toLowerCase().includes('gateway') || (b.dev.type && b.dev.type === 'gateway');
@@ -450,10 +458,10 @@
         if (isOnline) {
           statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`;
         } else {
-          let lastSeenStr = lastSeenTime > 0 ? new Date(lastSeenTime).toLocaleString("vi-VN") : "Chưa xác định";
+          let lastSeenStr = formatWithoutYear(lastSeenTime);
           statusHTML = `
             <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
-            <span class="info-sub" style="color: var(--accent-red);">Lần cuối: ${lastSeenStr}</span>
+            <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
           `;
         }
 
@@ -476,10 +484,11 @@
         }
 
         let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
+        // Đã đổi chữ "Khởi Động Lại" thành "Restart" để giảm kích thước nút
         let actionTd = `
           <td>
             <div class="action-group">
-              ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Khởi Động Lại</button>` : ''}
+              ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
               ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
               ${isAdmin ? `
                 <button class="btn-edit" onclick="openEditModal('${id}', '${safeCustomName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
