@@ -75,6 +75,19 @@
     .badge-fw { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); font-weight: 600; }
     .badge-group { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-radius: 12px; padding: 3px 8px; }
     
+    /* HIỆU ỨNG CHỚP NHÁY CHẤM XANH KHI LAST SEEN THAY ĐỔI */
+    @keyframes blinkGreenDot {
+      0% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #34d399); }
+      50% { opacity: 0.15; transform: scale(1.4); filter: drop-shadow(0 0 8px #34d399); }
+      100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #34d399); }
+    }
+
+    .dot-blinking {
+      animation: blinkGreenDot 0.6s infinite ease-in-out !important;
+      color: #34d399 !important;
+      display: inline-block;
+    }
+
     .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
     .status-online { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
     .status-offline { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
@@ -150,7 +163,7 @@
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-users" id="btnUsersPerm" style="display:none;" onclick="openUsersModal()"><i class="fa-solid fa-user-gear"></i> Phân Quyền & Tạo User</button>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-      <span class="app-version-badge">v3.1</span>
+      <span class="app-version-badge">v3.2</span>
     </div>
   </div>
 
@@ -315,6 +328,9 @@
   let currentFilteredLogs = [];
   let currentLogLimit = 50;
 
+  // LƯU VẾT MỐC THỜI GIAN NHẬN DỮ LIỆU ĐỂ GIỮ CHỚP NHÁY 3 GIÂY
+  let lastSeenTracker = {};
+
   function encodeEmail(email) {
     return email.replace(/\./g, '_dot_').replace(/@/g, '_at_');
   }
@@ -424,11 +440,31 @@
 
   function listenToDatabase() {
     db.ref("devices").on("value", (snapshot) => {
-      globalDeviceData = snapshot.val();
+      const newData = snapshot.val();
+      const clientNow = Date.now();
+
+      // Kiểm tra thay đổi dựa trên trường last_seen từ Firebase
+      if (newData) {
+        for (let id in newData) {
+          let dev = newData[id];
+          let currentLastSeen = dev.last_seen ? Number(dev.last_seen) : 0;
+
+          if (!lastSeenTracker[id]) {
+            lastSeenTracker[id] = { val: currentLastSeen, blinkUntil: 0 };
+          } else if (lastSeenTracker[id].val !== currentLastSeen && currentLastSeen > 0) {
+            // Phát hiện last_seen thay đổi -> kích hoạt nhấp nháy trong 3000ms (3 giây)
+            lastSeenTracker[id].val = currentLastSeen;
+            lastSeenTracker[id].blinkUntil = clientNow + 3000;
+          }
+        }
+      }
+
+      globalDeviceData = newData;
       if (globalDeviceData) updateGroupDropdown(globalDeviceData);
       renderDevices();
     }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
 
+    // Cập nhật lại giao diện định kỳ để đếm giây offline & dừng nhấp nháy đúng lúc
     setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
   }
 
@@ -552,9 +588,13 @@
 
         let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
 
+        // Kiểm tra xem thiết bị có đang trong mốc 3 giây nhấp nháy hay không
+        let isBlinking = lastSeenTracker[id] && (now < lastSeenTracker[id].blinkUntil);
+        let dotClass = isBlinking ? "dot-blinking" : "";
+
         let statusHTML = "";
         if (isOnline) {
-          statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle" style="font-size:7px;"></i> ONLINE</span>`;
+          statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
         } else {
           let lastSeenStr = formatWithoutYear(lastSeenTime);
           statusHTML = `
@@ -684,7 +724,6 @@
     });
   }
 
-  // HÀM TẠO TÀI KHOẢN TRÊN FIREBASE AUTH VÀ LƯU QUYỀN VÀO REALTIME DATABASE
   async function saveUserAndPermissions() {
     if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
 
@@ -707,7 +746,6 @@
     btnSave.disabled = true;
 
     try {
-      // 1. Tạo tài khoản trên Firebase Auth nếu có nhập mật khẩu
       if (password) {
         if (password.length < 6) {
           alert("Mật khẩu phải có ít nhất 6 ký tự!");
@@ -716,7 +754,6 @@
           return;
         }
 
-        // Gọi REST API tới Firebase Authentication Endpoint để tạo User mới mà không bị Đăng xuất Admin
         const authApiUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`;
         const response = await fetch(authApiUrl, {
           method: 'POST',
@@ -736,12 +773,9 @@
           } else {
             throw new Error("Lỗi Firebase Auth: " + authResult.error.message);
           }
-        } else {
-          console.log("Tạo User Firebase Auth thành công:", authResult.email);
         }
       }
 
-      // 2. Lưu/cập nhật thông tin phân quyền vào Realtime Database
       await db.ref("users_permission/" + emailKey).set({
         allowed_groups: groupsArray,
         updated_at: Date.now()
