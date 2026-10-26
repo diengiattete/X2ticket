@@ -30,18 +30,9 @@ function decodeEmail(key) {
 }
 
 async function updateMasterPublicIP() {
-  try {
-    const response = await fetch('https://api.ipify.org?format=json');
-    const data = await response.json();
-    if (data && data.ip) {
-      db.ref("system/gateway_ip").set({
-        ip_wan: data.ip,
-        updated_at: Date.now()
-      });
-    }
-  } catch (error) {
-    console.error("[IP WAN] Không thể lấy IP WAN từ Client:", error);
-  }
+  // Bỏ qua fetch api.ipify.org từ phía client để tránh lỗi CORS.
+  // IP WAN của Master đã được thiết bị ESP32 tự đẩy lên Firebase.
+  console.log("[IP WAN] Bỏ qua check IP từ browser để tránh CORS.");
 }
 
 auth.onAuthStateChanged((user) => {
