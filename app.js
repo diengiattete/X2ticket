@@ -137,7 +137,7 @@ function listenToDatabase() {
             .catch((err) => {
               console.error(`Lỗi khi xóa thiết bị ${id}:`, err);
             });
-          continue; // Bỏ qua không xử lý render thiết bị này nữa
+          continue; 
         }
 
         let currentLastSeen = dev.last_seen ? Number(dev.last_seen) : 0;
@@ -157,15 +157,7 @@ function listenToDatabase() {
   }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
 
   setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
-}
-
-    globalDeviceData = newData;
-    if (globalDeviceData) updateGroupDropdown(globalDeviceData);
-    renderDevices();
-  }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
-
-  setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
-}
+} // <--- Dấu ngoặc đóng của hàm listenToDatabase phải khớp chính xác ở đây
 
 function formatWithoutYear(timestamp) {
   if (!timestamp) return "Chưa xác định";
