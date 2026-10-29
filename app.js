@@ -105,23 +105,55 @@ function logout() { auth.signOut().then(() => location.reload()); }
 
 function restartSpecificMaster(deviceId, deviceDisplayName) {
   if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
-  
-  let choice = prompt(`Chọn lệnh cho Master "${deviceDisplayName}" (${deviceId}):\n\n1. Nhập "restart" để Khởi động lại\n2. Nhập "update" để Cập nhật OTA\n\n(Bấm Hủy để thoát)`);
-  
-  if (choice === null) return; // Người dùng bấm Hủy
-  
-  let commandVal = choice.trim().toLowerCase();
-  
-  if (commandVal === "restart" || commandVal === "1") {
-    commandVal = "restart";
-  } else if (commandVal === "update" || commandVal === "2") {
-    commandVal = "update";
-  } else {
-    alert("Lựa chọn không hợp lệ! Vui lòng thử lại.");
-    return;
-  }
 
-  // Gửi lệnh thẳng lên Firebase mà không cần hiện thêm hộp thoại confirm nữa
+  // Xóa modal cũ nếu đang tồn tại để tránh trùng lặp
+  let existingModal = document.getElementById("actionChoiceModal");
+  if (existingModal) existingModal.remove();
+
+  // Tạo giao diện bảng chọn (modal) chứa các nút bấm trực quan
+  let modalHtml = `
+    <div id="actionChoiceModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div style="background: var(--bg-card, #1e293b); padding: 24px; border-radius: 12px; width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155);">
+        <h3 style="margin-bottom: 10px; color: var(--text-main, #f8fafc); font-size: 18px;"><i class="fa-solid fa-terminal"></i> Chọn Lệnh Cho Master</h3>
+        <p style="margin-bottom: 20px; color: var(--text-muted, #94a3b8); font-size: 13px;">Thiết bị: <b>${deviceDisplayName}</b></p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button id="btnChoiceRestart" style="background: #f59e0b; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
+            <i class="fa-solid fa-power-off"></i> Khởi động lại (Restart)
+          </button>
+          <button id="btnChoiceUpdate" style="background: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
+            <i class="fa-solid fa-cloud-arrow-down"></i> Cập nhật OTA (Update)
+          </button>
+          <button id="btnChoiceCancel" style="background: transparent; color: var(--text-muted, #94a3b8); border: 1px solid var(--border-color, #334155); padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 13px;">
+            Hủy bỏ
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Chèn modal vào cuối body
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Gắn sự kiện khi bấm nút Restart
+  document.getElementById("btnChoiceRestart").onclick = function() {
+    document.getElementById("actionChoiceModal").remove();
+    sendMasterCommand(deviceId, "restart");
+  };
+
+  // Gắn sự kiện khi bấm nút Update
+  document.getElementById("btnChoiceUpdate").onclick = function() {
+    document.getElementById("actionChoiceModal").remove();
+    sendMasterCommand(deviceId, "update");
+  };
+
+  // Gắn sự kiện khi bấm Hủy bỏ
+  document.getElementById("btnChoiceCancel").onclick = function() {
+    document.getElementById("actionChoiceModal").remove();
+  };
+}
+
+// Hàm phụ trợ để thực hiện gửi lệnh lên Firebase
+function sendMasterCommand(deviceId, commandVal) {
   db.ref("devices/" + deviceId).update({
     command: commandVal,
     command_time: firebase.database.ServerValue.TIMESTAMP
@@ -131,7 +163,6 @@ function restartSpecificMaster(deviceId, deviceDisplayName) {
     alert("Lỗi khi gửi lệnh: " + err.message);
   });
 }
-
 function listenToDatabase() {
   db.ref("devices").on("value", (snapshot) => {
     const newData = snapshot.val();
