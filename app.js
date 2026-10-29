@@ -105,16 +105,31 @@ function logout() { auth.signOut().then(() => location.reload()); }
 
 function restartSpecificMaster(deviceId, deviceDisplayName) {
   if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
-  if (confirm(`Bạn có chắc chắn muốn khởi động lại Master "${deviceDisplayName}" (${deviceId}) không?`)) {
-    db.ref("devices/" + deviceId).update({
-      command: "restart",
-      command_time: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-      alert(`Đã gửi lệnh khởi động lại tới ${deviceId}! Thiết bị sẽ reboot sau vài giây.`);
-    }).catch(err => {
-      alert("Lỗi khi gửi lệnh: " + err.message);
-    });
+  
+  let choice = prompt(`Chọn lệnh cho Master "${deviceDisplayName}" (${deviceId}):\n\n1. Nhập "restart" để Khởi động lại\n2. Nhập "update" để Cập nhật OTA\n\n(Bấm Hủy để thoát)`);
+  
+  if (choice === null) return; // Người dùng bấm Hủy
+  
+  let commandVal = choice.trim().toLowerCase();
+  
+  if (commandVal === "restart" || commandVal === "1") {
+    commandVal = "restart";
+  } else if (commandVal === "update" || commandVal === "2") {
+    commandVal = "update";
+  } else {
+    alert("Lựa chọn không hợp lệ! Vui lòng thử lại.");
+    return;
   }
+
+  // Gửi lệnh thẳng lên Firebase mà không cần hiện thêm hộp thoại confirm nữa
+  db.ref("devices/" + deviceId).update({
+    command: commandVal,
+    command_time: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    alert(`Đã gửi lệnh "${commandVal}" thành công tới ${deviceId}!`);
+  }).catch(err => {
+    alert("Lỗi khi gửi lệnh: " + err.message);
+  });
 }
 
 function listenToDatabase() {
