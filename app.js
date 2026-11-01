@@ -256,158 +256,9 @@ function getSignalBarsHTML(rssi) {
   </span>`;
 }
 
-function renderDevices() {
-  const tbody = document.getElementById("device-table-body");
-  const filterValue = document.getElementById("groupFilter").value;
-  const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-
-  tbody.innerHTML = "";
-
-  if (!globalDeviceData) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
-    return;
-  }
-
-  const now = Date.now();
-  let totalCount = 0;
-  let groupsMap = {};
-
-  for (let id in globalDeviceData) {
-    let dev = globalDeviceData[id];
-
-    if (id.toLowerCase().includes('8266') || (dev.device_name && dev.device_name.toLowerCase().includes('8266'))) {
-      continue;
-    }
-
-    let devGroup = dev.group || "Chưa Phân Nhóm";
-
-    if (!isGroupAllowed(devGroup)) continue;
-    if (filterValue !== "ALL" && devGroup !== filterValue) continue;
-
-    if (!groupsMap[devGroup]) {
-      groupsMap[devGroup] = [];
-    }
-    groupsMap[devGroup].push({ id, dev });
-    totalCount++;
-  }
-
-  if (totalCount === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
-    return;
-  }
-
-  let sortedGroups = Object.keys(groupsMap).sort((a, b) => {
-    if (a === "Chưa Phân Nhóm") return 1;
-    if (b === "Chưa Phân Nhóm") return -1;
-    return a.localeCompare(b);
-  });
-
-  sortedGroups.forEach(devGroup => {
-    groupsMap[devGroup].sort((a, b) => {
-      let isGatewayA = a.id.toLowerCase().includes('gateway') || (a.dev.type && a.dev.type === 'gateway');
-      let isGatewayB = b.id.toLowerCase().includes('gateway') || (b.dev.type && b.dev.type === 'gateway');
-      
-      let nameA = a.dev.custom_name || (isGatewayA ? "Gateway Trung Tâm" : a.id);
-      let nameB = b.dev.custom_name || (isGatewayB ? "Gateway Trung Tâm" : b.id);
-      
-      return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
-    });
-
-    tbody.innerHTML += `
-      <tr class="mobile-group-header" style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
-        <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 8px 12px; font-size: 14px;">
-          <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
-        </td>
-      </tr>
-    `;
-
-    groupsMap[devGroup].forEach(item => {
-      let id = item.id;
-      let dev = item.dev;
-      
-      let isGateway = id.toLowerCase().includes('gateway') || (dev.type && dev.type === 'gateway');
-      let topCodeHtml = "";
-      let customName = dev.custom_name || (isGateway ? "Gateway Trung Tâm" : "Chưa đặt tên");
-
-      if (isGateway) {
-        topCodeHtml = `<span class="device-esp-id" style="color: var(--accent-orange);"><i class="fa-solid fa-network-wired"></i> GATEWAY SYSTEM</span>`;
-      } else {
-        let cleanId = id.replace(/^ESP_/, '');
-        topCodeHtml = `<span class="device-esp-id"><i class="fa-solid fa-microchip"></i> ESP_${cleanId}</span>`;
-      }
-
-      let macAddr = dev.mac || id;
-      let fwVer = dev.firmware || "1.0.0";
-      
-      let ipWan = dev.ip_wan || dev.ip || "--";
-      let ipLocal = dev.ip_local || "--";
-
-      let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
-      let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
-
-      let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 60) && (lastSeenTime > 0);
-
-      let inCnt = dev.input_count ?? 0;
-      let outCnt = dev.output_count ?? 0;
-      let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
-      let pulseUs = dev.pulse_width_us ?? "--";
-      
-      let signalDisplayHTML = getSignalBarsHTML(dev.wifi_signal);
-
-      let tempVal = dev.temperature ?? dev.temp;
-      let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
-      let voltVal = dev.voltage ?? dev.vcc;
-      let voltDisplay = voltVal !== undefined ? `${parseFloat(voltVal).toFixed(2)} V` : "--";
-
-      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
-
-      let isBlinking = lastSeenTracker[id] && (now < lastSeenTracker[id].blinkUntil);
-      let dotClass = isBlinking ? "dot-blinking" : "";
-
-      let statusHTML = "";
-      let statusMobileHTML = "";
-      
-      if (isOnline) {
-        statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
-        statusMobileHTML = `<span class="status-badge-mobile status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px; color: var(--accent-green);"></i></span>`;
-      } else {
-        let lastSeenStr = formatWithoutYear(lastSeenTime);
-        statusHTML = `
-          <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
-          <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
-        `;
-        statusMobileHTML = `<span class="status-badge-mobile status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:7px; color: var(--accent-red);"></i></span>`;
-      }
-
-      let pulseColumnHTML = "";
-      let pulseMobileHTML = "";
-      if (isGateway) {
-        pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 11px;"><i class="fa-solid fa-server"></i> Điều phối trung tâm</span>`;
-        pulseMobileHTML = `<span style="color: var(--text-muted); font-size: 11px;">Điều phối trung tâm</span>`;
-      } else {
-        let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
-        let ratioDisplay = isRatioError 
-          ? `<span style="color: var(--accent-red); font-weight: bold;">LỖI (${ratio}x)</span>`
-          : `<b>${ratio}x</b>`;
-
-        pulseColumnHTML = `
-          <div class="${pulseContainerClass}">
-            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
-            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
-          </div>
-          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
-        `;
-
-        pulseMobileHTML = `
-          <div style="font-family: monospace; font-size: 11px;">
-            <span style="color: #60a5fa;">IN:${inCnt}</span> | <span style="color: #f43f5e;">OUT:${outCnt}</span>
-          </div>
-        `;
-      }
-
-      let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
+let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
       let actionTd = `
-        <td data-label="Thao tác">
+        <td data-label="Thao tác" class="desktop-action-td">
           <div class="action-group">
             ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
             ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
@@ -421,45 +272,18 @@ function renderDevices() {
       let isMenuOpen = openMobileMenus[id] ? "active" : "";
       let cardBgStyle = openMobileMenus[id] ? "background: rgba(56, 189, 248, 0.08);" : "";
 
-      tbody.innerHTML += `<tr id="row-${id}" class="mobile-device-card" style="${cardBgStyle}">
-        <!-- Desktop cells -->
-        <td data-label="Trạng thái">${statusHTML}</td>
-        <td data-label="Tên thiết bị">
+      tbody.innerHTML += `<tr id="row-${id}" class="device-row" style="${cardBgStyle}">
+        <!-- Dữ liệu hiển thị trên PC (đủ 9 cột) -->
+        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">
+          <span class="desktop-status">${statusHTML}</span>
+          <span class="mobile-status">${statusMobileHTML}</span>
+        </td>
+        <td data-label="Tên thiết bị" onclick="toggleMobileMenu('${id}')">
           <div class="device-name-container">
             ${topCodeHtml}
-            <span class="device-custom-name">${customName}</span>
+            <span class="device-custom-name">${customName} <i class="fa-solid fa-chevron-down mobile-chevron" style="font-size: 9px; opacity: 0.5;"></i></span>
           </div>
-        </td>
-        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
-        <td data-label="Đếm xung">${pulseColumnHTML}</td>
-        <td data-label="Môi trường">
-          <div class="env-box">
-            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
-            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
-          </div>
-        </td>
-        <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
-        <td data-label="Mạng / MAC">
-          <span class="badge-mac">${macAddr}</span>
-          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
-          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
-        </td>
-        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
-        ${actionTd}
-
-        <!-- Mobile Layout định dạng 2 hàng rõ ràng không bị đè chữ -->
-        <td style="display: none;" class="mobile-only-cell">
-          <div class="mobile-card-row-top" onclick="toggleMobileMenu('${id}')">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              ${statusMobileHTML}
-              <div>
-                ${topCodeHtml}
-                <div class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></div>
-              </div>
-            </div>
-            <div>${pulseMobileHTML}</div>
-          </div>
-
+          <!-- Menu xổ xuống chỉ hiển thị khi ở Mobile -->
           <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
             <div class="mobile-extra-info">
               <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);">${tempDisplay}</span></span>
@@ -477,15 +301,27 @@ function renderDevices() {
               MAC: ${macAddr}
             </div>
             <div style="margin-top: 6px;">
-              ${actionTd.replace('<td>', '').replace('</td>', '')}
+              ${actionTd.replace('<td data-label="Thao tác" class="desktop-action-td">', '').replace('</td>', '')}
             </div>
           </div>
         </td>
+        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
+        <td data-label="Đếm xung" onclick="toggleMobileMenu('${id}')">${pulseColumnHTML}</td>
+        <td data-label="Môi trường" onclick="toggleMobileMenu('${id}')">
+          <div class="env-box">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+          </div>
+        </td>
+        <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
+        <td data-label="Mạng / MAC">
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+        </td>
+        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
       </tr>`;
-    });
-  });
-}
-
 function toggleMobileMenu(deviceId) {
   if (window.innerWidth > 768) return;
   
