@@ -426,8 +426,8 @@ function renderDevices() {
           <span class="desktop-status">${statusHTML}</span>
         </td>
         <td data-label="Tên thiết bị">
-          <!-- Phần giao diện chỉ hiển thị gọn trên Mobile -->
-          <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')" style="display:none;">
+          <!-- Bố cục dành riêng cho Mobile -->
+          <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
             <div style="display: flex; align-items: center; gap: 8px;">
               ${statusMobileHTML}
               <div class="device-name-container">
@@ -436,14 +436,6 @@ function renderDevices() {
               </div>
             </div>
             <div>${pulseMobileHTML}</div>
-          </div>
-
-          <!-- Phần hiển thị chuẩn trên PC -->
-          <div class="desktop-name-view">
-            <div class="device-name-container">
-              ${topCodeHtml}
-              <span class="device-custom-name">${customName}</span>
-            </div>
           </div>
 
           <!-- Menu xổ xuống trên mobile -->
@@ -488,6 +480,7 @@ function renderDevices() {
     });
   });
 }
+
 function toggleMobileMenu(deviceId) {
   if (window.innerWidth > 768) return;
   
