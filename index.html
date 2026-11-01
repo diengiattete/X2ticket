@@ -75,6 +75,7 @@
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
+    /* Ép cột Tín Hiệu co sát gọn trên PC */
     table th:nth-child(6), table td:nth-child(6) {
       width: 1% !important; white-space: nowrap !important; padding-left: 2px !important; padding-right: 2px !important; text-align: center !important;
     }
@@ -106,7 +107,7 @@
     .env-item { display: flex; align-items: center; gap: 6px; }
     
     .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
-    .device-name-container { display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
+    .device-name-container { display: flex; flex-direction: column; gap: 2px; }
     .device-esp-id { font-size: 11px; font-family: monospace; color: var(--accent-blue); font-weight: 600; }
     .device-custom-name { font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
 
@@ -140,7 +141,7 @@
     }
 
     /* ====================================================
-       GIAO DIỆN MOBILE: TỐI ƯU KHOẢNG CÁCH & DẤU CHẤM TRÒN
+       CHỈ ÁP DỤNG RIÊNG CHO MÀN HÌNH MOBILE (<= 768px)
        ==================================================== */
     @media screen and (max-width: 768px) {
       body { padding: 8px 4px !important; }
@@ -148,11 +149,13 @@
       .card { padding: 10px 8px !important; }
       .table-container { overflow-x: visible !important; }
 
-      table, table thead, table tbody, table th, table td, table tr {
+      table#device-table, table#device-table tr, table#device-table th, table#device-table td,
+      .container table, .container table thead, .container table tbody, .container table tr, .container table th, .container table td {
         display: block !important; width: 100% !important; box-sizing: border-box !important;
       }
-      table { min-width: 0 !important; }
-      table thead { display: none !important; }
+      
+      .container table { min-width: 0 !important; }
+      .container table thead { display: none !important; }
 
       #device-table-body tr {
         background: var(--bg-surface);
@@ -163,7 +166,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
-      /* Hàng nhóm thiết bị */
+      /* Hàng nhóm thiết bị trên mobile */
       #device-table-body tr[style*="background: rgba"] {
         background: rgba(56, 189, 248, 0.12) !important;
         border-top: 2px solid var(--accent-blue) !important;
@@ -186,7 +189,7 @@
       }
 
       #device-table-body td:nth-child(1) { width: 8% !important; justify-content: center; }
-      #device-table-body td:nth-child(2) { width: 38% !important; }
+      #device-table-body td:nth-child(2) { width: 38% !important; cursor: pointer; }
       #device-table-body td:nth-child(4) { width: 34% !important; font-size: 11px; justify-content: flex-end; }
       #device-table-body td:nth-child(5) { width: 20% !important; justify-content: flex-end; text-align: right; }
 
