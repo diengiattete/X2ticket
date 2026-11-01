@@ -71,11 +71,12 @@
     .card-title i { color: var(--accent-blue); }
 
     .table-container { overflow-x: auto; border-radius: 8px; width: 100%; }
+    
+    /* GIAO DIỆN PC CHUẨN MẶC ĐỊNH */
     table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
-    /* Cố định cột Tín Hiệu nhỏ gọn trên PC */
     table th:nth-child(6), table td:nth-child(6) {
       width: 1% !important; white-space: nowrap !important; padding-left: 2px !important; padding-right: 2px !important; text-align: center !important;
     }
@@ -142,7 +143,7 @@
     }
 
     /* ====================================================
-       CHỈ KÍCH HOẠT GIAO DIỆN THẺ MOBILE KHI <= 768px
+       GIAO DIỆN MOBILE RIÊNG BIỆT (<= 768px)
        ==================================================== */
     @media screen and (max-width: 768px) {
       body { padding: 8px 4px !important; }
@@ -150,60 +151,73 @@
       .card { padding: 10px 8px !important; }
       .table-container { overflow-x: visible !important; }
 
-      /* Chỉ định danh các thẻ bên trong #dashboardScreen để không ảnh hưởng modal hay trang khác */
-      #dashboardScreen table, 
-      #dashboardScreen table thead, 
-      #dashboardScreen table tbody, 
-      #dashboardScreen table th, 
-      #dashboardScreen table td, 
-      #dashboardScreen table tr {
+      .container table#mobile-safe-table, 
+      .container table#mobile-safe-table thead, 
+      .container table#mobile-safe-table tbody, 
+      .container table#mobile-safe-table th, 
+      .container table#mobile-safe-table td, 
+      .container table#mobile-safe-table tr {
         display: block !important; width: 100% !important; box-sizing: border-box !important;
       }
       
-      #dashboardScreen table { min-width: 0 !important; }
-      #dashboardScreen table thead { display: none !important; }
+      .container table#mobile-safe-table { min-width: 0 !important; }
+      .container table#mobile-safe-table thead { display: none !important; }
 
-      #dashboardScreen #device-table-body tr {
+      /* Thẻ Card cho từng thiết bị */
+      #device-table-body tr.mobile-device-card {
         background: var(--bg-surface);
         border: 1px solid var(--border-color) !important;
         border-radius: 12px;
         margin-bottom: 8px !important;
         padding: 8px 10px !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
       }
 
-      /* Hàng nhóm thiết bị trên mobile */
-      #dashboardScreen #device-table-body tr[style*="background: rgba"] {
+      /* Nhóm thiết bị dàn ngang, thu nhỏ font chữ, không bị xuống dòng thô */
+      #device-table-body tr.mobile-group-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         background: rgba(56, 189, 248, 0.12) !important;
         border-top: 2px solid var(--accent-blue) !important;
-        margin-top: 10px !important; margin-bottom: 6px !important; border-radius: 8px !important;
+        margin-top: 10px !important; 
+        margin-bottom: 6px !important; 
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        width: 100% !important;
       }
-      #dashboardScreen #device-table-body tr[style*="background: rgba"] td {
-        display: block !important; text-align: left !important; padding: 6px 4px !important; border: none !important;
-      }
-
-      #dashboardScreen #device-table-body td { display: none !important; }
-
-      #dashboardScreen #device-table-body td:nth-child(1),
-      #dashboardScreen #device-table-body td:nth-child(2),
-      #dashboardScreen #device-table-body td:nth-child(4),
-      #dashboardScreen #device-table-body td:nth-child(5) {
-        display: inline-flex !important;
-        vertical-align: middle !important;
+      #device-table-body tr.mobile-group-header td {
+        display: block !important; 
         border: none !important;
-        padding: 0 2px !important;
+        padding: 0 !important;
+        font-weight: 700; 
+        color: var(--accent-blue); 
+        font-size: 13px !important;
+        width: auto !important;
       }
 
-      #dashboardScreen #device-table-body td:nth-child(1) { width: 8% !important; justify-content: center; }
-      #dashboardScreen #device-table-body td:nth-child(2) { width: 38% !important; cursor: pointer; }
-      #dashboardScreen #device-table-body td:nth-child(4) { width: 34% !important; font-size: 11px; justify-content: flex-end; }
-      #dashboardScreen #device-table-body td:nth-child(5) { width: 20% !important; justify-content: flex-end; text-align: right; }
+      #device-table-body td { display: none !important; }
 
-      #dashboardScreen #device-table-body tr {
+      /* Layout bên trong Card thiết bị trên mobile: chia thành các hàng ngang rõ ràng không bị đè chữ */
+      .mobile-card-row-top {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 2px;
+        width: 100% !important;
+      }
+
+      .mobile-card-row-bottom {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        font-size: 11px !important;
+        border-top: 1px dashed rgba(255, 255, 255, 0.08);
+        padding-top: 6px;
       }
 
       .mobile-status { display: inline-block !important; }
@@ -219,8 +233,8 @@
       .status-online-dot {
         background: rgba(52, 211, 153, 0.2);
         border: 1px solid rgba(52, 211, 153, 0.4);
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -229,8 +243,8 @@
       .status-offline-dot {
         background: rgba(248, 113, 113, 0.2);
         border: 1px solid rgba(248, 113, 113, 0.4);
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -240,8 +254,8 @@
       .mobile-dropdown-menu {
         display: none;
         width: 100%;
-        margin-top: 8px;
-        padding-top: 8px;
+        margin-top: 4px;
+        padding-top: 6px;
         border-top: 1px dashed rgba(255, 255, 255, 0.15);
         flex-direction: column;
         gap: 6px;
@@ -308,7 +322,7 @@
     </div>
 
     <div class="table-container">
-      <table>
+      <table id="mobile-safe-table">
         <thead>
           <tr>
             <th>Trạng Thái</th>
