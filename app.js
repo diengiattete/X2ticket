@@ -412,7 +412,7 @@ function renderDevices() {
             <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
           </div>
         </td>
-       <td>${signalDisplayHTML}</td>
+       ${signalDisplayHTML}
         <td>
           <span class="badge-mac">${macAddr}</span>
           <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
