@@ -403,17 +403,34 @@ function renderDevices() {
           </div>
         </td>`;
 
-      tbody.innerHTML += `<tr>
-        <td data-label="Trạng thái">${statusHTML}</td>
-        <td data-label="Tên thiết bị">
+      tbody.innerHTML += `<tr id="row-${id}">
+        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">${statusHTML}</td>
+        <td data-label="Tên thiết bị" onclick="toggleMobileMenu('${id}')">
           <div class="device-name-container">
             ${topCodeHtml}
-            <span class="device-custom-name">${customName}</span>
+            <span class="device-custom-name">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 10px; opacity: 0.6;"></i></span>
+          </div>
+          <!-- Menu xổ xuống trên mobile -->
+          <div class="mobile-dropdown-menu" id="menu-${id}">
+            <div class="mobile-extra-info">
+              <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
+              <span><b>FW:</b> v${fwVer}</span>
+            </div>
+            <div class="mobile-extra-info" style="font-family: monospace;">
+              <span>WAN: ${ipWan}</span>
+              <span>LAN: ${ipLocal}</span>
+            </div>
+            <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
+              MAC: ${macAddr}
+            </div>
+            <div style="margin-top: 4px;">
+              ${actionTd.replace('<td>', '').replace('</td>', '')}
+            </div>
           </div>
         </td>
         <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
-        <td data-label="Đếm xung">${pulseColumnHTML}</td>
-        <td data-label="Môi trường">
+        <td data-label="Đếm xung" onclick="toggleMobileMenu('${id}')">${pulseColumnHTML}</td>
+        <td data-label="Môi trường" onclick="toggleMobileMenu('${id}')">
           <div class="env-box">
             <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
             <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
@@ -430,6 +447,22 @@ function renderDevices() {
       </tr>`;
     });
   });
+}
+
+function toggleMobileMenu(deviceId) {
+  if (window.innerWidth > 768) return;
+  
+  const menuEl = document.getElementById("menu-" + deviceId);
+  const rowEl = document.getElementById("row-" + deviceId);
+  
+  if (menuEl) {
+    menuEl.classList.toggle("active");
+    if (menuEl.classList.contains("active")) {
+      rowEl.style.background = "rgba(56, 189, 248, 0.08)";
+    } else {
+      rowEl.style.background = "var(--bg-surface)";
+    }
+  }
 }
 
 function updateGroupDropdown(data) {
