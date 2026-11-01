@@ -210,6 +210,42 @@ function isGroupAllowed(devGroup) {
   if (allowedGroupsList.includes("*")) return true;
   return allowedGroupsList.includes(devGroup);
 }
+function getSignalBarsHTML(rssi) {
+  if (rssi === "--" || rssi === undefined || rssi === null) {
+    return `<span style="color: var(--text-muted);"><i class="fa-solid fa-wifi" style="opacity: 0.3;"></i> Không có sóng</span>`;
+  }
+  
+  let val = Number(rssi);
+  let bars = 0;
+  let color = "var(--accent-green)";
+  let textLabel = "Cực tốt";
+
+  if (val >= -60) {
+    bars = 4;
+    color = "var(--accent-green, #10b981)";
+    textLabel = "Rất tốt (" + val + " dBm)";
+  } else if (val >= -70) {
+    bars = 3;
+    color = "var(--accent-blue, #3b82f6)";
+    textLabel = "Tốt (" + val + " dBm)";
+  } else if (val >= -85) {
+    bars = 2;
+    color = "var(--accent-yellow, #f59e0b)";
+    textLabel = "Trung bình (" + val + " dBm)";
+  } else {
+    bars = 1;
+    color = "var(--accent-red, #ef4444)";
+    textLabel = "Yếu (" + val + " dBm)";
+  }
+
+  // Sử dụng icon sóng kèm màu sắc trực quan theo từng bậc
+  let iconClass = "fa-solid fa-wifi";
+  if (bars === 1) iconClass = "fa-solid fa-wifi"; // Hoặc icon tương ứng
+
+  return `<span title="${textLabel}" style="color: ${color}; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+    <i class="${iconClass}"></i> Bậc ${bars}/4 <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(${val} dBm)</span>
+  </span>`;
+}
 
 function renderDevices() {
   const tbody = document.getElementById("device-table-body");
@@ -376,7 +412,7 @@ function renderDevices() {
             <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
           </div>
         </td>
-        <td><i class="fa-solid fa-wifi"></i> ${wifiRssi}</td>
+       <td>${signalDisplayHTML}</td>
         <td>
           <span class="badge-mac">${macAddr}</span>
           <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
