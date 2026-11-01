@@ -52,7 +52,7 @@
     .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
     .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     
-    /* CSS cho logo cờ Việt Nam */
+    /* CSS logo cờ Việt Nam */
     .vietnam-flag-logo {
       display: inline-flex;
       align-items: center;
@@ -83,12 +83,12 @@
     .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .card-title i { color: var(--accent-blue); }
 
-    .table-container { overflow-x: auto; border-radius: 8px; }
+    .table-container { overflow-x: auto; border-radius: 8px; width: 100%; }
     table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
-    /* Tối ưu triệt để bề ngang và khoảng cách của cột Tín Hiệu (Cột thứ 6) */
+    /* Tối ưu triệt để bề ngang của cột Tín Hiệu (Cột thứ 6 trên PC) */
     table th:nth-child(6),
     table td:nth-child(6) {
       width: 1% !important;
@@ -162,6 +162,98 @@
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
       .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+
+    /* ====================================================
+       BỘ CSS TỐI ƯU MOBILE: LOẠI BỎ CUỘN NGANG HOÀN TOÀN
+       ==================================================== */
+    @media screen and (max-width: 768px) {
+      body { padding: 8px 4px !important; }
+      .container { padding: 0 !important; width: 100% !important; }
+      .card { padding: 10px 8px !important; }
+      .table-container { overflow-x: visible !important; }
+
+      /* Chuyển đổi bảng thành thẻ dạng Card xếp dọc */
+      table, table thead, table tbody, table th, table td, table tr {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      table { min-width: 0 !important; }
+      table thead { display: none !important; }
+
+      /* Từng hàng thiết bị biến thành Card bo góc độc lập */
+      #device-table-body tr {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px;
+        margin-bottom: 10px !important;
+        padding: 8px 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Hàng nhóm thiết bị (Header Group) */
+      #device-table-body tr[style*="background: rgba"] {
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-top: 2px solid var(--accent-blue) !important;
+        margin-top: 12px !important;
+        margin-bottom: 8px !important;
+        border-radius: 8px !important;
+      }
+      #device-table-body tr[style*="background: rgba"] td {
+        display: block !important;
+        text-align: left !important;
+        padding: 6px 4px !important;
+        border: none !important;
+      }
+
+      /* Cấu trúc từng ô thông số bên trong Card */
+      #device-table-body td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 6px 0 !important;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.07) !important;
+        text-align: right !important;
+        width: 100% !important;
+      }
+      #device-table-body td:last-child {
+        border-bottom: none !important;
+        padding-top: 8px !important;
+        justify-content: flex-end !important;
+      }
+
+      /* Tự động lấy nhãn data-label hiển thị bên trái */
+      #device-table-body td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 11px;
+        text-align: left;
+        margin-right: 8px;
+        white-space: nowrap;
+      }
+
+      /* Tối ưu riêng cho ô Tín Hiệu trên mobile */
+      #device-table-body td:nth-child(6) {
+        width: 100% !important;
+        text-align: right !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+
+      /* Điều chỉnh nút bấm dễ thao tác bằng ngón tay trên mobile */
+      .action-group {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+      .action-group button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        flex: 1;
+        justify-content: center;
+      }
     }
   </style>
 </head>
