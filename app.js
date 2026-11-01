@@ -207,7 +207,7 @@ function isGroupAllowed(devGroup) {
 
 function getSignalBarsHTML(rssi) {
   if (rssi === "--" || rssi === undefined || rssi === null) {
-    return `<span title="Không có sóng" style="color: var(--text-muted); display: inline-flex; align-items: center;"><i class="fa-solid fa-wifi-slash" style="font-size: 14px;"></i></span>`;
+    return `<span title="Không có sóng" style="color: var(--text-muted); display: inline-flex; align-items: center;"><i class="fa-solid fa-wifi-slash" style="font-size: 16px;"></i></span>`;
   }
   
   let val = Number(rssi);
@@ -239,9 +239,8 @@ function getSignalBarsHTML(rssi) {
   let c2 = activeLevel >= 3 ? activeColor : inactiveColor; 
   let c3 = activeLevel >= 4 ? activeColor : inactiveColor; 
 
-  // Giảm kích thước SVG xuống width="16" height="14" để icon nhỏ gọn
   let svgIcon = `
-    <svg width="16" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+    <svg width="22" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
       <path d="M2 7.5C7.5 2.5 16.5 2.5 22 7.5" stroke="${c3}" stroke-width="2.5" stroke-linecap="round"/>
       <path d="M5.5 11C9 7.8 15 7.8 18.5 11" stroke="${c2}" stroke-width="2.5" stroke-linecap="round"/>
       <path d="M9 14.5C10.8 13 13.2 13 15 14.5" stroke="${c1}" stroke-width="2.5" stroke-linecap="round"/>
