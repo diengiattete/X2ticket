@@ -110,7 +110,7 @@ function restartSpecificMaster(deviceId, deviceDisplayName) {
   let existingModal = document.getElementById("actionChoiceModal");
   if (existingModal) existingModal.remove();
 
-  // Tạo giao diện bảng chọn (modal) chứa các nút bấm trực quan
+  // Tạo giao diện bảng chọn (modal) chứa các nút bấm trực quan (Restart / Update)
   let modalHtml = `
     <div id="actionChoiceModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999;">
       <div style="background: var(--bg-card, #1e293b); padding: 24px; border-radius: 12px; width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155);">
@@ -131,28 +131,23 @@ function restartSpecificMaster(deviceId, deviceDisplayName) {
     </div>
   `;
 
-  // Chèn modal vào cuối body
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-  // Gắn sự kiện khi bấm nút Restart
   document.getElementById("btnChoiceRestart").onclick = function() {
     document.getElementById("actionChoiceModal").remove();
     sendMasterCommand(deviceId, "restart");
   };
 
-  // Gắn sự kiện khi bấm nút Update
   document.getElementById("btnChoiceUpdate").onclick = function() {
     document.getElementById("actionChoiceModal").remove();
     sendMasterCommand(deviceId, "update");
   };
 
-  // Gắn sự kiện khi bấm Hủy bỏ
   document.getElementById("btnChoiceCancel").onclick = function() {
     document.getElementById("actionChoiceModal").remove();
   };
 }
 
-// Hàm phụ trợ để thực hiện gửi lệnh lên Firebase
 function sendMasterCommand(deviceId, commandVal) {
   db.ref("devices/" + deviceId).update({
     command: commandVal,
@@ -163,6 +158,7 @@ function sendMasterCommand(deviceId, commandVal) {
     alert("Lỗi khi gửi lệnh: " + err.message);
   });
 }
+
 function listenToDatabase() {
   db.ref("devices").on("value", (snapshot) => {
     const newData = snapshot.val();
@@ -172,9 +168,10 @@ function listenToDatabase() {
       for (let id in newData) {
         let dev = newData[id];
         
-        // Tự động xóa thiết bị mang firmware v1.0.0 khỏi Firebase
-        if (dev.firmware === "1.0.0") {
+        // Tự động xóa thiết bị mang firmware v1.0.0 hoặc node rác ảo khỏi Firebase
+        if (dev.firmware === "1.0.0" || id.length < 5 || id.includes(":") || id.includes("§") || id.includes("ò")) {
           db.ref("devices/" + id).remove().catch(err => console.error(err));
+          db.ref("logs/" + id).remove().catch(err => console.error(err));
           continue; 
         }
 
@@ -210,6 +207,7 @@ function isGroupAllowed(devGroup) {
   if (allowedGroupsList.includes("*")) return true;
   return allowedGroupsList.includes(devGroup);
 }
+
 function getSignalBarsHTML(rssi) {
   if (rssi === "--" || rssi === undefined || rssi === null) {
     return `<span style="color: var(--text-muted);"><i class="fa-solid fa-wifi" style="opacity: 0.3;"></i> Không có sóng</span>`;
@@ -238,9 +236,7 @@ function getSignalBarsHTML(rssi) {
     textLabel = "Yếu (" + val + " dBm)";
   }
 
-  // Sử dụng icon sóng kèm màu sắc trực quan theo từng bậc
   let iconClass = "fa-solid fa-wifi";
-  if (bars === 1) iconClass = "fa-solid fa-wifi"; // Hoặc icon tương ứng
 
   return `<span title="${textLabel}" style="color: ${color}; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
     <i class="${iconClass}"></i> Bậc ${bars}/4 <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(${val} dBm)</span>
@@ -342,7 +338,9 @@ function renderDevices() {
       let outCnt = dev.output_count ?? 0;
       let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
       let pulseUs = dev.pulse_width_us ?? "--";
-      let wifiRssi = dev.wifi_signal !== undefined ? dev.wifi_signal + " dBm" : "--";
+      
+      // Khai báo bậc sóng Wi-Fi trực quan
+      let signalDisplayHTML = getSignalBarsHTML(dev.wifi_signal);
 
       let tempVal = dev.temperature ?? dev.temp;
       let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
@@ -412,7 +410,7 @@ function renderDevices() {
             <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
           </div>
         </td>
-       ${signalDisplayHTML}
+        <td>${signalDisplayHTML}</td>
         <td>
           <span class="badge-mac">${macAddr}</span>
           <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
