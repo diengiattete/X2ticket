@@ -1,461 +1,758 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Theo Dõi Funchomper</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2280%22>🇻🇳</text></svg>">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-body: #090d16;
-      --bg-surface: rgba(22, 30, 46, 0.85);
-      --bg-input: rgba(15, 23, 42, 0.9);
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --accent-blue: #38bdf8;
-      --accent-green: #34d399;
-      --accent-yellow: #fbbf24;
-      --accent-red: #f87171;
-      --accent-orange: #f97316;
-      --border-color: rgba(255, 255, 255, 0.08);
+const ADMIN_EMAIL = "trung@fun.io";
+const firebaseConfig = {
+  apiKey: "AIzaSyDroRCHXWV_cspD1tbWgvTpr7yF-uqWWPM",
+  authDomain: "trungio.firebaseapp.com",
+  databaseURL: "https://trungio.firebaseio.com",
+  projectId: "trungio"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+let globalDeviceData = null;
+let currentUser = null;
+let allowedGroupsList = ["*"]; 
+let cachedRawLogs = [];
+let currentFilteredLogs = [];
+let currentLogLimit = 50;
+let lastSeenTracker = {};
+
+// Lưu trữ trạng thái menu mở trên mobile để không bị reset khi realtime cập nhật
+let openMobileMenus = {};
+
+function encodeEmail(email) {
+  return email.replace(/\./g, '_dot_').replace(/@/g, '_at_');
+}
+
+function decodeEmail(key) {
+  return key.replace(/_dot_/g, '.').replace(/_at_/g, '@');
+}
+
+async function updateMasterPublicIP() {
+  console.log("[IP WAN] Bỏ qua tra cứu IP phía client để tránh lỗi CORS.");
+}
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboardScreen").style.display = "block";
+
+    const isAdmin = (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+    const badgeEl = document.getElementById("userBadge");
+    const btnUsersPerm = document.getElementById("btnUsersPerm");
+
+    badgeEl.className = isAdmin ? "role-badge" : "role-badge readonly";
+    badgeEl.innerHTML = isAdmin 
+      ? `<i class="fa-solid fa-user-shield"></i> ${user.email} (ADMIN)`
+      : `<i class="fa-solid fa-eye"></i> ${user.email}`;
+
+    btnUsersPerm.style.display = isAdmin ? "inline-block" : "none";
+
+    fetchUserPermissions(user.email, () => {
+      updateMasterPublicIP();
+      listenToDatabase();
+    });
+  } else {
+    currentUser = null;
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("dashboardScreen").style.display = "none";
+  }
+});
+
+function fetchUserPermissions(email, callback) {
+  const isAdmin = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+  if (isAdmin) {
+    allowedGroupsList = ["*"];
+    if (callback) callback();
+    return;
+  }
+
+  const emailKey = encodeEmail(email.toLowerCase());
+  db.ref("users_permission/" + emailKey).once("value", (snapshot) => {
+    const permData = snapshot.val();
+    if (permData && permData.allowed_groups) {
+      allowedGroupsList = permData.allowed_groups;
+    } else {
+      allowedGroupsList = []; 
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body { background: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-body) 75%); color: var(--text-main); min-height: 100vh; padding: 16px 8px; }
-    .container { max-width: 1380px; margin: 0 auto; display: none; }
-    
-    .login-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 999; padding: 16px; }
-    .login-overlay { background: radial-gradient(circle at center, #1e293b 0%, #050811 100%); }
-    .modal-overlay { background: rgba(5, 8, 17, 0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; }
-    
-    .login-box, .modal-box { background: var(--bg-surface); backdrop-filter: blur(16px); padding: 24px 20px; border-radius: 16px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); }
-    .modal-box { max-width: 650px; }
-    
-    .login-box { text-align: center; }
-    .login-box .icon-logo { font-size: 36px; color: var(--accent-blue); margin-bottom: 12px; }
-    .login-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
-    
-    .form-group { margin-bottom: 16px; text-align: left; }
-    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
-    .form-input, .filter-box select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 14px; outline: none; }
-    .form-input:focus { border-color: var(--accent-blue); }
+    if (callback) callback();
+  }, (err) => {
+    allowedGroupsList = [];
+    if (callback) callback();
+  });
+}
 
-    .btn-login, .btn-primary, .btn-cancel, .btn-logout, .btn-users { padding: 10px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .btn-login, .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; width: 100%; }
-    .btn-primary { width: auto; }
-    .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
-    .btn-logout { background: rgba(248, 113, 113, 0.08); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.25); }
-    .btn-users { background: rgba(52, 211, 153, 0.12); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const btnLogin = document.getElementById("btnLogin");
 
-    .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
-    .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-    
-    .vietnam-flag-logo {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 28px; height: 20px; background: #da251d; border-radius: 3px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 12px;
-    }
-    .vietnam-flag-logo::after { content: "★"; color: #ff0; position: absolute; }
+  btnLogin.innerText = "ĐANG XÁC THỰC...";
+  btnLogin.disabled = true;
 
-    .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
-    
-    .role-badge { padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
-    .role-badge.readonly { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); border: 1px solid rgba(251, 191, 36, 0.3); }
-    
-    .app-version-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: rgba(148, 163, 184, 0.1); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.25); font-family: monospace; }
+  auth.signInWithEmailAndPassword(email, password)
+    .catch((error) => {
+      alert("Lỗi đăng nhập: " + error.message);
+      btnLogin.innerText = "ĐĂNG NHẬP";
+      btnLogin.disabled = false;
+    });
+}
 
-    .card { background: var(--bg-surface); backdrop-filter: blur(12px); border-radius: 14px; border: 1px solid var(--border-color); padding: 16px 12px; }
-    .card-header { display: flex; flex-direction: column; margin-bottom: 16px; gap: 12px; }
-    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .card-title i { color: var(--accent-blue); }
+function logout() { auth.signOut().then(() => location.reload()); }
 
-    .table-container { overflow-x: auto; border-radius: 8px; width: 100%; }
-    
-    /* GIAO DIỆN PC CHUẨN MẶC ĐỊNH */
-    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
-    th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
+function restartSpecificMaster(deviceId, deviceDisplayName) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
 
-    table th:nth-child(6), table td:nth-child(6) {
-      width: 1% !important; white-space: nowrap !important; padding-left: 2px !important; padding-right: 2px !important; text-align: center !important;
-    }
-    table thead th:nth-child(6) { padding-left: 4px !important; padding-right: 4px !important; font-size: 13px !important; }
+  let existingModal = document.getElementById("actionChoiceModal");
+  if (existingModal) existingModal.remove();
 
-    .badge-mac, .badge-fw, .badge-group { padding: 3px 6px; border-radius: 4px; font-size: 11px; }
-    .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); }
-    .badge-fw { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); font-weight: 600; }
-    .badge-group { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-radius: 12px; padding: 3px 8px; }
-    
-    @keyframes blinkGreenDot {
-      0% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #34d399); }
-      50% { opacity: 0.15; transform: scale(1.4); filter: drop-shadow(0 0 8px #34d399); }
-      100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #34d399); }
-    }
-    .dot-blinking { animation: blinkGreenDot 0.6s infinite ease-in-out !important; color: #34d399 !important; display: inline-block; }
+  let modalHtml = `
+    <div id="actionChoiceModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div style="background: var(--bg-card, #1e293b); padding: 24px; border-radius: 12px; width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155);">
+        <h3 style="margin-bottom: 10px; color: var(--text-main, #f8fafc); font-size: 18px;"><i class="fa-solid fa-terminal"></i> Chọn Lệnh Cho Master</h3>
+        <p style="margin-bottom: 20px; color: var(--text-muted, #94a3b8); font-size: 13px;">Thiết bị: <b>${deviceDisplayName}</b></p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button id="btnChoiceRestart" style="background: #f59e0b; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
+            <i class="fa-solid fa-power-off"></i> Khởi động lại (Restart)
+          </button>
+          <button id="btnChoiceUpdate" style="background: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
+            <i class="fa-solid fa-cloud-arrow-down"></i> Cập nhật OTA (Update)
+          </button>
+          <button id="btnChoiceCancel" style="background: transparent; color: var(--text-muted, #94a3b8); border: 1px solid var(--border-color, #334155); padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 13px;">
+            Hủy bỏ
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 
-    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-    .status-online { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
-    .status-offline { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.3); }
-    
-    .pulse-container-normal { background: rgba(15, 23, 42, 0.5); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); }
-    .pulse-container-error { background: rgba(248, 113, 113, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent-red); color: var(--accent-red); font-weight: bold; }
-    .pulse-counter { font-weight: 700; font-family: monospace; }
-    .pulse-in { color: #60a5fa; }
-    .pulse-out { color: #f43f5e; }
-    
-    .env-box { display: flex; flex-direction: column; gap: 2px; font-family: monospace; font-size: 12px; }
-    .env-item { display: flex; align-items: center; gap: 6px; }
-    
-    .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
-    .device-name-container { display: flex; flex-direction: column; gap: 2px; }
-    .device-esp-id { font-size: 11px; font-family: monospace; color: var(--accent-blue); font-weight: 600; }
-    .device-custom-name { font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-    .action-group { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
-    .btn-log, .btn-edit, .btn-delete, .btn-restart { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
-    .btn-log { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.3); }
-    .btn-edit { background: rgba(251, 191, 36, 0.1); color: var(--accent-yellow); border-color: rgba(251, 191, 36, 0.25); }
-    .btn-delete { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); border-color: rgba(248, 113, 113, 0.25); }
-    .btn-restart { background: rgba(249, 115, 22, 0.15); color: var(--accent-orange); border-color: rgba(249, 115, 22, 0.3); }
+  document.getElementById("btnChoiceRestart").onclick = function() {
+    document.getElementById("actionChoiceModal").remove();
+    sendMasterCommand(deviceId, "restart");
+  };
 
-    .modal-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-    
-    .log-filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .log-filter-bar label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
-    .log-filter-bar input[type="date"] { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none; color-scheme: dark; }
+  document.getElementById("btnChoiceUpdate").onclick = function() {
+    document.getElementById("actionChoiceModal").remove();
+    sendMasterCommand(deviceId, "update");
+  };
 
-    .log-list { max-height: 280px; overflow-y: auto; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 12px; }
-    .log-item { padding: 8px 6px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .log-item:last-child { border-bottom: none; }
+  document.getElementById("btnChoiceCancel").onclick = function() {
+    document.getElementById("actionChoiceModal").remove();
+  };
+}
 
-    .user-perm-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: auto; }
-    .user-perm-table th, .user-perm-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid var(--border-color); }
+function sendMasterCommand(deviceId, commandVal) {
+  db.ref("devices/" + deviceId).update({
+    command: commandVal,
+    command_time: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    alert(`Đã gửi lệnh "${commandVal}" thành công tới ${deviceId}!`);
+  }).catch(err => {
+    alert("Lỗi khi gửi lệnh: " + err.message);
+  });
+}
 
-    .mobile-status { display: none !important; }
-    .desktop-status { display: inline-block !important; }
-    .mobile-dropdown-menu { display: none !important; }
-    .mobile-chevron { display: none !important; }
+function listenToDatabase() {
+  db.ref("devices").on("value", (snapshot) => {
+    const newData = snapshot.val();
+    const clientNow = Date.now();
 
-    @media (min-width: 640px) {
-      body { padding: 32px 16px; }
-      .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
-    }
+    if (newData) {
+      for (let id in newData) {
+        let dev = newData[id];
+        
+        if (dev.firmware === "1.0.0" || id.length < 5 || id.includes(":") || id.includes("§") || id.includes("ò")) {
+          db.ref("devices/" + id).remove().catch(err => console.error(err));
+          db.ref("logs/" + id).remove().catch(err => console.error(err));
+          continue; 
+        }
 
-    /* ====================================================
-       GIAO DIỆN MOBILE RIÊNG BIỆT (<= 768px)
-       ==================================================== */
-    @media screen and (max-width: 768px) {
-      body { padding: 8px 4px !important; }
-      .container { padding: 0 !important; width: 100% !important; }
-      .card { padding: 10px 8px !important; }
-      .table-container { overflow-x: visible !important; }
+        let currentLastSeen = dev.last_seen ? Number(dev.last_seen) : 0;
 
-      .container table#mobile-safe-table, 
-      .container table#mobile-safe-table thead, 
-      .container table#mobile-safe-table tbody, 
-      .container table#mobile-safe-table th, 
-      .container table#mobile-safe-table tr {
-        display: block !important; width: 100% !important; box-sizing: border-box !important;
+        if (!lastSeenTracker[id]) {
+          lastSeenTracker[id] = { val: currentLastSeen, blinkUntil: 0 };
+        } else if (lastSeenTracker[id].val !== currentLastSeen && currentLastSeen > 0) {
+          lastSeenTracker[id].val = currentLastSeen;
+          lastSeenTracker[id].blinkUntil = clientNow + 3000;
+        }
       }
+    }
+
+    globalDeviceData = newData;
+    if (globalDeviceData) updateGroupDropdown(globalDeviceData);
+    renderDevices();
+  }, (error) => alert("Lỗi truy cập dữ liệu: " + error.message));
+
+  setInterval(() => { if (globalDeviceData) renderDevices(); }, 1000);
+}
+
+function formatWithoutYear(timestamp) {
+  if (!timestamp) return "Chưa xác định";
+  let dateObj = new Date(timestamp);
+  let timeStr = dateObj.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  let day = String(dateObj.getDate()).padStart(2, '0');
+  let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}, ${timeStr}`;
+}
+
+function isGroupAllowed(devGroup) {
+  if (allowedGroupsList.includes("*")) return true;
+  return allowedGroupsList.includes(devGroup);
+}
+
+function getSignalBarsHTML(rssi) {
+  if (rssi === "--" || rssi === undefined || rssi === null) {
+    return `<span title="Không có sóng" style="color: var(--text-muted); display: inline-flex; align-items: center;"><i class="fa-solid fa-wifi-slash" style="font-size: 16px;"></i></span>`;
+  }
+  
+  let val = Number(rssi);
+  let activeLevel = 0; 
+  let textLabel = "";
+
+  if (val >= -60) {
+    activeLevel = 4;
+    textLabel = "Rất tốt (" + val + " dBm)";
+  } else if (val >= -70) {
+    activeLevel = 3;
+    textLabel = "Tốt (" + val + " dBm)";
+  } else if (val >= -85) {
+    activeLevel = 2;
+    textLabel = "Trung bình (" + val + " dBm)";
+  } else if (val >= -100) {
+    activeLevel = 1;
+    textLabel = "Yếu (" + val + " dBm)";
+  } else {
+    activeLevel = 0;
+    textLabel = "Mất sóng (" + val + " dBm)";
+  }
+
+  const activeColor = "#a3e635"; 
+  const inactiveColor = "#334155"; 
+
+  let c0 = activeLevel >= 1 ? activeColor : inactiveColor; 
+  let c1 = activeLevel >= 2 ? activeColor : inactiveColor; 
+  let c2 = activeLevel >= 3 ? activeColor : inactiveColor; 
+  let c3 = activeLevel >= 4 ? activeColor : inactiveColor; 
+
+  let svgIcon = `
+    <svg width="22" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+      <path d="M2 7.5C7.5 2.5 16.5 2.5 22 7.5" stroke="${c3}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M5.5 11C9 7.8 15 7.8 18.5 11" stroke="${c2}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M9 14.5C10.8 13 13.2 13 15 14.5" stroke="${c1}" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="12" cy="18.5" r="1.8" fill="${c0}"/>
+    </svg>
+  `;
+
+  return `<span title="${textLabel}" style="display: inline-flex; align-items: center; justify-content: center; cursor: help;">
+    ${svgIcon}
+  </span>`;
+}
+
+function renderDevices() {
+  const tbody = document.getElementById("device-table-body");
+  const filterValue = document.getElementById("groupFilter").value;
+  const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
+  tbody.innerHTML = "";
+
+  if (!globalDeviceData) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
+    return;
+  }
+
+  const now = Date.now();
+  let totalCount = 0;
+  let groupsMap = {};
+
+  for (let id in globalDeviceData) {
+    let dev = globalDeviceData[id];
+
+    if (id.toLowerCase().includes('8266') || (dev.device_name && dev.device_name.toLowerCase().includes('8266'))) {
+      continue;
+    }
+
+    let devGroup = dev.group || "Chưa Phân Nhóm";
+
+    if (!isGroupAllowed(devGroup)) continue;
+    if (filterValue !== "ALL" && devGroup !== filterValue) continue;
+
+    if (!groupsMap[devGroup]) {
+      groupsMap[devGroup] = [];
+    }
+    groupsMap[devGroup].push({ id, dev });
+    totalCount++;
+  }
+
+  if (totalCount === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+    return;
+  }
+
+  let sortedGroups = Object.keys(groupsMap).sort((a, b) => {
+    if (a === "Chưa Phân Nhóm") return 1;
+    if (b === "Chưa Phân Nhóm") return -1;
+    return a.localeCompare(b);
+  });
+
+  sortedGroups.forEach(devGroup => {
+    groupsMap[devGroup].sort((a, b) => {
+      let isGatewayA = a.id.toLowerCase().includes('gateway') || (a.dev.type && a.dev.type === 'gateway');
+      let isGatewayB = b.id.toLowerCase().includes('gateway') || (b.dev.type && b.dev.type === 'gateway');
       
-      .container table#mobile-safe-table { min-width: 0 !important; }
-      .container table#mobile-safe-table thead { display: none !important; }
+      let nameA = a.dev.custom_name || (isGatewayA ? "Gateway Trung Tâm" : a.id);
+      let nameB = b.dev.custom_name || (isGatewayB ? "Gateway Trung Tâm" : b.id);
+      
+      return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+    });
 
-      /* Thẻ Card cho từng thiết bị trên mobile */
-      #device-table-body tr.device-row {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color) !important;
-        border-radius: 12px;
-        margin-bottom: 8px !important;
-        padding: 8px 10px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 6px !important;
-      }
+    tbody.innerHTML += `
+      <tr class="mobile-group-header" style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
+        <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 8px 12px; font-size: 14px;">
+          <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
+        </td>
+      </tr>
+    `;
 
-      /* Ẩn các cột thừa trên PC khi xem mobile */
-      #device-table-body td[data-label="Nhóm"],
-      #device-table-body td[data-label="Môi trường"],
-      #device-table-body td[data-label="Tín Hiệu"],
-      #device-table-body td[data-label="Mạng / MAC"],
-      #device-table-body td[data-label="Firmware"],
-      #device-table-body td.desktop-action-td {
-        display: none !important;
-      }
+    groupsMap[devGroup].forEach(item => {
+      let id = item.id;
+      let dev = item.dev;
+      
+      let isGateway = id.toLowerCase().includes('gateway') || (dev.type && dev.type === 'gateway');
+      let topCodeHtml = "";
+      let customName = dev.custom_name || (isGateway ? "Gateway Trung Tâm" : "Chưa đặt tên");
 
-      /* Hàng nhóm thiết bị dàn ngang, thu nhỏ font chữ */
-      #device-table-body tr.mobile-group-header {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        background: rgba(56, 189, 248, 0.12) !important;
-        border-top: 2px solid var(--accent-blue) !important;
-        margin-top: 10px !important; 
-        margin-bottom: 6px !important; 
-        border-radius: 8px !important;
-        padding: 6px 10px !important;
-        width: 100% !important;
-      }
-      #device-table-body tr.mobile-group-header td {
-        display: block !important; 
-        border: none !important;
-        padding: 0 !important;
-        font-weight: 700; 
-        color: var(--accent-blue); 
-        font-size: 13px !important;
-        width: auto !important;
+      if (isGateway) {
+        topCodeHtml = `<span class="device-esp-id" style="color: var(--accent-orange);"><i class="fa-solid fa-network-wired"></i> GATEWAY SYSTEM</span>`;
+      } else {
+        let cleanId = id.replace(/^ESP_/, '');
+        topCodeHtml = `<span class="device-esp-id"><i class="fa-solid fa-microchip"></i> ESP_${cleanId}</span>`;
       }
 
-      /* Tùy chỉnh hiển thị ô Trạng thái và Tên thiết bị trên mobile */
-      #device-table-body td[data-label="Trạng thái"],
-      #device-table-body td[data-label="Tên thiết bị"],
-      #device-table-body td[data-label="Đếm xung"] {
-        display: inline-block !important;
-        border: none !important;
-        padding: 0 !important;
+      let macAddr = dev.mac || id;
+      let fwVer = dev.firmware || "1.0.0";
+      
+      let ipWan = dev.ip_wan || dev.ip || "--";
+      let ipLocal = dev.ip_local || "--";
+
+      let lastSeenTime = dev.last_seen ? Number(dev.last_seen) : 0;
+      let timeDiffSec = Math.floor((now - lastSeenTime) / 1000);
+
+      let isOnline = (dev.status === "ONLINE") && (timeDiffSec <= 60) && (lastSeenTime > 0);
+
+      let inCnt = dev.input_count ?? 0;
+      let outCnt = dev.output_count ?? 0;
+      let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
+      let pulseUs = dev.pulse_width_us ?? "--";
+      
+      let signalDisplayHTML = getSignalBarsHTML(dev.wifi_signal);
+
+      let tempVal = dev.temperature ?? dev.temp;
+      let tempDisplay = tempVal !== undefined ? `${parseFloat(tempVal).toFixed(1)} °C` : "--";
+      let voltVal = dev.voltage ?? dev.vcc;
+      let voltDisplay = voltVal !== undefined ? `${parseFloat(voltVal).toFixed(2)} V` : "--";
+
+      let isRatioError = (inCnt > 0) && (ratio < 1.95 || ratio > 2.05);
+
+      let isBlinking = lastSeenTracker[id] && (now < lastSeenTracker[id].blinkUntil);
+      let dotClass = isBlinking ? "dot-blinking" : "";
+
+      let statusHTML = "";
+      let statusMobileHTML = "";
+      
+      if (isOnline) {
+        statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
+        statusMobileHTML = `<span class="status-badge-mobile status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px; color: var(--accent-green);"></i></span>`;
+      } else {
+        let lastSeenStr = formatWithoutYear(lastSeenTime);
+        statusHTML = `
+          <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
+          <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
+        `;
+        statusMobileHTML = `<span class="status-badge-mobile status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:7px; color: var(--accent-red);"></i></span>`;
       }
 
-      #device-table-body tr.device-row {
-        display: flex !important;
-        flex-direction: column !important;
+      let pulseColumnHTML = "";
+      if (isGateway) {
+        pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 11px;"><i class="fa-solid fa-server"></i> Điều phối trung tâm</span>`;
+      } else {
+        let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
+        let ratioDisplay = isRatioError 
+          ? `<span style="color: var(--accent-red); font-weight: bold;">LỖI (${ratio}x)</span>`
+          : `<b>${ratio}x</b>`;
+
+        pulseColumnHTML = `
+          <div class="${pulseContainerClass}">
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          </div>
+          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
+        `;
       }
 
-      .mobile-status { display: inline-block !important; }
-      .desktop-status { display: none !important; }
-      .mobile-chevron { display: inline-block !important; }
+      let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
+      let actionTd = `
+        <td data-label="Thao tác" class="desktop-action-td">
+          <div class="action-group">
+            ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
+            ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
+            ${isAdmin ? `
+              <button class="btn-edit" onclick="openEditModal('${id}', '${safeCustomName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+              <button class="btn-delete" onclick="deleteDevice('${id}', '${customName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+            ` : ''}
+          </div>
+        </td>`;
 
-      .status-badge-mobile {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 4px;
-        border-radius: 50%;
-      }
-      .status-online-dot {
-        background: rgba(52, 211, 153, 0.2);
-        border: 1px solid rgba(52, 211, 153, 0.4);
-        width: 14px;
-        height: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-      }
-      .status-offline-dot {
-        background: rgba(248, 113, 113, 0.2);
-        border: 1px solid rgba(248, 113, 113, 0.4);
-        width: 14px;
-        height: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
+      let isMenuOpen = openMobileMenus[id] ? "active" : "";
+      let cardBgStyle = openMobileMenus[id] ? "background: rgba(56, 189, 248, 0.08);" : "";
+
+      tbody.innerHTML += `<tr id="row-${id}" class="device-row" style="${cardBgStyle}">
+        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">
+          <span class="desktop-status">${statusHTML}</span>
+          <span class="mobile-status">${statusMobileHTML}</span>
+        </td>
+        <td data-label="Tên thiết bị" onclick="toggleMobileMenu('${id}')">
+          <div class="device-name-container">
+            ${topCodeHtml}
+            <span class="device-custom-name">${customName} <i class="fa-solid fa-chevron-down mobile-chevron" style="font-size: 9px; opacity: 0.5;"></i></span>
+          </div>
+          <!-- Menu xổ xuống trên mobile -->
+          <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
+            <div class="mobile-extra-info">
+              <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);">${tempDisplay}</span></span>
+              <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);">${voltDisplay}</span></span>
+            </div>
+            <div class="mobile-extra-info">
+              <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
+              <span><b>FW:</b> v${fwVer}</span>
+            </div>
+            <div class="mobile-extra-info" style="font-family: monospace;">
+              <span>WAN: ${ipWan}</span>
+              <span>LAN: ${ipLocal}</span>
+            </div>
+            <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
+              MAC: ${macAddr}
+            </div>
+            <div style="margin-top: 6px;">
+              ${actionTd.replace('<td data-label="Thao tác" class="desktop-action-td">', '').replace('</td>', '')}
+            </div>
+          </div>
+        </td>
+        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
+        <td data-label="Đếm xung" onclick="toggleMobileMenu('${id}')">${pulseColumnHTML}</td>
+        <td data-label="Môi trường" onclick="toggleMobileMenu('${id}')">
+          <div class="env-box">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+          </div>
+        </td>
+        <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
+        <td data-label="Mạng / MAC">
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+        </td>
+        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
+      </tr>`;
+    });
+  });
+}
+
+function toggleMobileMenu(deviceId) {
+  if (window.innerWidth > 768) return;
+  
+  const menuEl = document.getElementById("menu-" + deviceId);
+  const rowEl = document.getElementById("row-" + deviceId);
+  
+  if (menuEl) {
+    menuEl.classList.toggle("active");
+    const isOpen = menuEl.classList.contains("active");
+    openMobileMenus[deviceId] = isOpen; // Ghi nhớ trạng thái menu
+
+    if (isOpen) {
+      rowEl.style.background = "rgba(56, 189, 248, 0.08)";
+    } else {
+      rowEl.style.background = "var(--bg-surface)";
+    }
+  }
+}
+
+function updateGroupDropdown(data) {
+  const filterSelect = document.getElementById("groupFilter");
+  const currentSelected = filterSelect.value;
+  let groups = new Set();
+  for (let id in data) { 
+    if (id.toLowerCase().includes('8266') || (data[id].device_name && data[id].device_name.toLowerCase().includes('8266'))) continue;
+    let devGroup = data[id].group || "Chưa Phân Nhóm";
+    if (isGroupAllowed(devGroup)) {
+      groups.add(devGroup); 
+    }
+  }
+
+  let optionsHTML = '<option value="ALL">-- Tất cả nhóm --</option>';
+  groups.forEach(g => { optionsHTML += `<option value="${g}">${g}</option>`; });
+  filterSelect.innerHTML = optionsHTML;
+  filterSelect.value = groups.has(currentSelected) || currentSelected === "ALL" ? currentSelected : "ALL";
+}
+
+function openEditModal(deviceId, currentCustomName, currentGroup) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  document.getElementById("editDeviceId").value = deviceId;
+  document.getElementById("editDeviceName").value = currentCustomName;
+  document.getElementById("editGroupName").value = currentGroup;
+  document.getElementById("editModal").style.display = "flex";
+}
+
+function openUsersModal() {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  document.getElementById("usersModal").style.display = "flex";
+  loadUserPermissionsList();
+}
+
+function loadUserPermissionsList() {
+  const tbody = document.getElementById("userPermTableBody");
+  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Đang tải danh sách...</td></tr>`;
+
+  db.ref("users_permission").once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Chưa có phân quyền nào.</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    for (let emailKey in data) {
+      let originalEmail = decodeEmail(emailKey);
+      let groupsArr = data[emailKey].allowed_groups || [];
+      let groupsStr = groupsArr.join(", ");
+
+      html += `<tr>
+        <td><b>${originalEmail}</b></td>
+        <td><span class="badge-group">${groupsStr}</span></td>
+        <td style="text-align:right;">
+          <button class="btn-delete" style="padding:2px 6px;" onclick="deleteUserPermission('${emailKey}', '${originalEmail}')"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  });
+}
+
+async function saveUserAndPermissions() {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+  const email = document.getElementById("permUserEmail").value.trim().toLowerCase();
+  const password = document.getElementById("permUserPassword").value.trim();
+  const groupsRaw = document.getElementById("permGroups").value.trim();
+  const btnSave = document.getElementById("btnSaveUser");
+
+  if (!email) {
+    alert("Vui lòng nhập Email tài khoản!");
+    return;
+  }
+
+  let groupsArray = groupsRaw.split(',').map(g => g.trim()).filter(g => g.length > 0);
+  if (groupsArray.length === 0) groupsArray = ["*"];
+
+  const emailKey = encodeEmail(email);
+
+  btnSave.innerText = "ĐANG XỬ LÝ...";
+  btnSave.disabled = true;
+
+  try {
+    if (password) {
+      if (password.length < 6) {
+        alert("Mật khẩu phải có ít nhất 6 ký tự!");
+        btnSave.innerText = "TẠO TÀI KHOẢN & LƯU QUYỀN";
+        btnSave.disabled = false;
+        return;
       }
 
-      .mobile-dropdown-menu {
-        display: none;
-        width: 100%;
-        margin-top: 4px;
-        padding-top: 6px;
-        border-top: 1px dashed rgba(255, 255, 255, 0.15);
-        flex-direction: column;
-        gap: 6px;
-      }
-      .mobile-dropdown-menu.active {
-        display: flex !important;
-      }
+      const authApiUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`;
+      const response = await fetch(authApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          returnSecureToken: false
+        })
+      });
 
-      .mobile-extra-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 11px;
-        color: var(--text-muted);
+      const authResult = await response.json();
+
+      if (authResult.error) {
+        if (authResult.error.message === "EMAIL_EXISTS") {
+          console.log("Email đã tồn tại trên Auth, tiếp tục cập nhật phân quyền...");
+        } else {
+          throw new Error("Lỗi Firebase Auth: " + authResult.error.message);
+        }
       }
     }
-  </style>
-</head>
-<body>
 
-<!-- MÀN HÌNH ĐĂNG NHẬP -->
-<div class="login-overlay" id="loginScreen">
-  <div class="login-box">
-    <div class="icon-logo"><i class="fa-solid fa-shield-halved"></i></div>
-    <h2>FUNCHOMPER SYSTEM</h2>
-    <p>Đăng nhập bằng Firebase Auth</p>
-    <form onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label for="email">Email Hệ Thống</label>
-        <input type="email" id="email" class="form-input" placeholder="nhap_email@domain.com" required autofocus autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label for="password">Mật Khẩu</label>
-        <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="btn-login" id="btnLogin">ĐĂNG NHẬP</button>
-    </form>
-  </div>
-</div>
+    await db.ref("users_permission/" + emailKey).set({
+      allowed_groups: groupsArray,
+      updated_at: Date.now()
+    });
 
-<!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
-<div class="container" id="dashboardScreen">
-  <div class="navbar">
-    <h1>
-      <span class="vietnam-flag-logo" title="Cờ Việt Nam"></span> 
-      FUNCHOMPER
-    </h1>
-    <div class="nav-controls">
-      <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
-      <button class="btn-users" id="btnUsersPerm" style="display:none;" onclick="openUsersModal()"><i class="fa-solid fa-user-gear"></i> Phân Quyền & Tạo User</button>
-      <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-      <span class="app-version-badge">v3.2 by LT</span>
-    </div>
-  </div>
+    alert(`Thao tác thành công cho tài khoản ${email}!`);
+    document.getElementById("permUserEmail").value = "";
+    document.getElementById("permUserPassword").value = "";
+    document.getElementById("permGroups").value = "";
+    loadUserPermissionsList();
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
-      <div class="filter-box">
-        <select id="groupFilter" onchange="renderDevices()">
-          <option value="ALL">-- Tất cả nhóm --</option>
-        </select>
-      </div>
-    </div>
+  } catch (err) {
+    alert("Lỗi: " + err.message);
+  } finally {
+    btnSave.innerText = "TẠO TÀI KHOẢN & LƯU QUYỀN";
+    btnSave.disabled = false;
+  }
+}
 
-    <div class="table-container">
-      <table id="mobile-safe-table">
-        <thead>
-          <tr>
-            <th>Trạng Thái</th>
-            <th>Tên Trạm / Thiết Bị</th>
-            <th>Nhóm</th>
-            <th>Thông Số Xung (IN / OUT / Ratio)</th>
-            <th>Nhiệt Độ / Điện Áp</th>
-            <th>Tín Hiệu</th>
-            <th>Địa Chỉ MAC / IP</th>
-            <th>FW</th>
-            <th style="text-align: right;">Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody id="device-table-body">
-          <tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 30px;">Đang lấy dữ liệu an toàn từ Firebase...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+function deleteUserPermission(emailKey, email) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  if (confirm(`Xóa phân quyền của tài khoản "${email}"?`)) {
+    db.ref("users_permission/" + emailKey).remove()
+      .then(() => loadUserPermissionsList())
+      .catch(err => alert("Lỗi khi xóa: " + err.message));
+  }
+}
 
-<!-- MODAL EDIT DEVICE -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span><i class="fa-solid fa-pen-to-square" style="color:var(--accent-blue); margin-right:6px;"></i> Cập Nhật Trạm</span>
-      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('editModal')"></i>
-    </div>
-    <input type="hidden" id="editDeviceId">
-    <div class="form-group">
-      <label for="editDeviceName">Tên Trạm (Tùy Chọn Theo Ý Thích)</label>
-      <input type="text" id="editDeviceName" class="form-input" placeholder="Nhập tên trạm tùy chỉnh...">
-    </div>
-    <div class="form-group">
-      <label for="editGroupName">Tên Nhóm / Trung Tâm</label>
-      <input type="text" id="editGroupName" class="form-input" placeholder="Nhập tên nhóm...">
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('editModal')">Hủy</button>
-      <button class="btn-primary" onclick="saveDeviceChanges()">Lưu Thay Đổi</button>
-    </div>
-  </div>
-</div>
+function viewHourlyLog(macAddress) {
+  const container = document.getElementById("logContainer");
+  container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>`;
+  document.getElementById("currentLogMac").value = macAddress;
 
-<!-- MODAL PHÂN QUYỀN VÀ TẠO USER (ADMIN ONLY) -->
-<div class="modal-overlay" id="usersModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span><i class="fa-solid fa-user-shield" style="color:var(--accent-green); margin-right:6px;"></i> Quản Lý User & Phân Quyền Group</span>
-      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('usersModal')"></i>
-    </div>
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  document.getElementById("logDateFilter").value = todayStr;
+
+  document.getElementById("logModal").style.display = "flex";
+
+  db.ref("logs/" + macAddress).limitToLast(500).once("value", (snapshot) => {
+    let logs = snapshot.val();
+    if (!logs) {
+      cachedRawLogs = [];
+      currentFilteredLogs = [];
+      container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Chưa có nhật ký log cho thiết bị này.</div>`;
+      document.getElementById("logCountBadge").innerText = "Hiển thị: 0 bản ghi";
+      return;
+    }
+
+    cachedRawLogs = [];
+    for (let k in logs) {
+      cachedRawLogs.push(logs[k]);
+    }
+    cachedRawLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+    filterLogsByDate();
+  });
+}
+
+function displayLogItems() {
+  const container = document.getElementById("logContainer");
+  if (currentFilteredLogs.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 10px;">Không tìm thấy bản ghi nhật ký phù hợp.</div>`;
+    document.getElementById("logCountBadge").innerText = "Hiển thị: 0 bản ghi";
+    return;
+  }
+
+  const logsToDisplay = currentFilteredLogs.slice(0, currentLogLimit);
+
+  let html = "";
+  logsToDisplay.forEach(item => {
+    let dateObj = new Date(item.timestamp);
+    let dateStr = dateObj.toLocaleString("vi-VN");
     
-    <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px;">
-      <div style="font-size: 12px; font-weight:600; color:var(--accent-blue); margin-bottom:8px;">Tạo Tài Khoản Mới / Cập Nhật Quyền User</div>
-      
-      <div class="form-group" style="margin-bottom:8px;">
-        <label for="permUserEmail">Email Tài Khoản</label>
-        <input type="email" id="permUserEmail" class="form-input" placeholder="user@domain.com">
-      </div>
+    let inVal = item.hourly_in ?? item.input_count ?? item.in ?? 0;
+    let outVal = item.hourly_out ?? item.output_count ?? item.out ?? 0;
+    let ratioVal = item.ratio ?? 0;
 
-      <div class="form-group" style="margin-bottom:8px;">
-        <label for="permUserPassword">Mật Khẩu (Để trống nếu chỉ cập nhật quyền)</label>
-        <input type="password" id="permUserPassword" class="form-input" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)...">
-      </div>
+    let isErr = (inVal > 0) && (ratioVal < 1.95 || ratioVal > 2.05);
+    let ratioColor = isErr ? "color: var(--accent-red); font-weight:bold;" : "color: var(--accent-green);";
 
-      <div class="form-group" style="margin-bottom:8px;">
-        <label for="permGroups">Nhóm Được Xem (Phân cách bằng dấu phẩy, dùng * để xem tất cả)</label>
-        <input type="text" id="permGroups" class="form-input" placeholder="KhuVucA, KhuVucB hoặc *">
-      </div>
+    let logTemp = (item.temperature !== undefined) ? `${parseFloat(item.temperature).toFixed(1)}°C` : ((item.temp !== undefined) ? `${parseFloat(item.temp).toFixed(1)}°C` : "--");
+    let logVolt = (item.voltage !== undefined) ? `${parseFloat(item.voltage).toFixed(2)}V` : ((item.vcc !== undefined) ? `${parseFloat(item.vcc).toFixed(2)}V` : "--");
 
-      <button class="btn-primary" id="btnSaveUser" style="margin-top:4px;" onclick="saveUserAndPermissions()">TẠO TÀI KHOẢN & LƯU QUYỀN</button>
-    </div>
+    html += `<div class="log-item">
+      <div><i class="fa-regular fa-clock" style="color:var(--text-muted)"></i> ${dateStr}</div>
+      <div>IN: <b>${inVal}</b> | OUT: <b>${outVal}</b> | Ratio: <span style="${ratioColor}">${ratioVal}x</span></div>
+      <div style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${logTemp}</div>
+      <div style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${logVolt}</div>
+    </div>`;
+  });
 
-    <div style="font-size: 13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Danh Sách Phân Quyền Hiện Tại</div>
-    <div class="log-list" style="max-height: 200px;">
-      <table class="user-perm-table">
-        <thead>
-          <tr>
-            <th>Email Tài Khoản</th>
-            <th>Nhóm Được Xem</th>
-            <th style="text-align:right;">Xóa Quyền</th>
-          </tr>
-        </thead>
-        <tbody id="userPermTableBody">
-          <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Đang tải danh sách...</td></tr>
-        </tbody>
-      </table>
-    </div>
+  container.innerHTML = html;
+  document.getElementById("logCountBadge").innerText = `Hiển thị: ${logsToDisplay.length} / ${currentFilteredLogs.length} bản ghi`;
+}
 
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('usersModal')">Đóng</button>
-    </div>
-  </div>
-</div>
+function handleLogScroll(e) {
+  const container = e.target;
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+    if (currentLogLimit < currentFilteredLogs.length) {
+      currentLogLimit += 50;
+      displayLogItems();
+    }
+  }
+}
 
-<!-- MODAL NHẬT KÝ THEO NGÀY -->
-<div class="modal-overlay" id="logModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue); margin-right:6px;"></i> Nhật Ký Xung & Môi Trường</span>
-      <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeModal('logModal')"></i>
-    </div>
-    
-    <div class="log-filter-bar">
-      <label for="logDateFilter"><i class="fa-regular fa-calendar"></i> Chọn Ngày:</label>
-      <input type="date" id="logDateFilter" onchange="filterLogsByDate()">
-      <button class="btn-cancel" style="padding: 5px 10px; font-size: 11px;" onclick="resetLogDateFilter()">Xem Tất Cả</button>
-    </div>
+function filterLogsByDate() {
+  const selectedDateVal = document.getElementById("logDateFilter").value;
+  currentLogLimit = 50;
 
-    <input type="hidden" id="currentLogMac">
-    <div class="log-list" id="logContainer" onscroll="handleLogScroll(event)">
-      <div style="text-align:center; color:var(--text-muted); padding: 10px;">Đang tải nhật ký...</div>
-    </div>
-    
-    <div class="modal-footer">
-      <span id="logCountBadge" style="font-size: 11px; color: var(--text-muted);">Hiển thị: 0 bản ghi</span>
-      <button class="btn-cancel" onclick="closeModal('logModal')">Đóng</button>
-    </div>
-  </div>
-</div>
+  if (!selectedDateVal) {
+    currentFilteredLogs = [...cachedRawLogs];
+  } else {
+    currentFilteredLogs = cachedRawLogs.filter(item => {
+      let itemDate = new Date(item.timestamp);
+      let year = itemDate.getFullYear();
+      let month = String(itemDate.getMonth() + 1).padStart(2, '0');
+      let day = String(itemDate.getDate()).padStart(2, '0');
+      let itemDateStr = `${year}-${month}-${day}`;
+      return itemDateStr === selectedDateVal;
+    });
+  }
 
-<!-- FIREBASE SDKs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  displayLogItems();
+}
 
-<!-- FILE SCRIPT CHÍNH -->
-<script src="app.js"></script>
+function resetLogDateFilter() {
+  document.getElementById("logDateFilter").value = "";
+  currentLogLimit = 50;
+  currentFilteredLogs = [...cachedRawLogs];
+  displayLogItems();
+}
 
-</body>
-</html>
+function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+function saveDeviceChanges() {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+
+  const deviceId = document.getElementById("editDeviceId").value;
+  const newCustomName = document.getElementById("editDeviceName").value.trim();
+  const newGroup = document.getElementById("editGroupName").value.trim() || "Chưa Phân Nhóm";
+
+  db.ref("devices/" + deviceId).update({ custom_name: newCustomName, group: newGroup })
+    .then(() => { alert("Cập nhật thành công!"); closeModal("editModal"); })
+    .catch(err => alert("Lỗi khi lưu: " + err.message));
+}
+
+function deleteDevice(deviceId, deviceName) {
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
+  if (confirm(`Xóa thiết bị "${deviceName}"?`)) {
+    db.ref("devices/" + deviceId).remove()
+      .then(() => alert(`Đã xóa "${deviceName}"!`))
+      .catch(err => alert("Lỗi khi xóa: " + err.message));
+  }
+}
