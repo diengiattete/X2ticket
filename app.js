@@ -106,11 +106,9 @@ function logout() { auth.signOut().then(() => location.reload()); }
 function restartSpecificMaster(deviceId, deviceDisplayName) {
   if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
 
-  // Xóa modal cũ nếu đang tồn tại để tránh trùng lặp
   let existingModal = document.getElementById("actionChoiceModal");
   if (existingModal) existingModal.remove();
 
-  // Tạo giao diện bảng chọn (modal) chứa các nút bấm trực quan (Restart / Update)
   let modalHtml = `
     <div id="actionChoiceModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999;">
       <div style="background: var(--bg-card, #1e293b); padding: 24px; border-radius: 12px; width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155);">
@@ -168,7 +166,6 @@ function listenToDatabase() {
       for (let id in newData) {
         let dev = newData[id];
         
-        // Tự động xóa thiết bị mang firmware v1.0.0 hoặc node rác ảo khỏi Firebase
         if (dev.firmware === "1.0.0" || id.length < 5 || id.includes(":") || id.includes("§") || id.includes("ò")) {
           db.ref("devices/" + id).remove().catch(err => console.error(err));
           db.ref("logs/" + id).remove().catch(err => console.error(err));
@@ -210,36 +207,34 @@ function isGroupAllowed(devGroup) {
 
 function getSignalBarsHTML(rssi) {
   if (rssi === "--" || rssi === undefined || rssi === null) {
-    return `<span style="color: var(--text-muted);"><i class="fa-solid fa-wifi" style="opacity: 0.3;"></i> Không có sóng</span>`;
+    return `<span title="Không có sóng" style="color: var(--text-muted);"><i class="fa-solid fa-wifi-slash"></i></span>`;
   }
   
   let val = Number(rssi);
-  let bars = 0;
+  let iconClass = "";
   let color = "var(--accent-green)";
-  let textLabel = "Cực tốt";
+  let textLabel = "Cực tốt (" + val + " dBm)";
 
   if (val >= -60) {
-    bars = 4;
+    iconClass = "fa-solid fa-signal"; // 4 vạch
     color = "var(--accent-green, #10b981)";
     textLabel = "Rất tốt (" + val + " dBm)";
   } else if (val >= -70) {
-    bars = 3;
+    iconClass = "fa-solid fa-wifi"; // 3 vạch
     color = "var(--accent-blue, #3b82f6)";
     textLabel = "Tốt (" + val + " dBm)";
   } else if (val >= -85) {
-    bars = 2;
+    iconClass = "fa-solid fa-tower-cell"; // 2 vạch
     color = "var(--accent-yellow, #f59e0b)";
     textLabel = "Trung bình (" + val + " dBm)";
   } else {
-    bars = 1;
+    iconClass = "fa-solid fa-circle"; // 1 chấm (Sóng yếu)
     color = "var(--accent-red, #ef4444)";
     textLabel = "Yếu (" + val + " dBm)";
   }
 
-  let iconClass = "fa-solid fa-wifi";
-
-  return `<span title="${textLabel}" style="color: ${color}; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-    <i class="${iconClass}"></i> Bậc ${bars}/4 <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(${val} dBm)</span>
+  return `<span title="${textLabel}" style="color: ${color}; font-size: 16px; cursor: help; display: inline-flex; align-items: center;">
+    <i class="${iconClass}"></i>
   </span>`;
 }
 
@@ -302,7 +297,7 @@ function renderDevices() {
 
     tbody.innerHTML += `
       <tr style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
-        <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 12px; font-size: 14px;">
+        <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 8px 12px; font-size: 14px;">
           <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
         </td>
       </tr>
@@ -339,7 +334,6 @@ function renderDevices() {
       let ratio = dev.ratio !== undefined ? parseFloat(dev.ratio) : 0.0;
       let pulseUs = dev.pulse_width_us ?? "--";
       
-      // Khai báo bậc sóng Wi-Fi trực quan
       let signalDisplayHTML = getSignalBarsHTML(dev.wifi_signal);
 
       let tempVal = dev.temperature ?? dev.temp;
@@ -383,7 +377,7 @@ function renderDevices() {
 
       let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
       let actionTd = `
-        <td>
+        <td data-label="Thao tác">
           <div class="action-group">
             ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
             ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
@@ -395,28 +389,28 @@ function renderDevices() {
         </td>`;
 
       tbody.innerHTML += `<tr>
-        <td>${statusHTML}</td>
-        <td>
+        <td data-label="Trạng thái">${statusHTML}</td>
+        <td data-label="Tên thiết bị">
           <div class="device-name-container">
             ${topCodeHtml}
             <span class="device-custom-name">${customName}</span>
           </div>
         </td>
-        <td><span class="badge-group">${devGroup}</span></td>
-        <td>${pulseColumnHTML}</td>
-        <td>
+        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
+        <td data-label="Đếm xung">${pulseColumnHTML}</td>
+        <td data-label="Môi trường">
           <div class="env-box">
             <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
             <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
           </div>
         </td>
-        <td>${signalDisplayHTML}</td>
-        <td>
+        <td data-label="Wi-Fi">${signalDisplayHTML}</td>
+        <td data-label="Mạng / MAC">
           <span class="badge-mac">${macAddr}</span>
           <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
           <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
         </td>
-        <td><span class="badge-fw">v${fwVer}</span></td>
+        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
         ${actionTd}
       </tr>`;
     });
