@@ -52,24 +52,11 @@
     .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
     .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     
-    /* CSS logo cờ Việt Nam */
     .vietnam-flag-logo {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 20px;
-      background: #da251d;
-      border-radius: 3px;
-      position: relative;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      font-size: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 20px; background: #da251d; border-radius: 3px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 12px;
     }
-    .vietnam-flag-logo::after {
-      content: "★";
-      color: #ff0;
-      position: absolute;
-    }
+    .vietnam-flag-logo::after { content: "★"; color: #ff0; position: absolute; }
 
     .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
     
@@ -88,20 +75,10 @@
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
-    /* Tối ưu triệt để bề ngang của cột Tín Hiệu (Cột thứ 6 trên PC) */
-    table th:nth-child(6),
-    table td:nth-child(6) {
-      width: 1% !important;
-      white-space: nowrap !important;
-      padding-left: 2px !important;
-      padding-right: 2px !important;
-      text-align: center !important;
+    table th:nth-child(6), table td:nth-child(6) {
+      width: 1% !important; white-space: nowrap !important; padding-left: 2px !important; padding-right: 2px !important; text-align: center !important;
     }
-    table thead th:nth-child(6) {
-      padding-left: 4px !important;
-      padding-right: 4px !important;
-      font-size: 13px !important;
-    }
+    table thead th:nth-child(6) { padding-left: 4px !important; padding-right: 4px !important; font-size: 13px !important; }
 
     .badge-mac, .badge-fw, .badge-group { padding: 3px 6px; border-radius: 4px; font-size: 11px; }
     .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); }
@@ -113,12 +90,7 @@
       50% { opacity: 0.15; transform: scale(1.4); filter: drop-shadow(0 0 8px #34d399); }
       100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #34d399); }
     }
-
-    .dot-blinking {
-      animation: blinkGreenDot 0.6s infinite ease-in-out !important;
-      color: #34d399 !important;
-      display: inline-block;
-    }
+    .dot-blinking { animation: blinkGreenDot 0.6s infinite ease-in-out !important; color: #34d399 !important; display: inline-block; }
 
     .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
     .status-online { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(52, 211, 153, 0.3); }
@@ -134,9 +106,9 @@
     .env-item { display: flex; align-items: center; gap: 6px; }
     
     .info-sub { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
-    .device-name-container { display: flex; flex-direction: column; gap: 2px; }
+    .device-name-container { display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
     .device-esp-id { font-size: 11px; font-family: monospace; color: var(--accent-blue); font-weight: 600; }
-    .device-custom-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
+    .device-custom-name { font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
 
     .action-group { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
     .btn-log, .btn-edit, .btn-delete, .btn-restart { border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
@@ -165,7 +137,7 @@
     }
 
     /* ====================================================
-       BỘ CSS TỐI ƯU MOBILE: LOẠI BỎ CUỘN NGANG HOÀN TOÀN
+       GIAO DIỆN MOBILE: THU GỌN VÀ MENU XỔ KHI BẤM TÊN
        ==================================================== */
     @media screen and (max-width: 768px) {
       body { padding: 8px 4px !important; }
@@ -173,86 +145,78 @@
       .card { padding: 10px 8px !important; }
       .table-container { overflow-x: visible !important; }
 
-      /* Chuyển đổi bảng thành thẻ dạng Card xếp dọc */
       table, table thead, table tbody, table th, table td, table tr {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
+        display: block !important; width: 100% !important; box-sizing: border-box !important;
       }
       table { min-width: 0 !important; }
       table thead { display: none !important; }
 
-      /* Từng hàng thiết bị biến thành Card bo góc độc lập */
       #device-table-body tr {
         background: var(--bg-surface);
         border: 1px solid var(--border-color) !important;
         border-radius: 12px;
-        margin-bottom: 10px !important;
-        padding: 8px 12px !important;
+        margin-bottom: 8px !important;
+        padding: 10px 12px !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
-      /* Hàng nhóm thiết bị (Header Group) */
+      /* Hàng nhóm thiết bị */
       #device-table-body tr[style*="background: rgba"] {
         background: rgba(56, 189, 248, 0.12) !important;
         border-top: 2px solid var(--accent-blue) !important;
-        margin-top: 12px !important;
-        margin-bottom: 8px !important;
-        border-radius: 8px !important;
+        margin-top: 10px !important; margin-bottom: 6px !important; border-radius: 8px !important;
       }
       #device-table-body tr[style*="background: rgba"] td {
-        display: block !important;
-        text-align: left !important;
-        padding: 6px 4px !important;
+        display: block !important; text-align: left !important; padding: 6px 4px !important; border: none !important;
+      }
+
+      /* Ẩn các cột không cần thiết ở chế độ xem mặc định trên mobile để bảng siêu gọn */
+      #device-table-body td { display: none !important; }
+
+      /* Chỉ hiện thị các thông số cốt lõi giống ảnh mẫu: Trạng thái, Tên, Nhóm (ẩn), Xung, Nhiệt độ */
+      #device-table-body td:nth-child(1), /* Trạng thái */
+      #device-table-body td:nth-child(2), /* Tên */
+      #device-table-body td:nth-child(4), /* Xung */
+      #device-table-body td:nth-child(5)  /* Nhiệt độ/Điện áp */ {
+        display: inline-flex !important;
+        vertical-align: middle !important;
         border: none !important;
+        padding: 2px 4px !important;
       }
 
-      /* Cấu trúc từng ô thông số bên trong Card */
-      #device-table-body td {
+      #device-table-body td:nth-child(1) { width: 22% !important; }
+      #device-table-body td:nth-child(2) { width: 32% !important; }
+      #device-table-body td:nth-child(4) { width: 26% !important; font-size: 11px; }
+      #device-table-body td:nth-child(5) { width: 18% !important; text-align: right; }
+
+      /* Định dạng hàng chính trên mobile nằm trên cùng một dòng ngang */
+      #device-table-body tr {
         display: flex !important;
-        justify-content: space-between !important;
         align-items: center !important;
-        padding: 6px 0 !important;
-        border-bottom: 1px dashed rgba(255, 255, 255, 0.07) !important;
-        text-align: right !important;
-        width: 100% !important;
-      }
-      #device-table-body td:last-child {
-        border-bottom: none !important;
-        padding-top: 8px !important;
-        justify-content: flex-end !important;
+        justify-content: space-between !important;
+        gap: 4px;
       }
 
-      /* Tự động lấy nhãn data-label hiển thị bên trái */
-      #device-table-body td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--text-muted);
-        font-size: 11px;
-        text-align: left;
-        margin-right: 8px;
-        white-space: nowrap;
-      }
-
-      /* Tối ưu riêng cho ô Tín Hiệu trên mobile */
-      #device-table-body td:nth-child(6) {
-        width: 100% !important;
-        text-align: right !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-      }
-
-      /* Điều chỉnh nút bấm dễ thao tác bằng ngón tay trên mobile */
-      .action-group {
+      /* Menu xổ xuống (Accordion) chứa phần thao tác, MAC, Wi-Fi khi bấm vào tên */
+      .mobile-dropdown-menu {
+        display: none;
         width: 100%;
-        justify-content: flex-end;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+        flex-direction: column;
         gap: 6px;
       }
-      .action-group button {
-        padding: 8px 12px !important;
-        font-size: 12px !important;
-        flex: 1;
-        justify-content: center;
+      .mobile-dropdown-menu.active {
+        display: flex !important;
+      }
+
+      .mobile-extra-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--text-muted);
       }
     }
   </style>
@@ -296,7 +260,7 @@
 
   <div class="card">
     <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị</div>
+      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
       <div class="filter-box">
         <select id="groupFilter" onchange="renderDevices()">
           <option value="ALL">-- Tất cả nhóm --</option>
