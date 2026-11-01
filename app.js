@@ -21,6 +21,9 @@ let currentFilteredLogs = [];
 let currentLogLimit = 50;
 let lastSeenTracker = {};
 
+// Lưu trữ trạng thái các menu đang mở trên mobile để không bị đóng khi Realtime cập nhật
+let openMobileMenus = {};
+
 function encodeEmail(email) {
   return email.replace(/\./g, '_dot_').replace(/@/g, '_at_');
 }
@@ -311,7 +314,7 @@ function renderDevices() {
     });
 
     tbody.innerHTML += `
-      <tr style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
+      <tr class="mobile-group-header" style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
         <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 8px 12px; font-size: 14px;">
           <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
         </td>
@@ -366,19 +369,21 @@ function renderDevices() {
       
       if (isOnline) {
         statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
-        statusMobileHTML = `<span class="status-badge-mobile status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:8px; color: var(--accent-green);"></i></span>`;
+        statusMobileHTML = `<span class="status-badge-mobile status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px; color: var(--accent-green);"></i></span>`;
       } else {
         let lastSeenStr = formatWithoutYear(lastSeenTime);
         statusHTML = `
           <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
           <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
         `;
-        statusMobileHTML = `<span class="status-badge-mobile status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:8px; color: var(--accent-red);"></i></span>`;
+        statusMobileHTML = `<span class="status-badge-mobile status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:7px; color: var(--accent-red);"></i></span>`;
       }
 
       let pulseColumnHTML = "";
+      let pulseMobileHTML = "";
       if (isGateway) {
         pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 11px;"><i class="fa-solid fa-server"></i> Điều phối trung tâm</span>`;
+        pulseMobileHTML = `<span style="color: var(--text-muted); font-size: 11px;">Điều phối trung tâm</span>`;
       } else {
         let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
         let ratioDisplay = isRatioError 
@@ -386,8 +391,16 @@ function renderDevices() {
           : `<b>${ratio}x</b>`;
 
         pulseColumnHTML = `
-          <div class="${pulseContainerClass}" style="padding: 2px 4px; font-size: 11px;">
-            IN:<span class="pulse-counter pulse-in">${inCnt}</span>|OUT:<span class="pulse-counter pulse-out">${outCnt}</span>
+          <div class="${pulseContainerClass}">
+            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
+            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          </div>
+          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
+        `;
+
+        pulseMobileHTML = `
+          <div style="font-family: monospace; font-size: 11px;">
+            <span style="color: #60a5fa;">IN:${inCnt}</span> | <span style="color: #f43f5e;">OUT:${outCnt}</span>
           </div>
         `;
       }
@@ -405,24 +418,55 @@ function renderDevices() {
           </div>
         </td>`;
 
-      tbody.innerHTML += `<tr id="row-${id}">
-        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">
-          <span class="desktop-status">${statusHTML}</span>
-          <span class="mobile-status">${statusMobileHTML}</span>
-        </td>
-        <td data-label="Tên thiết bị" onclick="toggleMobileMenu('${id}')">
+      let isMenuOpen = openMobileMenus[id] ? "active" : "";
+      let cardBgStyle = openMobileMenus[id] ? "background: rgba(56, 189, 248, 0.08);" : "";
+
+      tbody.innerHTML += `<tr id="row-${id}" class="mobile-device-card" style="${cardBgStyle}">
+        <!-- Desktop cells -->
+        <td data-label="Trạng thái">${statusHTML}</td>
+        <td data-label="Tên thiết bị">
           <div class="device-name-container">
             ${topCodeHtml}
-            <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></span>
+            <span class="device-custom-name">${customName}</span>
           </div>
-          <!-- Menu xổ xuống trên mobile -->
-          <div class="mobile-dropdown-menu" id="menu-${id}">
+        </td>
+        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
+        <td data-label="Đếm xung">${pulseColumnHTML}</td>
+        <td data-label="Môi trường">
+          <div class="env-box">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+          </div>
+        </td>
+        <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
+        <td data-label="Mạng / MAC">
+          <span class="badge-mac">${macAddr}</span>
+          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+        </td>
+        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
+        ${actionTd}
+
+        <!-- Mobile Layout định dạng 2 hàng rõ ràng không bị đè chữ -->
+        <td style="display: none;" class="mobile-only-cell">
+          <div class="mobile-card-row-top" onclick="toggleMobileMenu('${id}')">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${statusMobileHTML}
+              <div>
+                ${topCodeHtml}
+                <div class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></div>
+              </div>
+            </div>
+            <div>${pulseMobileHTML}</div>
+          </div>
+
+          <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
             <div class="mobile-extra-info">
-              <span><b>Trạng thái:</b> ${statusHTML}</span>
-              <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
+              <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);">${tempDisplay}</span></span>
+              <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);">${voltDisplay}</span></span>
             </div>
             <div class="mobile-extra-info">
-              <span><b>Nhóm:</b> ${devGroup}</span>
+              <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
               <span><b>FW:</b> v${fwVer}</span>
             </div>
             <div class="mobile-extra-info" style="font-family: monospace;">
@@ -437,22 +481,6 @@ function renderDevices() {
             </div>
           </div>
         </td>
-        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
-        <td data-label="Đếm xung" onclick="toggleMobileMenu('${id}')">${pulseColumnHTML}</td>
-        <td data-label="Môi trường" onclick="toggleMobileMenu('${id}')">
-          <div class="env-box" style="font-size: 11px;">
-            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i><b>${tempDisplay}</b></div>
-            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i><b>${voltDisplay}</b></div>
-          </div>
-        </td>
-        <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
-        <td data-label="Mạng / MAC">
-          <span class="badge-mac">${macAddr}</span>
-          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
-          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
-        </td>
-        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
-        ${actionTd}
       </tr>`;
     });
   });
@@ -466,7 +494,10 @@ function toggleMobileMenu(deviceId) {
   
   if (menuEl) {
     menuEl.classList.toggle("active");
-    if (menuEl.classList.contains("active")) {
+    const isOpen = menuEl.classList.contains("active");
+    openMobileMenus[deviceId] = isOpen; // Lưu trạng thái mở để không bị tự đóng khi Realtime cập nhật
+
+    if (isOpen) {
       rowEl.style.background = "rgba(56, 189, 248, 0.08)";
     } else {
       rowEl.style.background = "var(--bg-surface)";
