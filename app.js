@@ -207,59 +207,53 @@ function isGroupAllowed(devGroup) {
 
 function getSignalBarsHTML(rssi) {
   if (rssi === "--" || rssi === undefined || rssi === null) {
-    return `<span title="Không có sóng" style="color: var(--text-muted); display: inline-flex; align-items: center;"><i class="fa-solid fa-wifi-slash" style="font-size: 16px;"></i></span>`;
+    return `<span title="Không có sóng" style="color: var(--text-muted); display: inline-flex; align-items: center;"><i class="fa-solid fa-wifi-slash" style="font-size: 14px;"></i></span>`;
   }
   
   let val = Number(rssi);
-  let activeLevel = 0; // Từ 0 đến 4 vạch
+  let activeLevel = 0; 
   let textLabel = "";
 
   if (val >= -60) {
-    activeLevel = 4; // Cực tốt (4 vạch sáng)
+    activeLevel = 4;
     textLabel = "Rất tốt (" + val + " dBm)";
   } else if (val >= -70) {
-    activeLevel = 3; // Tốt (3 vạch sáng)
+    activeLevel = 3;
     textLabel = "Tốt (" + val + " dBm)";
   } else if (val >= -85) {
-    activeLevel = 2; // Trung bình (2 vạch sáng)
+    activeLevel = 2;
     textLabel = "Trung bình (" + val + " dBm)";
   } else if (val >= -100) {
-    activeLevel = 1; // Yếu (1 vạch sáng / chấm sáng)
+    activeLevel = 1;
     textLabel = "Yếu (" + val + " dBm)";
   } else {
-    activeLevel = 0; // Rất yếu / Mất sóng
+    activeLevel = 0;
     textLabel = "Mất sóng (" + val + " dBm)";
   }
 
-  // Màu sắc chủ đạo theo mẫu của bạn: Màu sáng (Xanh lá/Neon) cho vạch active và màu tối (Xám đậm) cho vạch inactive
-  const activeColor = "#a3e635"; // Màu xanh sáng tương ứng ảnh mẫu
-  const inactiveColor = "#334155"; // Màu xám tối tương ứng ảnh mẫu
+  const activeColor = "#a3e635"; 
+  const inactiveColor = "#334155"; 
 
-  // Xác định màu cho từng tầng (từ dưới lên: chấm tròn, cung 1, cung 2, cung 3, cung ngoài cùng)
-  // activeLevel tương ứng số lượng phần tử được bật từ dưới lên
-  let c0 = activeLevel >= 1 ? activeColor : inactiveColor; // Chấm tròn gốc
-  let c1 = activeLevel >= 2 ? activeColor : inactiveColor; // Cung nhỏ trong cùng
-  let c2 = activeLevel >= 3 ? activeColor : inactiveColor; // Cung giữa
-  let c3 = activeLevel >= 4 ? activeColor : inactiveColor; // Cung lớn ngoài cùng
+  let c0 = activeLevel >= 1 ? activeColor : inactiveColor; 
+  let c1 = activeLevel >= 2 ? activeColor : inactiveColor; 
+  let c2 = activeLevel >= 3 ? activeColor : inactiveColor; 
+  let c3 = activeLevel >= 4 ? activeColor : inactiveColor; 
 
-  // Vẽ biểu tượng Wi-Fi chuẩn dạng SVG giống hệt mẫu hình ảnh
+  // Giảm kích thước SVG xuống width="16" height="14" để icon nhỏ gọn
   let svgIcon = `
-    <svg width="22" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-      <!-- Cung ngoài cùng (Lớn nhất) -->
+    <svg width="16" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
       <path d="M2 7.5C7.5 2.5 16.5 2.5 22 7.5" stroke="${c3}" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Cung thứ 3 -->
       <path d="M5.5 11C9 7.8 15 7.8 18.5 11" stroke="${c2}" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Cung thứ 2 -->
       <path d="M9 14.5C10.8 13 13.2 13 15 14.5" stroke="${c1}" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Chấm tròn ở gốc (Dưới cùng) -->
       <circle cx="12" cy="18.5" r="1.8" fill="${c0}"/>
     </svg>
   `;
 
-  return `<span title="${textLabel}" style="display: inline-flex; align-items: center; cursor: help;">
+  return `<span title="${textLabel}" style="display: inline-flex; align-items: center; justify-content: center; cursor: help;">
     ${svgIcon}
   </span>`;
 }
+
 function renderDevices() {
   const tbody = document.getElementById("device-table-body");
   const filterValue = document.getElementById("groupFilter").value;
