@@ -426,6 +426,7 @@ function renderDevices() {
           <span class="desktop-status">${statusHTML}</span>
         </td>
         <td data-label="Tên thiết bị">
+          <!-- Bố cục dành riêng cho Mobile -->
           <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
             <div style="display: flex; align-items: center; gap: 8px;">
               ${statusMobileHTML}
@@ -437,6 +438,7 @@ function renderDevices() {
             <div>${pulseMobileHTML}</div>
           </div>
 
+          <!-- Menu xổ xuống trên mobile -->
           <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
             <div class="mobile-extra-info">
               <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${tempDisplay}</span></span>
