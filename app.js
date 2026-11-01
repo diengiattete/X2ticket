@@ -398,7 +398,6 @@ function renderDevices() {
           <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
         `;
 
-        // Thêm hiển thị FW kế bên IN / OUT trên Mobile
         pulseMobileHTML = `
           <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); padding: 5px 8px; border-radius: 8px; font-family: monospace; font-size: 11px; font-weight: 700; white-space: nowrap;">
             <span style="color: #60a5fa;">IN:${inCnt}</span> | <span style="color: #f43f5e;">OUT:${outCnt}</span> | <span style="color: var(--accent-green);">v${fwVer}</span>
