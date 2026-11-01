@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Theo Dõi Funchomper</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2280%22>🎮</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2280%22>🇻🇳</text></svg>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -51,7 +51,26 @@
 
     .navbar { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
     .navbar h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-    .navbar h1 i { color: var(--accent-blue); }
+    
+    /* CSS cho logo cờ Việt Nam */
+    .vietnam-flag-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 20px;
+      background: #da251d;
+      border-radius: 3px;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      font-size: 12px;
+    }
+    .vietnam-flag-logo::after {
+      content: "★";
+      color: #ff0;
+      position: absolute;
+    }
+
     .nav-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
     
     .role-badge { padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
@@ -68,6 +87,21 @@
     table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+    /* Tối ưu triệt để bề ngang và khoảng cách của cột Tín Hiệu (Cột thứ 6) */
+    table th:nth-child(6),
+    table td:nth-child(6) {
+      width: 1% !important;
+      white-space: nowrap !important;
+      padding-left: 2px !important;
+      padding-right: 2px !important;
+      text-align: center !important;
+    }
+    table thead th:nth-child(6) {
+      padding-left: 4px !important;
+      padding-right: 4px !important;
+      font-size: 13px !important;
+    }
 
     .badge-mac, .badge-fw, .badge-group { padding: 3px 6px; border-radius: 4px; font-size: 11px; }
     .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); }
@@ -156,7 +190,10 @@
 <!-- MÀN HÌNH QUẢN LÝ (DASHBOARD) -->
 <div class="container" id="dashboardScreen">
   <div class="navbar">
-    <h1><i class="fa-solid fa-gamepad"></i> FUNCHOMPER</h1>
+    <h1>
+      <span class="vietnam-flag-logo" title="Cờ Việt Nam"></span> 
+      FUNCHOMPER
+    </h1>
     <div class="nav-controls">
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-users" id="btnUsersPerm" style="display:none;" onclick="openUsersModal()"><i class="fa-solid fa-user-gear"></i> Phân Quyền & Tạo User</button>
@@ -184,7 +221,7 @@
             <th>Nhóm</th>
             <th>Thông Số Xung (IN / OUT / Ratio)</th>
             <th>Nhiệt Độ / Điện Áp</th>
-            <th>Cường Độ Wi-Fi</th>
+            <th>Tín Hiệu</th>
             <th>Địa Chỉ MAC / IP</th>
             <th>FW</th>
             <th style="text-align: right;">Thao Tác</th>
@@ -303,7 +340,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<!-- FILE EXECUTION SCRIPT ĐÃ DỜI NÀO FILE NẰM NGOÀI VÀ MÃ HÓA -->
+<!-- FILE SCRIPT CHÍNH -->
 <script src="app.js"></script>
 
 </body>
