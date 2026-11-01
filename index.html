@@ -131,13 +131,16 @@
     .user-perm-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: auto; }
     .user-perm-table th, .user-perm-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid var(--border-color); }
 
+    .mobile-status { display: none; }
+    .desktop-status { display: inline-block; }
+
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
       .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
     }
 
     /* ====================================================
-       GIAO DIỆN MOBILE: THU GỌN VÀ MENU XỔ KHI BẤM TÊN
+       GIAO DIỆN MOBILE: TỐI ƯU KHOẢNG CÁCH & DẤU CHẤM TRÒN
        ==================================================== */
     @media screen and (max-width: 768px) {
       body { padding: 8px 4px !important; }
@@ -156,7 +159,7 @@
         border: 1px solid var(--border-color) !important;
         border-radius: 12px;
         margin-bottom: 8px !important;
-        padding: 10px 12px !important;
+        padding: 8px 10px !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
@@ -170,34 +173,61 @@
         display: block !important; text-align: left !important; padding: 6px 4px !important; border: none !important;
       }
 
-      /* Ẩn các cột không cần thiết ở chế độ xem mặc định trên mobile để bảng siêu gọn */
       #device-table-body td { display: none !important; }
 
-      /* Chỉ hiện thị các thông số cốt lõi giống ảnh mẫu: Trạng thái, Tên, Nhóm (ẩn), Xung, Nhiệt độ */
-      #device-table-body td:nth-child(1), /* Trạng thái */
-      #device-table-body td:nth-child(2), /* Tên */
-      #device-table-body td:nth-child(4), /* Xung */
-      #device-table-body td:nth-child(5)  /* Nhiệt độ/Điện áp */ {
+      #device-table-body td:nth-child(1),
+      #device-table-body td:nth-child(2),
+      #device-table-body td:nth-child(4),
+      #device-table-body td:nth-child(5) {
         display: inline-flex !important;
         vertical-align: middle !important;
         border: none !important;
-        padding: 2px 4px !important;
+        padding: 0 2px !important;
       }
 
-      #device-table-body td:nth-child(1) { width: 22% !important; }
-      #device-table-body td:nth-child(2) { width: 32% !important; }
-      #device-table-body td:nth-child(4) { width: 26% !important; font-size: 11px; }
-      #device-table-body td:nth-child(5) { width: 18% !important; text-align: right; }
+      #device-table-body td:nth-child(1) { width: 8% !important; justify-content: center; }
+      #device-table-body td:nth-child(2) { width: 38% !important; }
+      #device-table-body td:nth-child(4) { width: 34% !important; font-size: 11px; justify-content: flex-end; }
+      #device-table-body td:nth-child(5) { width: 20% !important; justify-content: flex-end; text-align: right; }
 
-      /* Định dạng hàng chính trên mobile nằm trên cùng một dòng ngang */
       #device-table-body tr {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        gap: 4px;
+        gap: 2px;
       }
 
-      /* Menu xổ xuống (Accordion) chứa phần thao tác, MAC, Wi-Fi khi bấm vào tên */
+      .mobile-status { display: inline-block !important; }
+      .desktop-status { display: none !important; }
+
+      .status-badge-mobile {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        border-radius: 50%;
+      }
+      .status-online-dot {
+        background: rgba(52, 211, 153, 0.2);
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+      .status-offline-dot {
+        background: rgba(248, 113, 113, 0.2);
+        border: 1px solid rgba(248, 113, 113, 0.4);
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+
       .mobile-dropdown-menu {
         display: none;
         width: 100%;
