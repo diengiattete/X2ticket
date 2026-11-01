@@ -72,7 +72,7 @@
 
     .table-container { overflow-x: auto; border-radius: 8px; width: 100%; }
     
-    /* GIAO DIỆN PC CHUẨN MẶC ĐỊNH */
+    /* GIAO DIỆN PC CHUẨN */
     table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
@@ -133,9 +133,10 @@
     .user-perm-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: auto; }
     .user-perm-table th, .user-perm-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid var(--border-color); }
 
-    .mobile-status { display: none; }
-    .desktop-status { display: inline-block; }
-    .mobile-dropdown-menu { display: none; }
+    .mobile-status { display: none !important; }
+    .desktop-status { display: inline-block !important; }
+    .mobile-dropdown-menu { display: none !important; }
+    .mobile-chevron { display: none !important; }
 
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
@@ -155,7 +156,6 @@
       .container table#mobile-safe-table thead, 
       .container table#mobile-safe-table tbody, 
       .container table#mobile-safe-table th, 
-      .container table#mobile-safe-table td, 
       .container table#mobile-safe-table tr {
         display: block !important; width: 100% !important; box-sizing: border-box !important;
       }
@@ -163,20 +163,27 @@
       .container table#mobile-safe-table { min-width: 0 !important; }
       .container table#mobile-safe-table thead { display: none !important; }
 
-      /* Thẻ Card cho từng thiết bị */
-      #device-table-body tr.mobile-device-card {
+      #device-table-body tr.device-row {
         background: var(--bg-surface);
         border: 1px solid var(--border-color) !important;
         border-radius: 12px;
         margin-bottom: 8px !important;
-        padding: 8px 10px !important;
+        padding: 10px 12px !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         display: flex !important;
         flex-direction: column !important;
-        gap: 6px !important;
+        gap: 8px !important;
       }
 
-      /* Nhóm thiết bị dàn ngang, thu nhỏ font chữ, không bị xuống dòng thô */
+      #device-table-body td[data-label="Nhóm"],
+      #device-table-body td[data-label="Môi trường"],
+      #device-table-body td[data-label="Tín Hiệu"],
+      #device-table-body td[data-label="Mạng / MAC"],
+      #device-table-body td[data-label="Firmware"],
+      #device-table-body td.desktop-action-td {
+        display: none !important;
+      }
+
       #device-table-body tr.mobile-group-header {
         display: flex !important;
         flex-direction: row !important;
@@ -200,28 +207,23 @@
         width: auto !important;
       }
 
-      #device-table-body td { display: none !important; }
-
-      /* Layout bên trong Card thiết bị trên mobile: chia thành các hàng ngang rõ ràng không bị đè chữ */
-      .mobile-card-row-top {
+      .mobile-card-main {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
+        cursor: pointer;
       }
 
-      .mobile-card-row-bottom {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 100% !important;
-        font-size: 11px !important;
-        border-top: 1px dashed rgba(255, 255, 255, 0.08);
-        padding-top: 6px;
+      #device-table-body td[data-label="Trạng thái"],
+      #device-table-body td[data-label="Tên thiết bị"],
+      #device-table-body td[data-label="Đếm xung"] {
+        display: none !important;
       }
 
       .mobile-status { display: inline-block !important; }
       .desktop-status { display: none !important; }
+      .mobile-chevron { display: inline-block !important; }
 
       .status-badge-mobile {
         display: inline-flex;
@@ -233,8 +235,8 @@
       .status-online-dot {
         background: rgba(52, 211, 153, 0.2);
         border: 1px solid rgba(52, 211, 153, 0.4);
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -243,8 +245,8 @@
       .status-offline-dot {
         background: rgba(248, 113, 113, 0.2);
         border: 1px solid rgba(248, 113, 113, 0.4);
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -255,7 +257,7 @@
         display: none;
         width: 100%;
         margin-top: 4px;
-        padding-top: 6px;
+        padding-top: 8px;
         border-top: 1px dashed rgba(255, 255, 255, 0.15);
         flex-direction: column;
         gap: 6px;
