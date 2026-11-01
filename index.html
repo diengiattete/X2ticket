@@ -67,20 +67,15 @@
 
     .card { background: var(--bg-surface); backdrop-filter: blur(12px); border-radius: 14px; border: 1px solid var(--border-color); padding: 16px 12px; }
     .card-header { display: flex; flex-direction: column; margin-bottom: 16px; gap: 12px; }
-    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .card-title i { color: var(--accent-blue); }
 
     .table-container { overflow-x: auto; border-radius: 8px; width: 100%; }
     
-    /* GIAO DIỆN PC CHUẨN */
+    /* GIAO DIỆN PC MẶC ĐỊNH */
     table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 980px; }
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; vertical-align: middle; }
     th { background: rgba(15, 23, 42, 0.7); font-size: 11px; font-weight: 600; color: var(--text-muted); }
-
-    table th:nth-child(6), table td:nth-child(6) {
-      width: 1% !important; white-space: nowrap !important; padding-left: 2px !important; padding-right: 2px !important; text-align: center !important;
-    }
-    table thead th:nth-child(6) { padding-left: 4px !important; padding-right: 4px !important; font-size: 13px !important; }
 
     .badge-mac, .badge-fw, .badge-group { padding: 3px 6px; border-radius: 4px; font-size: 11px; }
     .badge-mac { font-family: monospace; background: rgba(15, 23, 42, 0.8); color: var(--accent-blue); }
@@ -133,24 +128,33 @@
     .user-perm-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: auto; }
     .user-perm-table th, .user-perm-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid var(--border-color); }
 
-    .mobile-status { display: none !important; }
-    .desktop-status { display: inline-block !important; }
-    .mobile-dropdown-menu { display: none !important; }
-    .mobile-chevron { display: none !important; }
+    /* Mặc định trên PC: Ẩn các phần tử mobile */
+    .mobile-view-row { display: none !important; }
+    .pc-view-row { display: table-row !important; }
 
     @media (min-width: 640px) {
       body { padding: 32px 16px; }
       .navbar, .card-header { flex-direction: row; justify-content: space-between; align-items: center; }
     }
 
- /* ====================================================
-       GIAO DIỆN MOBILE CHUẨN MẪU (<= 768px)
+    /* ====================================================
+       GIAO DIỆN MOBILE RIÊNG BIỆT (<= 768px)
        ==================================================== */
     @media screen and (max-width: 768px) {
       body { padding: 8px 4px !important; }
       .container { padding: 0 !important; width: 100% !important; }
       .card { padding: 10px 8px !important; }
       .table-container { overflow-x: visible !important; }
+
+      .navbar { gap: 8px !important; margin-bottom: 12px !important; padding-bottom: 10px !important; }
+      .nav-controls { gap: 6px !important; }
+      .role-badge { padding: 4px 8px !important; font-size: 10px !important; }
+      .btn-users, .btn-logout { 
+        padding: 5px 10px !important; 
+        font-size: 11px !important; 
+        border-radius: 6px !important; 
+      }
+      .app-version-badge { padding: 2px 6px !important; font-size: 10px !important; }
 
       .container table#mobile-safe-table, 
       .container table#mobile-safe-table thead, 
@@ -163,54 +167,36 @@
       .container table#mobile-safe-table { min-width: 0 !important; }
       .container table#mobile-safe-table thead { display: none !important; }
 
-      /* Thẻ Card cho từng thiết bị trên mobile */
-      #device-table-body tr.device-row {
+      /* Ẩn hoàn toàn phần bảng PC trên mobile */
+      .pc-view-row { display: none !important; }
+      .mobile-view-row { display: block !important; }
+
+      .device-mobile-card {
         background: var(--bg-surface);
         border: 1px solid var(--border-color) !important;
-        border-radius: 12px;
+        border-radius: 10px;
         margin-bottom: 8px !important;
-        padding: 10px 12px !important;
+        padding: 8px 10px !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         display: flex !important;
         flex-direction: column !important;
-        gap: 8px !important;
+        gap: 6px !important;
       }
 
-      /* Ẩn các cột thừa trên PC khi xem mobile */
-      #device-table-body td[data-label="Nhóm"],
-      #device-table-body td[data-label="Môi trường"],
-      #device-table-body td[data-label="Tín Hiệu"],
-      #device-table-body td[data-label="Mạng / MAC"],
-      #device-table-body td[data-label="Firmware"],
-      #device-table-body td.desktop-action-td {
-        display: none !important;
-      }
-
-      /* Hàng nhóm thiết bị dàn ngang, thu nhỏ font chữ */
-      #device-table-body tr.mobile-group-header {
+      .mobile-group-header-card {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
         background: rgba(56, 189, 248, 0.12) !important;
         border-top: 2px solid var(--accent-blue) !important;
-        margin-top: 10px !important; 
-        margin-bottom: 6px !important; 
-        border-radius: 8px !important;
-        padding: 6px 10px !important;
+        margin-top: 8px !important; 
+        margin-bottom: 4px !important; 
+        border-radius: 6px !important;
+        padding: 6px 8px !important;
         width: 100% !important;
       }
-      #device-table-body tr.mobile-group-header td {
-        display: block !important; 
-        border: none !important;
-        padding: 0 !important;
-        font-weight: 700; 
-        color: var(--accent-blue); 
-        font-size: 13px !important;
-        width: auto !important;
-      }
 
-      /* Hàng chính card thiết bị: chia làm 2 bên trái (Trạng thái + Tên) và phải (IN/OUT) */
       .mobile-card-main {
         display: flex !important;
         align-items: center !important;
@@ -219,41 +205,18 @@
         cursor: pointer;
       }
 
-      #device-table-body td[data-label="Trạng thái"],
-      #device-table-body td[data-label="Tên thiết bị"],
-      #device-table-body td[data-label="Đếm xung"] {
-        display: none !important; /* Dùng lớp .mobile-card-main bao bọc thay vì ô td riêng lẻ */
-      }
-
-      .mobile-status { display: inline-block !important; }
-      .desktop-status { display: none !important; }
-      .mobile-chevron { display: inline-block !important; }
-
-      .status-badge-mobile {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 4px;
-        border-radius: 50%;
-      }
       .status-online-dot {
         background: rgba(52, 211, 153, 0.2);
         border: 1px solid rgba(52, 211, 153, 0.4);
-        width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 14px; height: 14px;
+        display: flex; align-items: center; justify-content: center;
         border-radius: 50%;
       }
       .status-offline-dot {
         background: rgba(248, 113, 113, 0.2);
         border: 1px solid rgba(248, 113, 113, 0.4);
-        width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 14px; height: 14px;
+        display: flex; align-items: center; justify-content: center;
         border-radius: 50%;
       }
 
@@ -261,7 +224,7 @@
         display: none;
         width: 100%;
         margin-top: 4px;
-        padding-top: 8px;
+        padding-top: 6px;
         border-top: 1px dashed rgba(255, 255, 255, 0.15);
         flex-direction: column;
         gap: 6px;
@@ -313,13 +276,13 @@
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-users" id="btnUsersPerm" style="display:none;" onclick="openUsersModal()"><i class="fa-solid fa-user-gear"></i> Phân Quyền & Tạo User</button>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-      <span class="app-version-badge">v3.4 by LT</span>
+      <span class="app-version-badge">v3.5 by LT</span>
     </div>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
+      <div class="card-title"><i class="fa-solid fa-server"></i> Theo dõi & quản lý thiết bị</div>
       <div class="filter-box">
         <select id="groupFilter" onchange="renderDevices()">
           <option value="ALL">-- Tất cả nhóm --</option>
