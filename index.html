@@ -67,7 +67,7 @@
 
     .card { background: var(--bg-surface); backdrop-filter: blur(12px); border-radius: 14px; border: 1px solid var(--border-color); padding: 16px 12px; }
     .card-header { display: flex; flex-direction: column; margin-bottom: 16px; gap: 12px; }
-    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .card-title i { color: var(--accent-blue); }
 
     .table-container { overflow-x: auto; border-radius: 8px; width: 100%; }
@@ -146,130 +146,145 @@
     /* ====================================================
        GIAO DIỆN MOBILE RIÊNG BIỆT (<= 768px)
        ==================================================== */
-   @media screen and (max-width: 768px) {
-  body { padding: 8px 4px !important; }
-  .container { padding: 0 !important; width: 100% !important; }
-  .card { padding: 10px 8px !important; }
-  
-  /* Thu gọn thanh điều hướng và các nút chức năng */
-  .navbar { gap: 8px !important; margin-bottom: 12px !important; padding-bottom: 10px !important; }
-  .nav-controls { gap: 6px !important; }
-  .role-badge { padding: 4px 8px !important; font-size: 10px !important; }
-  
-  /* Giảm kích thước nút Phân quyền và Thoát cho gọn gàng */
-  .btn-users, .btn-logout { 
-    padding: 6px 10px !important; 
-    font-size: 11px !important; 
-    border-radius: 6px !important; 
-  }
-  
-  .app-version-badge { padding: 2px 6px !important; font-size: 10px !important; }
+    @media screen and (max-width: 768px) {
+      body { padding: 8px 4px !important; }
+      .container { padding: 0 !important; width: 100% !important; }
+      .card { padding: 10px 8px !important; }
+      .table-container { overflow-x: visible !important; }
 
-  /* Sửa lỗi mất nội dung thiết bị: hiện lại các ô cần thiết trên mobile */
-  .container table#mobile-safe-table, 
-  .container table#mobile-safe-table thead, 
-  .container table#mobile-safe-table tbody, 
-  .container table#mobile-safe-table th, 
-  .container table#mobile-safe-table tr {
-    display: block !important; width: 100% !important; box-sizing: border-box !important;
-  }
-  
-  .container table#mobile-safe-table { min-width: 0 !important; }
-  .container table#mobile-safe-table thead { display: none !important; }
+      /* Thu gọn thanh điều hướng và nút bấm trên mobile */
+      .navbar { gap: 8px !important; margin-bottom: 12px !important; padding-bottom: 10px !important; }
+      .nav-controls { gap: 6px !important; }
+      .role-badge { padding: 4px 8px !important; font-size: 10px !important; }
+      .btn-users, .btn-logout { 
+        padding: 5px 10px !important; 
+        font-size: 11px !important; 
+        border-radius: 6px !important; 
+      }
+      .app-version-badge { padding: 2px 6px !important; font-size: 10px !important; }
 
-  #device-table-body tr.device-row {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color) !important;
-    border-radius: 10px;
-    margin-bottom: 8px !important;
-    padding: 8px 10px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-  }
+      .container table#mobile-safe-table, 
+      .container table#mobile-safe-table thead, 
+      .container table#mobile-safe-table tbody, 
+      .container table#mobile-safe-table th, 
+      .container table#mobile-safe-table tr {
+        display: block !important; width: 100% !important; box-sizing: border-box !important;
+      }
+      
+      .container table#mobile-safe-table { min-width: 0 !important; }
+      .container table#mobile-safe-table thead { display: none !important; }
 
-  /* Ép hiển thị các ô chứa tên thiết bị và thông số IN/OUT */
-  #device-table-body td {
-    display: none !important;
-    border: none !important;
-    padding: 0 !important;
-  }
+      #device-table-body tr.device-row {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color) !important;
+        border-radius: 10px;
+        margin-bottom: 8px !important;
+        padding: 8px 10px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+      }
 
-  #device-table-body td[data-label="Tên thiết bị"] {
-    display: block !important;
-    width: 100% !important;
-  }
+      #device-table-body td[data-label="Nhóm"],
+      #device-table-body td[data-label="Môi trường"],
+      #device-table-body td[data-label="Tín Hiệu"],
+      #device-table-body td[data-label="Mạng / MAC"],
+      #device-table-body td[data-label="Firmware"],
+      #device-table-body td.desktop-action-td {
+        display: none !important;
+      }
 
-  /* Hàng nhóm thiết bị dàn ngang gọn gàng */
-  #device-table-body tr.mobile-group-header {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    background: rgba(56, 189, 248, 0.12) !important;
-    border-top: 2px solid var(--accent-blue) !important;
-    margin-top: 8px !important; 
-    margin-bottom: 4px !important; 
-    border-radius: 6px !important;
-    padding: 6px 8px !important;
-    width: 100% !important;
-  }
-  #device-table-body tr.mobile-group-header td {
-    display: block !important; 
-    font-weight: 700; 
-    color: var(--accent-blue); 
-    font-size: 12px !important;
-  }
+      #device-table-body tr.mobile-group-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-top: 2px solid var(--accent-blue) !important;
+        margin-top: 8px !important; 
+        margin-bottom: 4px !important; 
+        border-radius: 6px !important;
+        padding: 6px 8px !important;
+        width: 100% !important;
+      }
+      #device-table-body tr.mobile-group-header td {
+        display: block !important; 
+        border: none !important;
+        padding: 0 !important;
+        font-weight: 700; 
+        color: var(--accent-blue); 
+        font-size: 12px !important;
+        width: auto !important;
+      }
 
-  .mobile-card-main {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    cursor: pointer;
-  }
+      .mobile-card-main {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        cursor: pointer;
+      }
 
-  .mobile-status { display: inline-block !important; }
-  .desktop-status { display: none !important; }
-  .mobile-chevron { display: inline-block !important; }
+      #device-table-body td[data-label="Trạng thái"],
+      #device-table-body td[data-label="Tên thiết bị"],
+      #device-table-body td[data-label="Đếm xung"] {
+        display: none !important;
+      }
 
-  .status-online-dot {
-    background: rgba(52, 211, 153, 0.2);
-    border: 1px solid rgba(52, 211, 153, 0.4);
-    width: 14px; height: 14px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-  }
-  .status-offline-dot {
-    background: rgba(248, 113, 113, 0.2);
-    border: 1px solid rgba(248, 113, 113, 0.4);
-    width: 14px; height: 14px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-  }
+      .mobile-status { display: inline-block !important; }
+      .desktop-status { display: none !important; }
+      .mobile-chevron { display: inline-block !important; }
 
-  .mobile-dropdown-menu {
-    display: none;
-    width: 100%;
-    margin-top: 4px;
-    padding-top: 6px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.15);
-    flex-direction: column;
-    gap: 6px;
-  }
-  .mobile-dropdown-menu.active {
-    display: flex !important;
-  }
+      .status-badge-mobile {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        border-radius: 50%;
+      }
+      .status-online-dot {
+        background: rgba(52, 211, 153, 0.2);
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+      .status-offline-dot {
+        background: rgba(248, 113, 113, 0.2);
+        border: 1px solid rgba(248, 113, 113, 0.4);
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
 
-  .mobile-extra-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-}
+      .mobile-dropdown-menu {
+        display: none;
+        width: 100%;
+        margin-top: 4px;
+        padding-top: 6px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+        flex-direction: column;
+        gap: 6px;
+      }
+      .mobile-dropdown-menu.active {
+        display: flex !important;
+      }
+
+      .mobile-extra-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+    }
   </style>
 </head>
 <body>
@@ -305,13 +320,13 @@
       <div id="userBadge" class="role-badge"><i class="fa-solid fa-user-check"></i> <span id="userEmail">Loading...</span></div>
       <button class="btn-users" id="btnUsersPerm" style="display:none;" onclick="openUsersModal()"><i class="fa-solid fa-user-gear"></i> Phân Quyền & Tạo User</button>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-      <span class="app-version-badge">v3.2 by LT</span>
+      <span class="app-version-badge">v3.5 by LT</span>
     </div>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-server"></i> Theo Dõi & Quản Lý Thiết Bị Realtime</div>
+      <div class="card-title"><i class="fa-solid fa-server"></i> Theo dõi & quản lý thiết bị</div>
       <div class="filter-box">
         <select id="groupFilter" onchange="renderDevices()">
           <option value="ALL">-- Tất cả nhóm --</option>
