@@ -380,10 +380,8 @@ function renderDevices() {
       }
 
       let pulseColumnHTML = "";
-      let pulseMobileHTML = "";
       if (isGateway) {
         pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 11px;"><i class="fa-solid fa-server"></i> Điều phối trung tâm</span>`;
-        pulseMobileHTML = `<span style="color: var(--text-muted); font-size: 11px;">Điều phối trung tâm</span>`;
       } else {
         let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
         let ratioDisplay = isRatioError 
@@ -396,12 +394,6 @@ function renderDevices() {
             OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
           </div>
           <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
-        `;
-
-        pulseMobileHTML = `
-          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 8px; font-family: monospace; font-size: 12px; font-weight: 700;">
-            <span style="color: #60a5fa;">IN:${inCnt}</span> | <span style="color: #f43f5e;">OUT:${outCnt}</span>
-          </div>
         `;
       }
 
@@ -422,31 +414,24 @@ function renderDevices() {
       let cardBgStyle = openMobileMenus[id] ? "background: rgba(56, 189, 248, 0.08);" : "";
 
       tbody.innerHTML += `<tr id="row-${id}" class="device-row" style="${cardBgStyle}">
-        <td data-label="Trạng thái">
+        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">
           <span class="desktop-status">${statusHTML}</span>
+          <span class="mobile-status">${statusMobileHTML}</span>
         </td>
-        <td data-label="Tên thiết bị">
-          <!-- Bố cục chuẩn mobile giống hình mẫu -->
-          <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              ${statusMobileHTML}
-              <div class="device-name-container">
-                ${topCodeHtml}
-                <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down mobile-chevron" style="font-size: 9px; opacity: 0.5;"></i></span>
-              </div>
-            </div>
-            <div>${pulseMobileHTML}</div>
+        <td data-label="Tên thiết bị" onclick="toggleMobileMenu('${id}')">
+          <div class="device-name-container">
+            ${topCodeHtml}
+            <span class="device-custom-name">${customName} <i class="fa-solid fa-chevron-down mobile-chevron" style="font-size: 9px; opacity: 0.5;"></i></span>
           </div>
-
-          <!-- Menu xổ xuống chứa Nhiệt độ, Điện áp, Wi-Fi và các thông số khác -->
+          <!-- Menu xổ xuống trên mobile -->
           <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
             <div class="mobile-extra-info">
-              <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${tempDisplay}</span></span>
-              <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${voltDisplay}</span></span>
+              <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);">${tempDisplay}</span></span>
+              <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);">${voltDisplay}</span></span>
             </div>
             <div class="mobile-extra-info">
               <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
-              <span><b>Firmware:</b> v${fwVer}</span>
+              <span><b>FW:</b> v${fwVer}</span>
             </div>
             <div class="mobile-extra-info" style="font-family: monospace;">
               <span>WAN: ${ipWan}</span>
@@ -455,14 +440,14 @@ function renderDevices() {
             <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
               MAC: ${macAddr}
             </div>
-            <div style="margin-top: 8px;">
+            <div style="margin-top: 6px;">
               ${actionTd.replace('<td data-label="Thao tác" class="desktop-action-td">', '').replace('</td>', '')}
             </div>
           </div>
         </td>
         <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
-        <td data-label="Đếm xung">${pulseColumnHTML}</td>
-        <td data-label="Môi trường">
+        <td data-label="Đếm xung" onclick="toggleMobileMenu('${id}')">${pulseColumnHTML}</td>
+        <td data-label="Môi trường" onclick="toggleMobileMenu('${id}')">
           <div class="env-box">
             <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
             <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
