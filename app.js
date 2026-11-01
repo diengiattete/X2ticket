@@ -256,14 +256,17 @@ function getSignalBarsHTML(rssi) {
 }
 
 function renderDevices() {
-  const tbody = document.getElementById("device-table-body");
+  const pcTbody = document.getElementById("pc-table-body");
+  const mobileContainer = document.getElementById("mobile-cards-container");
   const filterValue = document.getElementById("groupFilter").value;
   const isAdmin = currentUser && (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
-  tbody.innerHTML = "";
+  pcTbody.innerHTML = "";
+  mobileContainer.innerHTML = "";
 
   if (!globalDeviceData) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
+    pcTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</td></tr>`;
+    mobileContainer.innerHTML = `<div style="text-align:center; color: var(--text-muted); padding:30px;">Chưa có thiết bị nào trong cơ sở dữ liệu.</div>`;
     return;
   }
 
@@ -291,7 +294,8 @@ function renderDevices() {
   }
 
   if (totalCount === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+    pcTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</td></tr>`;
+    mobileContainer.innerHTML = `<div style="text-align:center; color: var(--text-muted); padding:30px;">Không tìm thấy thiết bị phù hợp.</div>`;
     return;
   }
 
@@ -312,26 +316,21 @@ function renderDevices() {
       return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
     });
 
-    // 1. Tiêu đề nhóm cho PC
-    tbody.innerHTML += `
-      <tr class="pc-view-row" style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
+    // 1. Render Tiêu đề nhóm cho PC (Bảng)
+    pcTbody.innerHTML += `
+      <tr style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
         <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 8px 12px; font-size: 14px;">
           <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
         </td>
       </tr>
     `;
 
-    // 2. Tiêu đề nhóm cho Mobile
-    tbody.innerHTML += `
-      <tr class="mobile-view-row">
-        <td style="padding:0; border:none;">
-          <div class="mobile-group-header-card">
-            <span style="font-weight: 700; color: var(--accent-blue); font-size: 12px;">
-              <i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> NHÓM: ${devGroup} (${groupsMap[devGroup].length})
-            </span>
-          </div>
-        </td>
-      </tr>
+    // 2. Render Tiêu đề nhóm cho Mobile (Thẻ Card)
+    let mobileGroupHTML = `
+      <div class="mobile-group-section">
+        <div class="mobile-group-header-card">
+          <span><i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> NHÓM: ${devGroup} (${groupsMap[devGroup].length})</span>
+        </div>
     `;
 
     groupsMap[devGroup].forEach(item => {
@@ -433,9 +432,9 @@ function renderDevices() {
       let isMenuOpen = openMobileMenus[id] ? "active" : "";
       let cardBgStyle = openMobileMenus[id] ? "background: rgba(56, 189, 248, 0.08);" : "";
 
-      // 3. Dòng hiển thị chuẩn cho PC
-      tbody.innerHTML += `
-        <tr class="pc-view-row">
+      // Thêm dòng dữ liệu vào Bảng PC
+      pcTbody.innerHTML += `
+        <tr>
           <td>${statusHTML}</td>
           <td>
             <div class="device-name-container">
@@ -462,47 +461,46 @@ function renderDevices() {
         </tr>
       `;
 
-      // 4. Khối thẻ card hiển thị riêng cho Mobile
-      tbody.innerHTML += `
-        <tr class="mobile-view-row">
-          <td style="padding:0; border:none;">
-            <div class="device-mobile-card" id="row-${id}" style="${cardBgStyle}">
-              <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  ${statusMobileHTML}
-                  <div class="device-name-container">
-                    ${topCodeHtml}
-                    <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></span>
-                  </div>
-                </div>
-                <div>${pulseMobileHTML}</div>
-              </div>
-
-              <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
-                <div class="mobile-extra-info">
-                  <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${tempDisplay}</span></span>
-                  <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${voltDisplay}</span></span>
-                </div>
-                <div class="mobile-extra-info">
-                  <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
-                  <span><b>Tỷ lệ:</b> ${isGateway ? '--' : ratio + 'x'}</span>
-                </div>
-                <div class="mobile-extra-info" style="font-family: monospace;">
-                  <span>WAN: ${ipWan}</span>
-                  <span>LAN: ${ipLocal}</span>
-                </div>
-                <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
-                  MAC: ${macAddr}
-                </div>
-                <div style="margin-top: 8px;">
-                  ${actionTd}
-                </div>
+      // Thêm thẻ card vào danh sách Mobile
+      mobileGroupHTML += `
+        <div class="device-mobile-card" id="row-${id}" style="${cardBgStyle}">
+          <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${statusMobileHTML}
+              <div class="device-name-container">
+                ${topCodeHtml}
+                <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></span>
               </div>
             </div>
-          </td>
-        </tr>
+            <div>${pulseMobileHTML}</div>
+          </div>
+
+          <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
+            <div class="mobile-extra-info">
+              <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${tempDisplay}</span></span>
+              <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${voltDisplay}</span></span>
+            </div>
+            <div class="mobile-extra-info">
+              <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
+              <span><b>Tỷ lệ:</b> ${isGateway ? '--' : ratio + 'x'}</span>
+            </div>
+            <div class="mobile-extra-info" style="font-family: monospace;">
+              <span>WAN: ${ipWan}</span>
+              <span>LAN: ${ipLocal}</span>
+            </div>
+            <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
+              MAC: ${macAddr}
+            </div>
+            <div style="margin-top: 8px;">
+              ${actionTd}
+            </div>
+          </div>
+        </div>
       `;
     });
+
+    mobileGroupHTML += `</div>`;
+    mobileContainer.innerHTML += mobileGroupHTML;
   });
 }
 
