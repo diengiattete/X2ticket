@@ -362,31 +362,33 @@ function renderDevices() {
       let dotClass = isBlinking ? "dot-blinking" : "";
 
       let statusHTML = "";
+      let statusMobileHTML = "";
+      
       if (isOnline) {
         statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
+        statusMobileHTML = `<span class="status-badge-mobile status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:8px; color: var(--accent-green);"></i></span>`;
       } else {
         let lastSeenStr = formatWithoutYear(lastSeenTime);
         statusHTML = `
           <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
           <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
         `;
+        statusMobileHTML = `<span class="status-badge-mobile status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:8px; color: var(--accent-red);"></i></span>`;
       }
 
       let pulseColumnHTML = "";
       if (isGateway) {
-        pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 12px;"><i class="fa-solid fa-server"></i> Thiết bị điều phối trung tâm</span>`;
+        pulseColumnHTML = `<span style="color: var(--text-muted); font-size: 11px;"><i class="fa-solid fa-server"></i> Điều phối trung tâm</span>`;
       } else {
         let pulseContainerClass = isRatioError ? "pulse-container-error" : "pulse-container-normal";
         let ratioDisplay = isRatioError 
-          ? `<span style="color: var(--accent-red); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> LỖI TỶ LỆ (${ratio}x)</span>`
+          ? `<span style="color: var(--accent-red); font-weight: bold;">LỖI (${ratio}x)</span>`
           : `<b>${ratio}x</b>`;
 
         pulseColumnHTML = `
-          <div class="${pulseContainerClass}">
-            IN: <span class="pulse-counter pulse-in">${inCnt}</span> | 
-            OUT: <span class="pulse-counter pulse-out">${outCnt}</span>
+          <div class="${pulseContainerClass}" style="padding: 2px 4px; font-size: 11px;">
+            IN:<span class="pulse-counter pulse-in">${inCnt}</span>|OUT:<span class="pulse-counter pulse-out">${outCnt}</span>
           </div>
-          <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
         `;
       }
 
@@ -404,16 +406,23 @@ function renderDevices() {
         </td>`;
 
       tbody.innerHTML += `<tr id="row-${id}">
-        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">${statusHTML}</td>
+        <td data-label="Trạng thái" onclick="toggleMobileMenu('${id}')">
+          <span class="desktop-status">${statusHTML}</span>
+          <span class="mobile-status">${statusMobileHTML}</span>
+        </td>
         <td data-label="Tên thiết bị" onclick="toggleMobileMenu('${id}')">
           <div class="device-name-container">
             ${topCodeHtml}
-            <span class="device-custom-name">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 10px; opacity: 0.6;"></i></span>
+            <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></span>
           </div>
           <!-- Menu xổ xuống trên mobile -->
           <div class="mobile-dropdown-menu" id="menu-${id}">
             <div class="mobile-extra-info">
+              <span><b>Trạng thái:</b> ${statusHTML}</span>
               <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
+            </div>
+            <div class="mobile-extra-info">
+              <span><b>Nhóm:</b> ${devGroup}</span>
               <span><b>FW:</b> v${fwVer}</span>
             </div>
             <div class="mobile-extra-info" style="font-family: monospace;">
@@ -423,7 +432,7 @@ function renderDevices() {
             <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
               MAC: ${macAddr}
             </div>
-            <div style="margin-top: 4px;">
+            <div style="margin-top: 6px;">
               ${actionTd.replace('<td>', '').replace('</td>', '')}
             </div>
           </div>
@@ -431,9 +440,9 @@ function renderDevices() {
         <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
         <td data-label="Đếm xung" onclick="toggleMobileMenu('${id}')">${pulseColumnHTML}</td>
         <td data-label="Môi trường" onclick="toggleMobileMenu('${id}')">
-          <div class="env-box">
-            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
-            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+          <div class="env-box" style="font-size: 11px;">
+            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i><b>${tempDisplay}</b></div>
+            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i><b>${voltDisplay}</b></div>
           </div>
         </td>
         <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
