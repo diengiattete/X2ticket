@@ -21,7 +21,6 @@ let currentFilteredLogs = [];
 let currentLogLimit = 50;
 let lastSeenTracker = {};
 
-// Lưu trạng thái menu mở trên mobile
 let openMobileMenus = {};
 
 function encodeEmail(email) {
@@ -313,10 +312,24 @@ function renderDevices() {
       return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
     });
 
+    // 1. Tiêu đề nhóm cho PC
     tbody.innerHTML += `
-      <tr class="mobile-group-header" style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
+      <tr class="pc-view-row" style="background: rgba(56, 189, 248, 0.08); border-top: 2px solid var(--accent-blue);">
         <td colspan="9" style="font-weight: 700; color: var(--accent-blue); padding: 8px 12px; font-size: 14px;">
           <i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> NHÓM: ${devGroup} <span style="font-weight: 400; color: var(--text-muted); font-size: 12px;">(${groupsMap[devGroup].length} thiết bị)</span>
+        </td>
+      </tr>
+    `;
+
+    // 2. Tiêu đề nhóm cho Mobile
+    tbody.innerHTML += `
+      <tr class="mobile-view-row">
+        <td style="padding:0; border:none;">
+          <div class="mobile-group-header-card">
+            <span style="font-weight: 700; color: var(--accent-blue); font-size: 12px;">
+              <i class="fa-solid fa-layer-group" style="margin-right: 4px;"></i> NHÓM: ${devGroup} (${groupsMap[devGroup].length})
+            </span>
+          </div>
         </td>
       </tr>
     `;
@@ -369,14 +382,14 @@ function renderDevices() {
       
       if (isOnline) {
         statusHTML = `<span class="status-badge status-online"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px;"></i> ONLINE</span>`;
-        statusMobileHTML = `<span class="status-badge-mobile status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px; color: var(--accent-green);"></i></span>`;
+        statusMobileHTML = `<span class="status-online-dot"><i class="fa-solid fa-circle ${dotClass}" style="font-size:7px; color: var(--accent-green);"></i></span>`;
       } else {
         let lastSeenStr = formatWithoutYear(lastSeenTime);
         statusHTML = `
           <span class="status-badge status-offline"><i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i> OFFLINE</span>
           <span class="info-sub" style="color: var(--accent-red);">${lastSeenStr}</span>
         `;
-        statusMobileHTML = `<span class="status-badge-mobile status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:7px; color: var(--accent-red);"></i></span>`;
+        statusMobileHTML = `<span class="status-offline-dot" title="Offline: ${lastSeenStr}"><i class="fa-solid fa-circle" style="font-size:7px; color: var(--accent-red);"></i></span>`;
       }
 
       let pulseColumnHTML = "";
@@ -398,7 +411,6 @@ function renderDevices() {
           <span class="info-sub">Tỷ lệ: ${ratioDisplay} | Độ rộng: ${pulseUs} µs</span>
         `;
 
-        // Thêm hiển thị FW kế bên IN / OUT trên Mobile
         pulseMobileHTML = `
           <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); padding: 5px 8px; border-radius: 8px; font-family: monospace; font-size: 11px; font-weight: 700; white-space: nowrap;">
             <span style="color: #60a5fa;">IN:${inCnt}</span> | <span style="color: #f43f5e;">OUT:${outCnt}</span> | <span style="color: var(--accent-green);">v${fwVer}</span>
@@ -408,74 +420,88 @@ function renderDevices() {
 
       let safeCustomName = (dev.custom_name || "").replace(/'/g, "\\'");
       let actionTd = `
-        <td data-label="Thao tác" class="desktop-action-td">
-          <div class="action-group">
-            ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
-            ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
-            ${isAdmin ? `
-              <button class="btn-edit" onclick="openEditModal('${id}', '${safeCustomName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
-              <button class="btn-delete" onclick="deleteDevice('${id}', '${customName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
-            ` : ''}
-          </div>
-        </td>`;
+        <div class="action-group">
+          ${isGateway && isAdmin ? `<button class="btn-restart" onclick="restartSpecificMaster('${id}', '${safeCustomName}')"><i class="fa-solid fa-power-off"></i> Restart</button>` : ''}
+          ${!isGateway ? `<button class="btn-log" onclick="viewHourlyLog('${id}')"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button>` : ''}
+          ${isAdmin ? `
+            <button class="btn-edit" onclick="openEditModal('${id}', '${safeCustomName}', '${devGroup}')"><i class="fa-solid fa-pen"></i> Sửa</button>
+            <button class="btn-delete" onclick="deleteDevice('${id}', '${customName}')"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          ` : ''}
+        </div>
+      `;
 
       let isMenuOpen = openMobileMenus[id] ? "active" : "";
       let cardBgStyle = openMobileMenus[id] ? "background: rgba(56, 189, 248, 0.08);" : "";
 
-      tbody.innerHTML += `<tr id="row-${id}" class="device-row" style="${cardBgStyle}">
-        <td data-label="Trạng thái">
-          <span class="desktop-status">${statusHTML}</span>
-        </td>
-        <td data-label="Tên thiết bị">
-          <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              ${statusMobileHTML}
-              <div class="device-name-container">
-                ${topCodeHtml}
-                <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down mobile-chevron" style="font-size: 9px; opacity: 0.5;"></i></span>
+      // 3. Dòng hiển thị chuẩn cho PC
+      tbody.innerHTML += `
+        <tr class="pc-view-row">
+          <td>${statusHTML}</td>
+          <td>
+            <div class="device-name-container">
+              ${topCodeHtml}
+              <span class="device-custom-name">${customName}</span>
+            </div>
+          </td>
+          <td><span class="badge-group">${devGroup}</span></td>
+          <td>${pulseColumnHTML}</td>
+          <td>
+            <div class="env-box">
+              <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
+              <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
+            </div>
+          </td>
+          <td style="text-align: center;">${signalDisplayHTML}</td>
+          <td>
+            <span class="badge-mac">${macAddr}</span>
+            <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
+            <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
+          </td>
+          <td><span class="badge-fw">v${fwVer}</span></td>
+          <td style="text-align: right;">${actionTd}</td>
+        </tr>
+      `;
+
+      // 4. Khối thẻ card hiển thị riêng cho Mobile
+      tbody.innerHTML += `
+        <tr class="mobile-view-row">
+          <td style="padding:0; border:none;">
+            <div class="device-mobile-card" id="row-${id}" style="${cardBgStyle}">
+              <div class="mobile-card-main" onclick="toggleMobileMenu('${id}')">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  ${statusMobileHTML}
+                  <div class="device-name-container">
+                    ${topCodeHtml}
+                    <span class="device-custom-name" style="font-size: 13px;">${customName} <i class="fa-solid fa-chevron-down" style="font-size: 9px; opacity: 0.5;"></i></span>
+                  </div>
+                </div>
+                <div>${pulseMobileHTML}</div>
+              </div>
+
+              <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
+                <div class="mobile-extra-info">
+                  <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${tempDisplay}</span></span>
+                  <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${voltDisplay}</span></span>
+                </div>
+                <div class="mobile-extra-info">
+                  <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
+                  <span><b>Tỷ lệ:</b> ${isGateway ? '--' : ratio + 'x'}</span>
+                </div>
+                <div class="mobile-extra-info" style="font-family: monospace;">
+                  <span>WAN: ${ipWan}</span>
+                  <span>LAN: ${ipLocal}</span>
+                </div>
+                <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
+                  MAC: ${macAddr}
+                </div>
+                <div style="margin-top: 8px;">
+                  ${actionTd}
+                </div>
               </div>
             </div>
-            <div>${pulseMobileHTML}</div>
-          </div>
-
-          <div class="mobile-dropdown-menu ${isMenuOpen}" id="menu-${id}">
-            <div class="mobile-extra-info">
-              <span><b>Nhiệt độ:</b> <span style="color: var(--accent-orange);"><i class="fa-solid fa-temperature-half"></i> ${tempDisplay}</span></span>
-              <span><b>Điện áp:</b> <span style="color: var(--accent-yellow);"><i class="fa-solid fa-bolt"></i> ${voltDisplay}</span></span>
-            </div>
-            <div class="mobile-extra-info">
-              <span><b>Wi-Fi:</b> ${signalDisplayHTML}</span>
-              <span><b>Tỷ lệ:</b> ${isGateway ? '--' : ratio + 'x'}</span>
-            </div>
-            <div class="mobile-extra-info" style="font-family: monospace;">
-              <span>WAN: ${ipWan}</span>
-              <span>LAN: ${ipLocal}</span>
-            </div>
-            <div class="mobile-extra-info" style="font-family: monospace; font-size: 10px; color: var(--accent-blue);">
-              MAC: ${macAddr}
-            </div>
-            <div style="margin-top: 8px;">
-              ${actionTd.replace('<td data-label="Thao tác" class="desktop-action-td">', '').replace('</td>', '')}
-            </div>
-          </div>
-        </td>
-        <td data-label="Nhóm"><span class="badge-group">${devGroup}</span></td>
-        <td data-label="Đếm xung">${pulseColumnHTML}</td>
-        <td data-label="Môi trường">
-          <div class="env-box">
-            <div class="env-item"><i class="fa-solid fa-temperature-half" style="color: var(--accent-orange);"></i> <b>${tempDisplay}</b></div>
-            <div class="env-item"><i class="fa-solid fa-bolt" style="color: var(--accent-yellow);"></i> <b>${voltDisplay}</b></div>
-          </div>
-        </td>
-        <td data-label="Tín Hiệu">${signalDisplayHTML}</td>
-        <td data-label="Mạng / MAC">
-          <span class="badge-mac">${macAddr}</span>
-          <span class="info-sub"><i class="fa-solid fa-globe"></i> WAN: ${ipWan}</span>
-          <span class="info-sub"><i class="fa-solid fa-network-wired"></i> LAN: ${ipLocal}</span>
-        </td>
-        <td data-label="Firmware"><span class="badge-fw">v${fwVer}</span></td>
-        ${actionTd}
-      </tr>`;
+          </td>
+        </tr>
+      `;
     });
   });
 }
